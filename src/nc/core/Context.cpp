@@ -46,7 +46,7 @@ namespace core {
 
 Context::Context():
     image_(std::make_shared<image::Image>()),
-    instructions_(std::make_shared<const arch::Instructions>())
+    instructions_(new arch::Instructions())
 {}
 
 Context::~Context() {}
