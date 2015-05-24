@@ -46,7 +46,7 @@ namespace gui {
 Project::Project(QObject *parent):
     QObject(parent),
     image_(std::make_shared<core::image::Image>()),
-    instructions_(std::make_shared<const core::arch::Instructions>()),
+    instructions_(new core::arch::Instructions()),
     context_(std::make_shared<core::Context>()),
     commandQueue_(new CommandQueue(this))
 {

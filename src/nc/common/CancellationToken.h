@@ -58,7 +58,7 @@ public:
      * Creates a not canceled token.
      */
     CancellationToken():
-        cancellationRequested_(std::make_shared<volatile bool>(false))
+        cancellationRequested_(new bool(false))
     {}
 
     /**
