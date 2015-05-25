@@ -130,6 +130,12 @@ else()
     set(IDA_PLUGIN_DISABLED YES)
 endif()
 
+# Find x64dbg SDK.
+find_package(x64dbg)
+
+# Option for building x64dbg module.
+set(X64DBG_MODULE_ENABLED ${X64DBG_SDK_FOUND} CACHE BOOL "Build x64dbg module.")
+
 # Option for making multithreaded builds.
 set(NC_USE_THREADS ${IDA_PLUGIN_DISABLED} CACHE BOOL "Enable threads.")
 
@@ -146,6 +152,11 @@ add_subdirectory(snowman)
 
 if(${IDA_PLUGIN_ENABLED})
     add_subdirectory(ida-plugin)
+endif()
+
+# Only build x64dbg when using MSVC (no support for other compilers in the SDK).
+if(${X64DBG_MODULE_ENABLED} AND ${MSVC})
+    add_subdirectory(x64dbg-module)
 endif()
 
 # vim:set et sts=4 sw=4 nospell:
