@@ -1055,12 +1055,13 @@ public:
 
                 if (operandsAreTheSame(0, 1)) {
                     _[zf ^= operand(0) == constant(0)];
+                    _[sf ^= signed_(operand(0)) < constant(0)];
                 } else {
                     _[zf ^= (operand(0) & operand(1)) == constant(0)];
+                    _[sf ^= signed_(operand(0) & operand(1)) < constant(0)];
                 }
 
                 _[
-                    sf ^= intrinsic(),
                     of ^= constant(0),
                     af ^= undefined(),
                     kill(pseudo_flags)
