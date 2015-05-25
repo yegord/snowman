@@ -49,6 +49,7 @@ SearchWidget::SearchWidget(std::unique_ptr<Searcher> searcher, QWidget *parent):
     auto supportedFlags = searcher_->supportedFlags();
 
     QHBoxLayout *layout = new QHBoxLayout(this);
+    layout->setMargin(0);
 
     QLabel *findLabel = new QLabel(tr("Find:"), this);
     layout->addWidget(findLabel);
@@ -148,14 +149,15 @@ void SearchWidget::deactivate() {
 
 void SearchWidget::findNext() {
     searcher()->stopTrackingViewport();
-    searcher()->restoreViewport();
+    if (searcher()->restoreViewport()) {
 
-    if (searcher()->find(lineEdit_->text(), searchFlags())) {
-        searcher()->rememberViewport();
-        indicateSuccess();
-    } else {
-        searcher()->restoreViewport();
-        indicateFailure();
+        if (searcher()->find(lineEdit_->text(), searchFlags())) {
+            searcher()->rememberViewport();
+            indicateSuccess();
+        } else {
+            searcher()->restoreViewport();
+            indicateFailure();
+        }
     }
 
     searcher()->startTrackingViewport();
@@ -163,14 +165,15 @@ void SearchWidget::findNext() {
 
 void SearchWidget::findPrevious() {
     searcher()->stopTrackingViewport();
-    searcher()->restoreViewport();
+    if (searcher()->restoreViewport()) {
 
-    if (searcher()->find(lineEdit_->text(), searchFlags() | Searcher::FindBackward)) {
-        searcher()->rememberViewport();
-        indicateSuccess();
-    } else {
-        searcher()->restoreViewport();
-        indicateFailure();
+        if (searcher()->find(lineEdit_->text(), searchFlags() | Searcher::FindBackward)) {
+            searcher()->rememberViewport();
+            indicateSuccess();
+        } else {
+            searcher()->restoreViewport();
+            indicateFailure();
+        }
     }
 
     searcher()->startTrackingViewport();

@@ -66,7 +66,7 @@ class TextEditSearcher: public QObject, public Searcher {
     public Q_SLOTS:
 
     virtual void rememberViewport() override;
-    virtual void restoreViewport() override;
+    virtual bool restoreViewport() override;
 
     public:
 

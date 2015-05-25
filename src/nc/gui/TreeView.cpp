@@ -120,6 +120,8 @@ void TreeView::showContextMenu(const QPoint &pos) {
 }
 
 void TreeView::populateContextMenu(QMenu *menu) {
+    if (!treeView_->selectionModel())
+        return;
     if (!treeView_->selectionModel()->selectedIndexes().isEmpty()) {
         menu->addSeparator();
         menu->addAction(copyAction_);

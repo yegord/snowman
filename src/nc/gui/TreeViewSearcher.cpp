@@ -56,8 +56,9 @@ void TreeViewSearcher::rememberViewport() {
     vvalue_ = treeView_->verticalScrollBar()->value();
 }
 
-void TreeViewSearcher::restoreViewport() {
-    assert(hvalue_ != -1);
+bool TreeViewSearcher::restoreViewport() {
+    if (hvalue_ == -1)
+        return false;
 
     treeView_->setCurrentIndex(currentIndex_);
 
@@ -73,6 +74,8 @@ void TreeViewSearcher::restoreViewport() {
 
     treeView_->horizontalScrollBar()->setValue(hvalue_);
     treeView_->verticalScrollBar()->setValue(vvalue_);
+
+    return true;
 }
 
 Searcher::FindFlags TreeViewSearcher::supportedFlags() const {
