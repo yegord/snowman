@@ -56,6 +56,7 @@ GotoLineWidget::GotoLineWidget(QPlainTextEdit *textEdit, QWidget *parent):
     connect(goButton, SIGNAL(clicked()), this, SLOT(go()));
 
     QHBoxLayout *layout = new QHBoxLayout(this);
+    layout->setMargin(0);
     layout->addWidget(goLabel);
     layout->addWidget(lineEdit_);
     layout->addWidget(goButton);

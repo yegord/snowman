@@ -65,7 +65,7 @@ class Searcher {
     /**
      * Restores the remembered viewport of the widget being searched in.
      */
-    virtual void restoreViewport() = 0;
+    virtual bool restoreViewport() = 0;
 
     /**
      * Start automatically remembering viewport when it is changed.

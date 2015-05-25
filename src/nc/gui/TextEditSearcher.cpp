@@ -51,12 +51,15 @@ void TextEditSearcher::rememberViewport() {
     vvalue_ = textEdit_->verticalScrollBar()->value();
 }
 
-void TextEditSearcher::restoreViewport() {
-    assert(hvalue_ != -1);
+bool TextEditSearcher::restoreViewport() {
+    if (hvalue_ == -1)
+        return false;
 
     textEdit_->setTextCursor(cursor_);
     textEdit_->horizontalScrollBar()->setValue(hvalue_);
     textEdit_->verticalScrollBar()->setValue(vvalue_);
+
+    return true;
 }
 
 Searcher::FindFlags TextEditSearcher::supportedFlags() const {
