@@ -394,6 +394,14 @@ private:
             }
             break;
         }
+        case ARM_INS_TST: {
+            _[
+                n ^= signed_(operand(0) & operand(1)) < constant(0),
+                z ^= (operand(0) & operand(1)) == constant(0),
+                c ^= intrinsic()
+            ];
+            break;
+        }
         default: {
             _(std::make_unique<core::ir::InlineAssembly>());
             break;
