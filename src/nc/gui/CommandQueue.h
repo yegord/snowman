@@ -52,9 +52,9 @@ class CommandQueue: public QObject {
     /**
      * Constructor.
      *
-     * \param parent Pointer to the parent widget. Can be NULL.
+     * \param parent Pointer to the parent widget. Can be nullptr.
      */
-    CommandQueue(QObject *parent = NULL);
+    CommandQueue(QObject *parent = nullptr);
 
     /**
      * Destructor.
@@ -71,14 +71,14 @@ class CommandQueue: public QObject {
     void push(std::unique_ptr<Command> command);
 
     /**
-     * \return Pointer to the first element of the queue. Can be NULL if the queue is empty.
+     * \return Pointer to the first element of the queue. Can be nullptr if the queue is empty.
      */
     Command *front() const { return front_.get(); }
 
     /**
      * \return True if the queue is empty, false otherwise.
      */
-    bool empty() const { return front() == NULL; }
+    bool empty() const { return front() == nullptr; }
 
     public Q_SLOTS:
 

@@ -99,20 +99,20 @@ public:
     X86InstructionAnalyzerImpl(const X86Architecture *architecture):
         architecture_(architecture), capstone_(CS_ARCH_X86, 0)
     {
-        assert(architecture != NULL);
+        assert(architecture != nullptr);
     }
 
     void createStatements(const X86Instruction *instruction, core::ir::Program *program) {
-        assert(instruction != NULL);
-        assert(program != NULL);
+        assert(instruction != nullptr);
+        assert(program != nullptr);
 
         instruction_ = instruction;
 
         instr_ = disassemble(instruction);
-        assert(instr_ != NULL);
+        assert(instr_ != nullptr);
         detail_ = &instr_->detail->x86;
 
-        core::ir::BasicBlock *cachedDirectSuccessor = NULL;
+        core::ir::BasicBlock *cachedDirectSuccessor = nullptr;
         auto directSuccessor = [&]() -> core::ir::BasicBlock * {
             if (!cachedDirectSuccessor) {
                 cachedDirectSuccessor = program->createBasicBlock(instruction->endAddr());
@@ -1134,7 +1134,7 @@ private:
                 throw core::irgen::InvalidInstructionException(tr("The instruction does not have an argument with index %1").arg(index));
             case X86_OP_REG: {
                 auto result = createRegisterAccess(operand.reg);
-                assert(result != NULL);
+                assert(result != nullptr);
                 return result;
             }
             case X86_OP_IMM: {
@@ -1153,7 +1153,7 @@ private:
 
     std::unique_ptr<core::ir::Term> createRegisterAccess(unsigned reg) const {
         switch (reg) {
-        case X86_REG_INVALID: return NULL;
+        case X86_REG_INVALID: return nullptr;
 
         #define REG(cs_name, nc_name) case X86_REG_##cs_name: return X86InstructionAnalyzer::createTerm(X86Registers::nc_name());
 

@@ -74,7 +74,7 @@ class CallOperator: public Expression {
      * \param argument Valid pointer to an expression.
      */
     void addArgument(std::unique_ptr<Expression> argument) {
-        assert(argument != NULL);
+        assert(argument != nullptr);
         arguments_.push_back(std::move(argument));
     }
 

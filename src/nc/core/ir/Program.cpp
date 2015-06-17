@@ -47,13 +47,13 @@ Program::Program() {}
 Program::~Program() {}
 
 void Program::addRange(BasicBlock *basicBlock) {
-    assert(basicBlock != NULL);
+    assert(basicBlock != nullptr);
     assert(basicBlock->address() && basicBlock->successorAddress() && "Basic block must be memory-bound.");
     range2basicBlock_[AddrRange(*basicBlock->address(), *basicBlock->successorAddress())] = basicBlock;
 }
 
 void Program::removeRange(BasicBlock *basicBlock) {
-    assert(basicBlock != NULL);
+    assert(basicBlock != nullptr);
     assert(basicBlock->address() && basicBlock->successorAddress() && "Basic block must be memory-bound.");
     range2basicBlock_.erase(AddrRange(*basicBlock->address(), *basicBlock->successorAddress()));
 }
@@ -115,13 +115,13 @@ BasicBlock *Program::getBasicBlockForInstruction(const arch::Instruction *instru
 }
 
 BasicBlock *Program::takeOwnership(std::unique_ptr<BasicBlock> basicBlock) {
-    assert(basicBlock != NULL);
+    assert(basicBlock != nullptr);
 
     BasicBlock *result = basicBlock.get();
     basicBlocks_.push_back(std::move(basicBlock));
 
     if (result->address()) {
-        assert(getBasicBlockStartingAt(*result->address()) == NULL);
+        assert(getBasicBlockStartingAt(*result->address()) == nullptr);
         start2basicBlock_[*result->address()] = result;
     }
 

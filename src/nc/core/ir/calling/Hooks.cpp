@@ -59,7 +59,7 @@ Hooks::~Hooks() {}
 
 const Convention *Hooks::getConvention(const CalleeId &calleeId) const {
     if (!calleeId) {
-        return NULL;
+        return nullptr;
     }
     if (auto result = conventions_.getConvention(calleeId)) {
         return result;
@@ -70,26 +70,26 @@ const Convention *Hooks::getConvention(const CalleeId &calleeId) const {
 }
 
 const EntryHook *Hooks::getEntryHook(const Function *function) const {
-    assert(function != NULL);
+    assert(function != nullptr);
 
     return nc::find(lastEntryHooks_, function);
 }
 
 const CallHook *Hooks::getCallHook(const Call *call) const {
-    assert(call != NULL);
+    assert(call != nullptr);
 
     return nc::find(lastCallHooks_, call);
 }
 
 const ReturnHook *Hooks::getReturnHook(const Jump *jump) const {
-    assert(jump != NULL);
+    assert(jump != nullptr);
 
     return nc::find(lastReturnHooks_, jump);
 }
 
 void Hooks::instrument(Function *function, const dflow::Dataflow *dataflow) {
-    assert(function != NULL);
-    assert(dataflow != NULL);
+    assert(function != nullptr);
+    assert(dataflow != nullptr);
 
     deinstrument(function);
 
@@ -119,7 +119,7 @@ void Hooks::instrument(Function *function, const dflow::Dataflow *dataflow) {
 }
 
 void Hooks::deinstrument(Function *function) {
-    assert(function != NULL);
+    assert(function != nullptr);
 
     if (auto callback = nc::find(function2callback_, function)) {
         deinstrumentEntry(function);
@@ -174,7 +174,7 @@ void Hooks::deinstrumentEntry(Function *function) {
 
     if (lastEntryHook) {
         lastEntryHook->patch().remove();
-        lastEntryHook = NULL;
+        lastEntryHook = nullptr;
     }
 }
 
@@ -208,7 +208,7 @@ void Hooks::deinstrumentCall(Call *call) {
 
     if (lastCallHook) {
         lastCallHook->patch().remove();
-        lastCallHook = NULL;
+        lastCallHook = nullptr;
     }
 }
 
@@ -241,12 +241,12 @@ void Hooks::deinstrumentJump(Jump *jump) {
 
     if (lastReturnHook) {
         lastReturnHook->patch().remove();
-        lastReturnHook = NULL;
+        lastReturnHook = nullptr;
     }
 }
 
 CalleeId getCalleeId(const Function *function) {
-    assert(function != NULL);
+    assert(function != nullptr);
 
     if (function->entry() && function->entry()->address()) {
         return CalleeId(EntryAddress(*function->entry()->address()));
@@ -256,7 +256,7 @@ CalleeId getCalleeId(const Function *function) {
 }
 
 CalleeId getCalleeId(const Call *call, const dflow::Dataflow &dataflow) {
-    assert(call != NULL);
+    assert(call != nullptr);
 
     auto targetValue = dataflow.getValue(call->target());
     if (targetValue->abstractValue().isConcrete()) {

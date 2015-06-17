@@ -81,7 +81,7 @@ public:
         const CancellationToken &canceled, const LogToken &log):
         dataflow_(dataflow), architecture_(architecture), canceled_(canceled), log_(log)
     {
-        assert(architecture != NULL);
+        assert(architecture != nullptr);
     }
 
     /**

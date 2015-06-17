@@ -61,19 +61,19 @@ public:
     /**
      * Constructor.
      *
-     * \param parent Pointer to the parent widget. Can be NULL.
+     * \param parent Pointer to the parent widget. Can be nullptr.
      */
     InstructionsView(QWidget *parent = 0);
 
     /**
-     * \return Pointer to the assembler document being viewed. Can be NULL.
+     * \return Pointer to the assembler document being viewed. Can be nullptr.
      */
     InstructionsModel *model() const { return model_; }
 
     /**
      * Sets the model being viewed.
      *
-     * \param model Pointer to the new model. Can be NULL.
+     * \param model Pointer to the new model. Can be nullptr.
      */
     void setModel(InstructionsModel *model);
 

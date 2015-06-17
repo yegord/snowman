@@ -45,7 +45,7 @@ public:
     QString &comment() { return comment_; }
     const QString &comment() const { return comment_; }
 
-    operator const void*() const { return name_.isEmpty() ? NULL : this; }
+    operator const void*() const { return name_.isEmpty() ? nullptr : this; }
 };
 
 class NameGenerator {

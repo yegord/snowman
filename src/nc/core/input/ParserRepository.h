@@ -58,7 +58,7 @@ public:
      * \param[in] name Name of the parser.
      *
      * \returns Valid pointer to the parser with the given name,
-     *          or NULL if no such parser found.
+     *          or nullptr if no such parser found.
      */
     const Parser *getParser(const QString &name) const;
 

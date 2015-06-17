@@ -36,7 +36,7 @@ namespace nc { namespace gui {
 TreeViewSearcher::TreeViewSearcher(QTreeView *treeView):
     treeView_(treeView), hvalue_(-1), vvalue_(-1)
 {
-    assert(treeView != NULL);
+    assert(treeView != nullptr);
 }
 
 void TreeViewSearcher::startTrackingViewport() {
@@ -201,7 +201,7 @@ bool TreeViewSearcher::find(const QString &expression, FindFlags flags) {
         return true;
     }
 
-    if (treeView_->model() == NULL) {
+    if (treeView_->model() == nullptr) {
         return false;
     }
 

@@ -28,7 +28,7 @@ public:
     CapstoneDeleter(std::size_t count = 0): count_(count) {}
 
     void operator()(cs_insn *ptr) const {
-        assert(ptr == NULL || count_ > 0);
+        assert(ptr == nullptr || count_ > 0);
         cs_free(ptr, count_);
     }
 };
@@ -94,7 +94,7 @@ public:
      * \param[in] size Buffer size.
      * \param[in] count How many instructions to disassemble.
      *
-     * \return Pointer to the instruction disassembled from the buffer if disassembling succeeded, NULL otherwise.
+     * \return Pointer to the instruction disassembled from the buffer if disassembling succeeded, nullptr otherwise.
      */
     CapstoneInstructionPtr disassemble(ByteAddr pc, const void *buffer, ByteSize size, std::size_t count = 1) {
         cs_insn *insn;

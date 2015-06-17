@@ -76,13 +76,13 @@ class InspectorItem {
      */
     InspectorItem(const QString &text):
         text_(text),
-        node_(NULL),
-        term_(NULL),
-        statement_(NULL),
-        instruction_(NULL),
-        type_(NULL),
+        node_(nullptr),
+        term_(nullptr),
+        statement_(nullptr),
+        instruction_(nullptr),
+        type_(nullptr),
         expanded_(false),
-        parent_(NULL),
+        parent_(nullptr),
         row_(-1)
     {}
 
@@ -107,62 +107,62 @@ class InspectorItem {
     void addComment(const QString &comment);
 
     /**
-     * \return Pointer to the associated LikeC node. Can be NULL.
+     * \return Pointer to the associated LikeC node. Can be nullptr.
      */
     const core::likec::TreeNode *node() const { return node_; }
 
     /**
      * Sets associated LikeC node.
      *
-     * \param[in] node Associated LikeC node. Can be NULL.
+     * \param[in] node Associated LikeC node. Can be nullptr.
      */
     void setNode(const core::likec::TreeNode *node) { node_ = node; }
 
     /**
-     * \return Pointer to the associated IR term. Can be NULL.
+     * \return Pointer to the associated IR term. Can be nullptr.
      */
     const core::ir::Term *term() const { return term_; }
 
     /**
      * Sets associated IR term.
      *
-     * \param[in] term Associated IR term. Can be NULL.
+     * \param[in] term Associated IR term. Can be nullptr.
      */
     void setTerm(const core::ir::Term *term) { term_ = term; }
 
     /**
-     * \return Pointer to the associated IR statement. Can be NULL.
+     * \return Pointer to the associated IR statement. Can be nullptr.
      */
     const core::ir::Statement *statement() const { return statement_; }
 
     /**
      * Sets associated IR statement.
      *
-     * \param[in] statement Associated IR term. Can be NULL.
+     * \param[in] statement Associated IR term. Can be nullptr.
      */
     void setStatement(const core::ir::Statement *statement) { statement_ = statement; }
 
     /**
-     * \return Pointer to the associated instruction. Can be NULL.
+     * \return Pointer to the associated instruction. Can be nullptr.
      */
     const core::arch::Instruction *instruction() const { return instruction_; }
 
     /**
      * Sets associated instruction.
      *
-     * \param[in] instruction Associated instruction. Can be NULL.
+     * \param[in] instruction Associated instruction. Can be nullptr.
      */
     void setInstruction(const core::arch::Instruction *instruction) { instruction_ = instruction; }
 
     /**
      * Sets associated instruction.
      *
-     * \param[in] type Associated LikeC type. Can be NULL.
+     * \param[in] type Associated LikeC type. Can be nullptr.
      */
     void setType(const core::likec::Type *type) { type_ = type; }
 
     /**
-     * \return Pointer to the LikeC type. Can be NULL.
+     * \return Pointer to the LikeC type. Can be nullptr.
      */
     const core::likec::Type *type() const { return type_; }
 
@@ -179,7 +179,7 @@ class InspectorItem {
     void setExpanded(bool value) { expanded_ = value; }
 
     /**
-     * \return Pointer to the item's parent. Can be NULL.
+     * \return Pointer to the item's parent. Can be nullptr.
      */
     InspectorItem *parent() const { return parent_; }
 

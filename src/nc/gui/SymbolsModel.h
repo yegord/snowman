@@ -36,15 +36,15 @@ public:
     /**
      * Constructor.
      *
-     * \param parent    Pointer to the parent object. Can be NULL.
-     * \param image     Pointer to the image. Can be NULL.
+     * \param parent    Pointer to the parent object. Can be nullptr.
+     * \param image     Pointer to the image. Can be nullptr.
      */
-    SymbolsModel(QObject *parent = NULL, std::shared_ptr<const core::image::Image> image = NULL);
+    SymbolsModel(QObject *parent = nullptr, std::shared_ptr<const core::image::Image> image = nullptr);
 
     /**
      * \param index Model index.
      *
-     * \return Pointer to the section associated with the index. Can be NULL.
+     * \return Pointer to the section associated with the index. Can be nullptr.
      */
     const core::image::Symbol *getSymbol(const QModelIndex &index) const;
 

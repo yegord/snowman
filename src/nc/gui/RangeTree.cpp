@@ -28,7 +28,7 @@ RangeNode *getChildAtOffset(RangeNode &node, int offset) {
     if (i != node.children().end() && i->range().contains(offset)) {
         return &*i;
     } else {
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -36,7 +36,7 @@ RangeNode *getChildAtOffset(RangeNode &node, int offset) {
 
 const RangeNode *RangeTree::getLeafAt(int position) const {
     if (!root_ || !root_->range().contains(position)) {
-        return NULL;
+        return nullptr;
     }
 
     auto node = root_.get();
@@ -73,12 +73,12 @@ std::vector<const RangeNode *> RangeTree::getNodesIn(const Range<int> &range) co
 }
 
 Range<int> RangeTree::getRange(const RangeNode *node) const {
-    assert(node != NULL);
-    assert(root_ != NULL);
+    assert(node != nullptr);
+    assert(root_ != nullptr);
 
-    if (node->parent() == NULL && node != root_.get()) {
+    if (node->parent() == nullptr && node != root_.get()) {
         root_->updateParentPointers();
-        assert(node->parent() != NULL);
+        assert(node->parent() != nullptr);
     }
 
     int offset = 0;

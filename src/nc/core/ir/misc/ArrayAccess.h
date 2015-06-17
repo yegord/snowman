@@ -47,7 +47,7 @@ public:
     /**
      * Constructs an invalid indexing expression.
      */
-    ArrayAccess(): index_(NULL) {}
+    ArrayAccess(): index_(nullptr) {}
 
     /**
      * Constructs a valid indexing expression.
@@ -59,7 +59,7 @@ public:
     ArrayAccess(ConstantValue base, ConstantValue stride, const Term *index):
         base_(base), stride_(stride), index_(index)
     {
-        assert(index_ != NULL);
+        assert(index_ != nullptr);
     }
 
     /**
@@ -79,7 +79,7 @@ public:
     const Term *index() const { assert(*this); return index_; }
 
     /**
-     * \return A non-NULL pointer if and only if the descriptor is valid.
+     * \return A non-nullptr pointer if and only if the descriptor is valid.
      */
     operator const void*() const { return index_; }
 };

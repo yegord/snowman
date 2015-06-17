@@ -62,12 +62,12 @@ public:
     ~Function();
 
     /**
-     * \return Pointer to the entry basic block. Can be NULL.
+     * \return Pointer to the entry basic block. Can be nullptr.
      */
     BasicBlock *entry() { return entry_; }
 
     /**
-     * \return Pointer to the entry basic block. Can be NULL.
+     * \return Pointer to the entry basic block. Can be nullptr.
      */
     const BasicBlock *entry() const { return entry_; }
 
@@ -77,7 +77,7 @@ public:
      * \param entry Valid pointer to the new entry basic block.
      */
     void setEntry(BasicBlock *entry) {
-        assert(entry != NULL && "Function's entry must be not NULL.");
+        assert(entry != nullptr && "Function's entry must be not nullptr.");
         entry_ = entry;
     }
 

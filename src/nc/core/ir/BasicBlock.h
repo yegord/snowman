@@ -93,19 +93,19 @@ public:
     void setSuccessorAddress(const boost::optional<ByteAddr> &successorAddress);
 
     /**
-     * \return Pointer to the function this basic block belongs to. Can be NULL.
+     * \return Pointer to the function this basic block belongs to. Can be nullptr.
      */
     Function *function() { return function_; }
 
     /**
-     * \return Pointer to the function this basic block belongs to. Can be NULL.
+     * \return Pointer to the function this basic block belongs to. Can be nullptr.
      */
     const Function *function() const { return function_; }
 
     /**
      * Sets the function this basic block belongs to.
      *
-     * \param function Pointer to the function. Can be NULL.
+     * \param function Pointer to the function. Can be nullptr.
      */
     void setFunction(Function *function) { function_ = function; }
 
@@ -172,7 +172,7 @@ public:
 
     /**
      * Erases a statement pointed by the given iterator.
-     * Sets the basic block pointer in this statement to NULL.
+     * Sets the basic block pointer in this statement to nullptr.
      *
      * \param statement Valid pointer to the erased statement.
      *
@@ -182,19 +182,19 @@ public:
 
     /**
      * \return Valid pointer to the last statement in the basic block if this
-     *         is a terminator statement, NULL otherwise.
+     *         is a terminator statement, nullptr otherwise.
      */
     const Statement *getTerminator() const;
 
     /**
      * \return Valid pointer to the last statement in the basic block if this
-     *         is a jump, NULL otherwise.
+     *         is a jump, nullptr otherwise.
      */
     Jump *getJump();
 
     /**
      * \return Valid pointer to the last statement in the basic block if this
-     *         is a jump, NULL otherwise.
+     *         is a jump, nullptr otherwise.
      */
     const Jump *getJump() const;
 

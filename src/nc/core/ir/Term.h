@@ -92,7 +92,7 @@ public:
      * \param[in] size Size of this term's value in bits.
      */
     Term(int kind, SmallBitSize size):
-        kind_(kind), statement_(NULL), size_(size)
+        kind_(kind), statement_(nullptr), size_(size)
     {
         assert(size != 0);
     }
@@ -103,7 +103,7 @@ public:
     SmallBitSize size() const { return size_; }
 
     /**
-     * \return Pointer to the statement this term belongs to. Can be NULL.
+     * \return Pointer to the statement this term belongs to. Can be nullptr.
      */
     const Statement *statement() const { return statement_; }
 
@@ -139,7 +139,7 @@ public:
     /**
      * \return If the term stands in the left hand side of an assignment,
      *         returns the right hand size of this assignment. Otherwise,
-     *         NULL is returned.
+     *         nullptr is returned.
      */
     const Term *source() const;
 

@@ -56,7 +56,7 @@ public:
      * \param[in] title     Title of the widget.
      * \param[in] parent    Parent widget.
      */
-    TreeView(const QString &title, QWidget *parent = NULL);
+    TreeView(const QString &title, QWidget *parent = nullptr);
 
     /**
      * \return Valid pointer to the tree widget.

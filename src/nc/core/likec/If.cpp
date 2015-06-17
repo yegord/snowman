@@ -38,7 +38,7 @@ void If::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
     fun(condition());
     fun(thenStatement());
 
-    if (elseStatement() != NULL) {
+    if (elseStatement() != nullptr) {
         fun(elseStatement());
     }
 }

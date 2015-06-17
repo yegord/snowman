@@ -99,7 +99,7 @@ Call::Call(std::unique_ptr<Term> target):
     Statement(CALL), 
     target_(std::move(target))
 {
-    assert(target_ != NULL);
+    assert(target_ != nullptr);
 
     target_->setStatement(this);
 }

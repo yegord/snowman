@@ -97,7 +97,7 @@ CxxDocument::CxxDocument(QObject *parent, std::shared_ptr<const core::Context> c
 }
 
 void CxxDocument::computeReverseMappings(const RangeNode *rangeNode) {
-    assert(rangeNode != NULL);
+    assert(rangeNode != nullptr);
 
     auto node = getNode(rangeNode);
 
@@ -138,7 +138,7 @@ const core::likec::TreeNode *CxxDocument::getLeafAt(int position) const {
     if (auto rangeNode = rangeTree_.getLeafAt(position)) {
         return getNode(rangeNode);
     }
-    return NULL;
+    return nullptr;
 }
 
 std::vector<const core::likec::TreeNode *> CxxDocument::getNodesIn(const Range<int> &range) const {
@@ -155,7 +155,7 @@ std::vector<const core::likec::TreeNode *> CxxDocument::getNodesIn(const Range<i
 }
 
 Range<int> CxxDocument::getRange(const core::likec::TreeNode *node) const {
-    assert(node != NULL);
+    assert(node != nullptr);
     if (auto rangeNode = nc::find(node2rangeNode_, node)) {
         return rangeTree_.getRange(rangeNode);
     }
@@ -163,7 +163,7 @@ Range<int> CxxDocument::getRange(const core::likec::TreeNode *node) const {
 }
 
 void CxxDocument::getRanges(const core::arch::Instruction *instruction, std::vector<Range<int>> &result) const {
-    assert(instruction != NULL);
+    assert(instruction != nullptr);
 
     const auto &rangeNodes = nc::find(instruction2rangeNodes_, instruction);
 
@@ -184,7 +184,7 @@ void CxxDocument::onContentsChange(int position, int charsRemoved, int charsAdde
 }
 
 void CxxDocument::rename(const core::likec::Declaration *declaration, const QString &newName) {
-    assert(declaration != NULL);
+    assert(declaration != nullptr);
 
     foreach (auto use, getUses(declaration)) {
         replaceText(getRange(use), newName);
@@ -211,11 +211,11 @@ void CxxDocument::replaceText(const Range<int> &range, const QString &text) {
 void CxxDocument::getOrigin(const core::likec::TreeNode *node, const core::ir::Statement *&statement,
                             const core::ir::Term *&term, const core::arch::Instruction *&instruction)
 {
-    assert(node != NULL);
+    assert(node != nullptr);
 
-    statement = NULL;
-    term = NULL;
-    instruction = NULL;
+    statement = nullptr;
+    term = nullptr;
+    instruction = nullptr;
 
     if (auto stmt = node->as<core::likec::Statement>()) {
         statement = stmt->statement();
@@ -232,7 +232,7 @@ void CxxDocument::getOrigin(const core::likec::TreeNode *node, const core::ir::S
 }
 
 const core::likec::Declaration *CxxDocument::getDeclarationOfIdentifier(const core::likec::TreeNode *node) {
-    assert(node != NULL);
+    assert(node != nullptr);
     if (auto expression = node->as<core::likec::Expression>()) {
         if (auto identifier = expression->as<core::likec::FunctionIdentifier>()) {
             return identifier->declaration();
@@ -242,7 +242,7 @@ const core::likec::Declaration *CxxDocument::getDeclarationOfIdentifier(const co
             return identifier->declaration();
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 }} // namespace nc::gui

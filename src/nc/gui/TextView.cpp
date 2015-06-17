@@ -278,7 +278,7 @@ void TextView::setDocumentFont(const QFont &font) {
 }
 
 void TextView::selectFont() {
-    setDocumentFont(QFontDialog::getFont(NULL, documentFont(), this));
+    setDocumentFont(QFontDialog::getFont(nullptr, documentFont(), this));
 }
 
 bool TextView::eventFilter(QObject *watched, QEvent *event) {

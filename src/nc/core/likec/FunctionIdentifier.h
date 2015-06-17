@@ -47,7 +47,7 @@ public:
     FunctionIdentifier(Tree &tree, FunctionDeclaration *declaration):
         Expression(tree, FUNCTION_IDENTIFIER), declaration_(declaration)
     {
-        assert(declaration != NULL);
+        assert(declaration != nullptr);
     }
 
     /**
@@ -64,7 +64,7 @@ public:
      * \param declaration Valid pointer to the function declaration.
      */
     void setDeclaration(FunctionDeclaration *declaration) {
-        assert(declaration != NULL);
+        assert(declaration != nullptr);
         declaration_ = declaration;
     }
 

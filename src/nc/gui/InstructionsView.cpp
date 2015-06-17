@@ -34,7 +34,7 @@ namespace nc { namespace gui {
 
 InstructionsView::InstructionsView(QWidget *parent):
     TreeView(tr("Instructions"), parent),
-    model_(NULL)
+    model_(nullptr)
 {
     treeView()->setHeaderHidden(true);
     treeView()->setItemsExpandable(false);

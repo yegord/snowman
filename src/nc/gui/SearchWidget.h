@@ -52,9 +52,9 @@ class SearchWidget: public QWidget {
      * Constructor.
      *
      * \param searcher  Valid pointer to the searcher.
-     * \param parent    Pointer to the parent widget. Can be NULL.
+     * \param parent    Pointer to the parent widget. Can be nullptr.
      */
-    SearchWidget(std::unique_ptr<Searcher> searcher, QWidget *parent = NULL);
+    SearchWidget(std::unique_ptr<Searcher> searcher, QWidget *parent = nullptr);
 
     /**
      * Destructor.

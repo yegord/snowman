@@ -35,7 +35,7 @@ public:
     Relocation(ByteAddr address, const Symbol *symbol, ByteSize addend = 0):
         address_(address), symbol_(symbol), addend_(addend)
     {
-        assert(symbol != NULL);
+        assert(symbol != nullptr);
     }
 
     /**

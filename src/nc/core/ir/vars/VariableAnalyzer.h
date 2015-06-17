@@ -67,7 +67,7 @@ public:
     VariableAnalyzer(Variables &variables, const dflow::Dataflows &dataflows, const arch::Architecture *architecture):
         variables_(variables), dataflows_(dataflows), architecture_(architecture)
     {
-        assert(architecture != NULL);
+        assert(architecture != nullptr);
     }
 
     /**

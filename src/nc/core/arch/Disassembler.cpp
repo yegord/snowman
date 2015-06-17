@@ -17,7 +17,7 @@ namespace core {
 namespace arch {
 
 void Disassembler::disassemble(const image::ByteSource *source, ByteAddr begin, ByteAddr end, InstructionCallback callback, const CancellationToken &canceled) {
-    assert(source != NULL);
+    assert(source != nullptr);
     assert(begin <= end);
 
     const SmallByteSize maxInstructionSize = architecture_->maxInstructionSize();

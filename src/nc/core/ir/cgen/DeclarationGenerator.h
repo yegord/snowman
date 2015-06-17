@@ -86,7 +86,7 @@ public:
 
     /**
      * \return Pointer to the signature of the function, for which
-     *         declaration is generated. Can be NULL.
+     *         declaration is generated. Can be nullptr.
      */
     const calling::FunctionSignature *signature() const { return signature_; }
 

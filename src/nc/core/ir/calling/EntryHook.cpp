@@ -39,7 +39,7 @@ namespace ir {
 namespace calling {
 
 EntryHook::EntryHook(const Convention *convention, const FunctionSignature *signature) {
-    assert(convention != NULL);
+    assert(convention != nullptr);
 
     auto &statements = patch_.statements();
 

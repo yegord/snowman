@@ -72,7 +72,7 @@ public:
     /**
      * Sets the document shown in the text edit widget.
      *
-     * \param document Pointer to the document. Can be NULL.
+     * \param document Pointer to the document. Can be nullptr.
      *
      * Use this method instead of QPlainTextEdit::setDocument() in order to
      * keep the font configuration intact.

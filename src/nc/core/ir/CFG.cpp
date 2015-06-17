@@ -83,8 +83,8 @@ void CFG::addConnections(const BasicBlock *predecessor, const JumpTarget &jumpTa
 }
 
 void CFG::addConnection(const BasicBlock *predecessor, const BasicBlock *successor) {
-    assert(predecessor != NULL);
-    assert(successor != NULL);
+    assert(predecessor != nullptr);
+    assert(successor != nullptr);
 
     successors_[predecessor].push_back(successor);
     predecessors_[successor].push_back(predecessor);

@@ -132,7 +132,7 @@ public:
     /**
      * \param name Name of a calling convention.
      *
-     * \return Pointer to the calling convention with the given name. Can be NULL.
+     * \return Pointer to the calling convention with the given name. Can be nullptr.
      */
     const ir::calling::Convention *getCallingConvention(const QString &name) const;
 

@@ -53,7 +53,7 @@ class PrintContext {
      * Class constructor.
      *
      * \param[in] out Output stream.
-     * \param[in] callback Pointer to print callback. Can be NULL.
+     * \param[in] callback Pointer to print callback. Can be nullptr.
      */
     PrintContext(QTextStream &out, PrintCallback<const TreeNode *> *callback):
         out_(out), callback_(callback), indentSize_(4), indent_(0)
@@ -65,7 +65,7 @@ class PrintContext {
     QTextStream &out() const { return out_; }
 
     /**
-     * \return Pointer to print callback. Can be NULL.
+     * \return Pointer to print callback. Can be nullptr.
      */
     PrintCallback<const TreeNode *> *callback() const { return callback_; }
 

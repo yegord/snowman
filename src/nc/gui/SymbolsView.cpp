@@ -14,7 +14,7 @@ namespace gui {
 
 SymbolsView::SymbolsView(QWidget *parent):
     TreeView(tr("Symbols"), parent),
-    model_(NULL)
+    model_(nullptr)
 {
     treeView()->setItemsExpandable(false);
     treeView()->setRootIsDecorated(false);

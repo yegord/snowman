@@ -56,24 +56,24 @@ public:
     /**
      * Constructor.
      *
-     * \param parent Pointer to the parent widget. Can be NULL.
+     * \param parent Pointer to the parent widget. Can be nullptr.
      */
     SectionsView(QWidget *parent = 0);
 
     /**
-     * \return Pointer to the model being viewed. Can be NULL.
+     * \return Pointer to the model being viewed. Can be nullptr.
      */
     SectionsModel *model() const { return model_; }
 
     /**
      * Sets the model being viewed.
      *
-     * \param model Pointer to the new model. Can be NULL.
+     * \param model Pointer to the new model. Can be nullptr.
      */
     void setModel(SectionsModel *model);
 
     /**
-     * \returns Pointer to the currently selected section. Can be NULL.
+     * \returns Pointer to the currently selected section. Can be nullptr.
      */
     const core::image::Section *selectedSection() const;
 };

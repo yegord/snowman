@@ -329,7 +329,7 @@ public:
 } // anonymous namespace
 
 std::vector<MemoryLocation> SignatureAnalyzer::getUndefinedUses(const Function *function) {
-    assert(function != NULL);
+    assert(function != nullptr);
 
     auto &dataflow = *dataflows_.at(function);
 
@@ -378,7 +378,7 @@ std::vector<MemoryLocation> SignatureAnalyzer::getUndefinedUses(const Function *
 }
 
 std::vector<MemoryLocation> SignatureAnalyzer::getUnusedDefines(const Call *call) {
-    assert(call != NULL);
+    assert(call != nullptr);
 
     std::vector<MemoryLocation> result;
 
@@ -411,7 +411,7 @@ std::vector<MemoryLocation> SignatureAnalyzer::getUnusedDefines(const Call *call
 }
 
 std::vector<MemoryLocation> SignatureAnalyzer::getUsedReturnValueLocations(const Call *call) {
-    assert(call != NULL);
+    assert(call != nullptr);
 
     std::vector<MemoryLocation> result;
 
@@ -435,7 +435,7 @@ std::vector<MemoryLocation> SignatureAnalyzer::getUsedReturnValueLocations(const
 }
 
 std::vector<MemoryLocation> SignatureAnalyzer::getUnusedReturnValueLocations(const Jump *jump) {
-    assert(jump != NULL);
+    assert(jump != nullptr);
 
     std::vector<MemoryLocation> result;
 
@@ -519,7 +519,7 @@ public:
                     memoryLocation.size<SmallBitSize>()
                 );
             } else {
-                return NULL;
+                return nullptr;
             }
         } else {
             return std::make_shared<MemoryLocationAccess>(memoryLocation);

@@ -37,7 +37,7 @@ namespace nc {
 namespace core {
 namespace ir {
 
-Function::Function(): entry_(NULL) {}
+Function::Function(): entry_(nullptr) {}
 
 Function::~Function() {}
 

@@ -88,7 +88,7 @@ UnaryOperator::UnaryOperator(int operatorKind, std::unique_ptr<Term> operand, Sm
     operatorKind_(operatorKind), 
     operand_(std::move(operand))
 {
-    assert(operand_ != NULL);
+    assert(operand_ != nullptr);
 
     switch (operatorKind) {
         case NOT: case NEGATION:
@@ -138,8 +138,8 @@ void UnaryOperator::print(QTextStream &out) const {
 BinaryOperator::BinaryOperator(int operatorKind, std::unique_ptr<Term> left, std::unique_ptr<Term> right, SmallBitSize size):
     Term(BINARY_OPERATOR, size), operatorKind_(operatorKind), left_(std::move(left)), right_(std::move(right))
 {
-    assert(left_ != NULL);
-    assert(right_ != NULL);
+    assert(left_ != nullptr);
+    assert(right_ != nullptr);
 
     switch (operatorKind) {
         case AND: case OR: case XOR:
@@ -239,8 +239,8 @@ void BinaryOperator::print(QTextStream &out) const {
 Choice::Choice(std::unique_ptr<Term> preferredTerm, std::unique_ptr<Term> defaultTerm):
     Term(CHOICE, preferredTerm->size()), preferredTerm_(std::move(preferredTerm)), defaultTerm_(std::move(defaultTerm))
 {
-    assert(preferredTerm_ != NULL);
-    assert(defaultTerm_ != NULL);
+    assert(preferredTerm_ != nullptr);
+    assert(defaultTerm_ != nullptr);
     assert(preferredTerm_->size() == defaultTerm_->size());
 }
 

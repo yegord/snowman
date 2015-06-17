@@ -29,7 +29,7 @@ class RangeNode {
 
 public:
     RangeNode(void *data, int offset):
-        data_(data), offset_(offset), size_(-1), parent_(NULL)
+        data_(data), offset_(offset), size_(-1), parent_(nullptr)
     {
         assert(offset >= 0);
     }

@@ -163,9 +163,9 @@ private:
      *
      * \param node          Valid pointer to the node to generate code for.
      * \param block         Valid pointer to the block where the code will be added.
-     * \param nextBB        Pointer to the basic block getting control after the generated code. Can be NULL.
-     * \param breakBB       Pointer to the basic block getting control by 'break' statement. Can be NULL.
-     * \param continueBB    Pointer to the basic block getting control by 'continue' statement. Can be NULL.
+     * \param nextBB        Pointer to the basic block getting control after the generated code. Can be nullptr.
+     * \param breakBB       Pointer to the basic block getting control by 'break' statement. Can be nullptr.
+     * \param continueBB    Pointer to the basic block getting control by 'continue' statement. Can be nullptr.
      * \param switchContext Switch context.
      */
     void makeStatements(const cflow::Node *node, likec::Block *block, const BasicBlock *nextBB, const BasicBlock *breakBB, const BasicBlock *continueBB, SwitchContext &switchContext);
@@ -175,9 +175,9 @@ private:
      *
      * \param nodes         Valid pointers to the node to generate code for.
      * \param block         Valid pointer to the block where the code will be added.
-     * \param nextBB        Pointer to the basic block getting control after the generated code. Can be NULL.
-     * \param breakBB       Pointer to the basic block getting control by 'break' statement. Can be NULL.
-     * \param continueBB    Pointer to the basic block getting control by 'continue' statement. Can be NULL.
+     * \param nextBB        Pointer to the basic block getting control after the generated code. Can be nullptr.
+     * \param breakBB       Pointer to the basic block getting control by 'break' statement. Can be nullptr.
+     * \param continueBB    Pointer to the basic block getting control by 'continue' statement. Can be nullptr.
      * \param switchContext Switch context.
      */
     void makeStatements(const std::vector<cflow::Node *> &nodes, likec::Block *block, const BasicBlock *nextBB, const BasicBlock *breakBB, const BasicBlock *continueBB, SwitchContext &switchContext);
@@ -186,7 +186,7 @@ private:
      * Creates an expression from a condition node.
      *
      * \param node Valid pointer to the node.
-     * \param block Pointer to the block. Can be NULL.
+     * \param block Pointer to the block. Can be nullptr.
      * \param thenBB Valid pointer to the basic block that will get control if the generated expression is true.
      * \param elseBB Valid pointer to the basic block that will get control if the generated expression is false.
      * \param switchContext Switch context.
@@ -201,9 +201,9 @@ private:
      *
      * \param[in] statement     Valid pointer to an IR Statement.
      * \param[in] nextBB        Pointer to the basic block, whose code will textually
-     *                          follow the basic block of the statement. Can be NULL.
-     * \param[in] breakBB       Pointer to the basic block getting control by break statement. Can be NULL.
-     * \param[in] continueBB    Pointer to the basic block getting control by continue statement. Can be NULL.
+     *                          follow the basic block of the statement. Can be nullptr.
+     * \param[in] breakBB       Pointer to the basic block getting control by break statement. Can be nullptr.
+     * \param[in] continueBB    Pointer to the basic block getting control by continue statement. Can be nullptr.
      *
      * \return Valid pointer to created LikeC statement.
      */
@@ -229,11 +229,11 @@ private:
      *
      * \param[in] target        Valid pointer to the target basic block.
      * \param[in] nextBB        Pointer to the basic block, whose code will textually
-     *                          follow the basic block of the created statement. Can be NULL.
-     * \param[in] breakBB       Pointer to the basic block getting control by break statement. Can be NULL.
-     * \param[in] continueBB    Pointer to the basic block getting control by continue statement. Can be NULL.
+     *                          follow the basic block of the created statement. Can be nullptr.
+     * \param[in] breakBB       Pointer to the basic block getting control by break statement. Can be nullptr.
+     * \param[in] continueBB    Pointer to the basic block getting control by continue statement. Can be nullptr.
      *
-     * \return Pointer to the created goto, break, or continue statement, or NULL if the target is equal to nextBB.
+     * \return Pointer to the created goto, break, or continue statement, or nullptr if the target is equal to nextBB.
      */
     std::unique_ptr<likec::Statement> makeJump(const BasicBlock *target, const BasicBlock *nextBB, const BasicBlock *breakBB, const BasicBlock *continueBB);
 
@@ -242,11 +242,11 @@ private:
      *
      * \param[in] target   Valid pointer to the target basic block.
      * \param[in] nextBB        Pointer to the basic block, whose code will textually
-     *                          follow the basic block of the created statement. Can be NULL.
-     * \param[in] breakBB       Pointer to the basic block getting control by break statement. Can be NULL.
-     * \param[in] continueBB    Pointer to the basic block getting control by continue statement. Can be NULL.
+     *                          follow the basic block of the created statement. Can be nullptr.
+     * \param[in] breakBB       Pointer to the basic block getting control by break statement. Can be nullptr.
+     * \param[in] continueBB    Pointer to the basic block getting control by continue statement. Can be nullptr.
      *
-     * \return Pointer to the created goto, break, or continue statement, or NULL if the target is equal to nextBB.
+     * \return Pointer to the created goto, break, or continue statement, or nullptr if the target is equal to nextBB.
      */
     std::unique_ptr<likec::Statement> makeJump(const JumpTarget &target, const BasicBlock *nextBB, const BasicBlock *breakBB, const BasicBlock *continueBB);
 

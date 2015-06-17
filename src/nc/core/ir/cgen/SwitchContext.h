@@ -58,29 +58,29 @@ public:
     /**
      * Default constructor.
      */
-    SwitchContext(): valueType_(NULL), defaultBasicBlock_(NULL) {}
+    SwitchContext(): valueType_(nullptr), defaultBasicBlock_(nullptr) {}
 
     /**
-     * \return Pointer to the type of the value switched upon. Can be NULL, if not set.
+     * \return Pointer to the type of the value switched upon. Can be nullptr, if not set.
      */
     const likec::IntegerType *valueType() const { return valueType_; }
 
     /**
      * Sets the type of the value switched upon.
      *
-     * \param[in] type Pointer to the type. Can be NULL.
+     * \param[in] type Pointer to the type. Can be nullptr.
      */
     void setValueType(const likec::IntegerType *type) { valueType_ = type; }
 
     /**
-     * \return Pointer to the basic block which must be labeled by default case label. Can be NULL.
+     * \return Pointer to the basic block which must be labeled by default case label. Can be nullptr.
      */
     const BasicBlock *defaultBasicBlock() { return defaultBasicBlock_; }
 
     /**
      * Sets the basic block that must be labeled by default case label.
      *
-     * \param basicBlock Pointer to the basic block. Can be NULL.
+     * \param basicBlock Pointer to the basic block. Can be nullptr.
      */
     void setDefaultBasicBlock(const BasicBlock *basicBlock) { defaultBasicBlock_ = basicBlock; }
 

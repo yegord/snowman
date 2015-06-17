@@ -79,7 +79,7 @@ public:
      * \param value Value of the symbol.
      * \param section Pointer to the section referenced by the symbol.
      */
-    Symbol(SymbolType type, QString name, const boost::optional<ConstantValue> &value, const Section *section = NULL):
+    Symbol(SymbolType type, QString name, const boost::optional<ConstantValue> &value, const Section *section = nullptr):
         type_(type), name_(std::move(name)), value_(value), section_(section)
     {}
 
@@ -99,7 +99,7 @@ public:
     const boost::optional<ConstantValue> &value() const { return value_; }
 
     /**
-     * \return Pointer to the section references by the symbol. Can be NULL.
+     * \return Pointer to the section references by the symbol. Can be nullptr.
      */
     const Section *section() const { return section_; }
 };

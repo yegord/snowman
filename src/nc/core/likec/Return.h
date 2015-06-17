@@ -46,18 +46,18 @@ public:
      * Constructor.
      *
      * \param[in] tree Owning tree.
-     * \param[in] returnValue Returned value. Can be NULL.
+     * \param[in] returnValue Returned value. Can be nullptr.
      */
-    Return(Tree &tree, std::unique_ptr<Expression> returnValue = NULL):
+    Return(Tree &tree, std::unique_ptr<Expression> returnValue = nullptr):
         Statement(tree, RETURN), returnValue_(std::move(returnValue)) {}
 
     /**
-     * \return Returned value. Can be NULL.
+     * \return Returned value. Can be nullptr.
      */
     Expression *returnValue() { return returnValue_.get(); }
 
     /**
-     * \return Returned value. Can be NULL.
+     * \return Returned value. Can be nullptr.
      */
     const Expression *returnValue() const { return returnValue_.get(); }
 

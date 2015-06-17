@@ -54,13 +54,13 @@ public:
      * \param[in] tree Owning tree.
      * \param[in] identifier Name of this variable.
      * \param[in] type Valid pointer to the type of this variable.
-     * \param[in] initialValue Pointer to the expression representing the initial value. Can be NULL.
+     * \param[in] initialValue Pointer to the expression representing the initial value. Can be nullptr.
      */
-    VariableDeclaration(Tree &tree, QString identifier, const Type *type, std::unique_ptr<Expression> initialValue = NULL):
-        Declaration(tree, VARIABLE_DECLARATION, std::move(identifier)), type_(type),
-        variableIdentifier_(new VariableIdentifier(tree, this)), initialValue_(std::move(initialValue))
-    {
-        assert(type != NULL);
+    VariableDeclaration(Tree &tree, QString identifier, const Type *type,
+                        std::unique_ptr<Expression> initialValue = nullptr)
+        : Declaration(tree, VARIABLE_DECLARATION, std::move(identifier)), type_(type),
+          variableIdentifier_(new VariableIdentifier(tree, this)), initialValue_(std::move(initialValue)) {
+        assert(type != nullptr);
     }
 
     /**
@@ -74,7 +74,7 @@ public:
     const VariableIdentifier *variableIdentifier() const { return variableIdentifier_.get(); }
 
     /**
-     * \return Pointer to the expression representing the initial value. Can be NULL.
+     * \return Pointer to the expression representing the initial value. Can be nullptr.
      */
     const Expression *initialValue() const { return initialValue_.get(); }
 

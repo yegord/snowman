@@ -51,7 +51,7 @@ class Edge {
     Edge(Node *tail, Node *head);
 
     /**
-     * \return Pointer to the edge's tail. Can be NULL.
+     * \return Pointer to the edge's tail. Can be nullptr.
      */
     Node *tail() const { return tail_; }
 
@@ -59,12 +59,12 @@ class Edge {
      * Sets edge tail.
      * Removes the edge from the list of outgoing edges of the previous tail and adds to the one of new tail.
      *
-     * \param[in] tail Pointer to the edge's tail. Can be NULL.
+     * \param[in] tail Pointer to the edge's tail. Can be nullptr.
      */
     void setTail(Node *tail);
 
     /**
-     * \return Pointer to the edge's head. Can be NULL.
+     * \return Pointer to the edge's head. Can be nullptr.
      */
     Node *head() const { return head_; }
 
@@ -73,7 +73,7 @@ class Edge {
      *
      * Removes the edge from the list of incoming edges of the previous head and adds to the one of new head.
      *
-     * \param[in] head Pointer to the edge's head. Can be NULL.
+     * \param[in] head Pointer to the edge's head. Can be nullptr.
      */
     void setHead(Node *head);
 };

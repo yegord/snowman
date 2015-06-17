@@ -15,7 +15,7 @@ namespace calling {
 Patch::~Patch() {}
 
 void Patch::insertAfter(Statement *after) {
-    assert(after != NULL);
+    assert(after != nullptr);
 
     while (!statements_.empty()) {
         insertedStatements_.push_back(after->basicBlock()->insertAfter(after, statements_.pop_back()));

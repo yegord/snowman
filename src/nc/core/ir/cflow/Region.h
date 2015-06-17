@@ -70,7 +70,7 @@ public:
      * \param regionKind    Region kind.
      */
     Region(RegionKind regionKind):
-        Node(REGION), regionKind_(regionKind), entry_(NULL), exitBasicBlock_(NULL), loopCondition_(NULL)
+        Node(REGION), regionKind_(regionKind), entry_(nullptr), exitBasicBlock_(nullptr), loopCondition_(nullptr)
     {}
 
     /**
@@ -81,7 +81,7 @@ public:
     void setRegionKind(RegionKind regionKind) { regionKind_ = regionKind; }
 
     /**
-     * \return Pointer to the region's entry. Can be NULL.
+     * \return Pointer to the region's entry. Can be nullptr.
      */
     Node *entry() const { return entry_; }
 
@@ -91,7 +91,7 @@ public:
      * \param[in] entry Valid pointer to the new region entry.
      */
     void setEntry(Node *entry) {
-        assert(entry != NULL);
+        assert(entry != nullptr);
         entry_ = entry;
     }
 
@@ -117,7 +117,7 @@ public:
     bool addSubregion(std::unique_ptr<Region> subregion);
 
     /**
-     * \return Pointer to the exit basic block. Can be NULL.
+     * \return Pointer to the exit basic block. Can be nullptr.
      */
     const BasicBlock *exitBasicBlock() const { return exitBasicBlock_; }
 
@@ -125,12 +125,12 @@ public:
      * Sets the exit basic block.
      * Exit basic block gets control when the region finishes execution.
      *
-     * \param basicBlock Pointer to the new exit basic block. Can be NULL.
+     * \param basicBlock Pointer to the new exit basic block. Can be nullptr.
      */
     void setExitBasicBlock(const BasicBlock *basicBlock) { exitBasicBlock_ = basicBlock; }
 
     /**
-     * \return Pointer to the node being the condition of the loop. Can be NULL.
+     * \return Pointer to the node being the condition of the loop. Can be nullptr.
      */
     Node *loopCondition() const { return loopCondition_; }
 

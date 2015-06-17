@@ -33,15 +33,15 @@
 namespace nc { namespace core { namespace input {
 
 bool Parser::canParse(QIODevice *source) const {
-    assert(source != NULL);
+    assert(source != nullptr);
 
     source->seek(0);
     return doCanParse(source);
 }
 
 void Parser::parse(QIODevice *source, image::Image *image, const LogToken &log) const {
-    assert(source != NULL);
-    assert(image != NULL);
+    assert(source != nullptr);
+    assert(image != nullptr);
 
     try {
         source->seek(0);

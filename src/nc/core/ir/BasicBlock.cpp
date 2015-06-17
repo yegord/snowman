@@ -38,7 +38,7 @@ namespace core {
 namespace ir {
 
 BasicBlock::BasicBlock(const boost::optional<ByteAddr> &address):
-    address_(address), successorAddress_(address), function_(NULL)
+    address_(address), successorAddress_(address), function_(nullptr)
 {}
 
 BasicBlock::~BasicBlock() {}
@@ -56,8 +56,8 @@ void BasicBlock::setSuccessorAddress(const boost::optional<ByteAddr> &successorA
 }
 
 Statement *BasicBlock::insert(ilist<Statement>::const_iterator position, std::unique_ptr<Statement> statement) {
-    assert(statement != NULL);
-    assert(statement->basicBlock() == NULL);
+    assert(statement != nullptr);
+    assert(statement->basicBlock() == nullptr);
 
     auto result = statement.get();
     statements_.insert(position, std::move(statement));
@@ -66,27 +66,27 @@ Statement *BasicBlock::insert(ilist<Statement>::const_iterator position, std::un
 }
 
 Statement *BasicBlock::pushFront(std::unique_ptr<Statement> statement) {
-    assert(statement != NULL);
+    assert(statement != nullptr);
 
     return insert(statements_.begin(), std::move(statement));
 }
 
 Statement *BasicBlock::pushBack(std::unique_ptr<Statement> statement) {
-    assert(statement != NULL);
+    assert(statement != nullptr);
 
     return insert(statements_.end(), std::move(statement));
 }
 
 Statement *BasicBlock::insertAfter(const Statement *after, std::unique_ptr<Statement> statement) {
-    assert(after != NULL);
-    assert(statement != NULL);
+    assert(after != nullptr);
+    assert(statement != nullptr);
 
     return insert(++statements_.get_iterator(after), std::move(statement));
 }
 
 Statement *BasicBlock::insertBefore(const Statement *before, std::unique_ptr<Statement> statement) {
-    assert(before != NULL);
-    assert(statement != NULL);
+    assert(before != nullptr);
+    assert(statement != nullptr);
 
     return insert(statements_.get_iterator(before), std::move(statement));
 }
@@ -94,13 +94,13 @@ Statement *BasicBlock::insertBefore(const Statement *before, std::unique_ptr<Sta
 std::unique_ptr<Statement> BasicBlock::erase(Statement *statement) {
     auto result = statements_.erase(statement);
     assert(result->basicBlock() == this);
-    result->setBasicBlock(NULL);
+    result->setBasicBlock(nullptr);
     return result;
 }
 
 const Statement *BasicBlock::getTerminator() const {
     if (statements().empty()) {
-        return NULL;
+        return nullptr;
     }
 
     auto lastStatement = statements().back();
@@ -108,12 +108,12 @@ const Statement *BasicBlock::getTerminator() const {
         return lastStatement;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 Jump *BasicBlock::getJump() {
     if (statements().empty()) {
-        return NULL;
+        return nullptr;
     } else {
         return statements().back()->as<Jump>();
     }
@@ -121,7 +121,7 @@ Jump *BasicBlock::getJump() {
 
 const Jump *BasicBlock::getJump() const {
     if (statements().empty()) {
-        return NULL;
+        return nullptr;
     } else {
         return statements().back()->as<Jump>();
     }

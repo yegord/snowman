@@ -35,7 +35,7 @@ namespace gui {
 
 SectionsView::SectionsView(QWidget *parent):
     TreeView(tr("Sections"), parent),
-    model_(NULL)
+    model_(nullptr)
 {
     treeView()->setItemsExpandable(false);
     treeView()->setRootIsDecorated(false);

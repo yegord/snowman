@@ -89,24 +89,24 @@ public:
      *
      * \param[in] kind Kind of the statement.
      */
-    Statement(int kind): kind_(kind), basicBlock_(NULL), instruction_(NULL) {}
+    Statement(int kind): kind_(kind), basicBlock_(nullptr), instruction_(nullptr) {}
 
     /**
      * \return Pointer to the basic block to which this statement belongs.
-     *         Can be NULL.
+     *         Can be nullptr.
      */
     BasicBlock *basicBlock() { return basicBlock_; }
 
     /**
      * \return Pointer to the basic block to which this statement belongs.
-     *         Can be NULL.
+     *         Can be nullptr.
      */
     const BasicBlock *basicBlock() const { return basicBlock_; }
 
     /**
      * Sets the pointer to the basic block to which this statement belongs.
      *
-     * \param[in] basicBlock Pointer to the basic block. Can be NULL.
+     * \param[in] basicBlock Pointer to the basic block. Can be nullptr.
      */
     void setBasicBlock(BasicBlock *basicBlock) { basicBlock_ = basicBlock; }
 
@@ -119,7 +119,7 @@ public:
     }
 
     /**
-     * \return Instruction that this statement was generated from. Can be NULL.
+     * \return Instruction that this statement was generated from. Can be nullptr.
      */
     const arch::Instruction *instruction() const { return instruction_; }
 

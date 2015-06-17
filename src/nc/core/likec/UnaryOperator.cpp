@@ -85,7 +85,7 @@ const Type *UnaryOperator::getType() const {
             unreachable();
             break;
     }
-    return NULL;
+    return nullptr;
 }
 
 Expression *UnaryOperator::rewrite() {

@@ -378,7 +378,7 @@ bool StructureAnalyzer::reduceSwitch(Node *entry) {
      *     }
      * }
      */
-    BasicNode *boundsCheckNode = NULL;
+    BasicNode *boundsCheckNode = nullptr;
 
     if (Node *node = entry->uniquePredecessor()) {
         if (BasicNode *basicBlockNode = node->as<BasicNode>()) {
@@ -398,7 +398,7 @@ bool StructureAnalyzer::reduceSwitch(Node *entry) {
     /*
      * Node getting control if the bounds check fails is either an exit or a default.
      */
-    Node *exitOrDefaultBranch = NULL;
+    Node *exitOrDefaultBranch = nullptr;
 
     if (boundsCheckNode) {
         exitOrDefaultBranch = boundsCheckNode->getOtherSuccessor(entry);
@@ -434,23 +434,23 @@ bool StructureAnalyzer::reduceSwitch(Node *entry) {
     while (!queue.empty()) {
         foreach (Edge *outEdge, queue.front()->outEdges()) {
             if (!nc::find(node2branch, outEdge->head())) {
-                Node *branch = NULL;
+                Node *branch = nullptr;
 
                 foreach (Edge *inEdge, outEdge->head()->inEdges()) {
                     if (Node *inBranch = nc::find(node2branch, inEdge->tail())) {
-                        if (branch == NULL) {
+                        if (branch == nullptr) {
                             branch = inBranch;
                         } else if (branch != inBranch) {
-                            branch = NULL;
+                            branch = nullptr;
                             break;
                         }
                     } else {
-                        branch = NULL;
+                        branch = nullptr;
                         break;
                     }
                 }
 
-                if (branch != NULL) {
+                if (branch != nullptr) {
                     node2branch[outEdge->head()] = branch;
                     queue.push(outEdge->head());
                 }
@@ -480,7 +480,7 @@ bool StructureAnalyzer::reduceSwitch(Node *entry) {
      * One of the branches can be actually an exit branch, i.e. go outside
      * the switch region.
      */
-    Node *exitBranch = NULL;
+    Node *exitBranch = nullptr;
 
     /* More than so many other branches must join in the exit branch. */
     std::size_t exitBranchJoinDegree = 2;
@@ -494,7 +494,7 @@ bool StructureAnalyzer::reduceSwitch(Node *entry) {
     }
 
     /* If bounds check does not lead to an exit, it leads to the default branch. */
-    Node *defaultBranch = NULL;
+    Node *defaultBranch = nullptr;
 
     if (exitBranch != exitOrDefaultBranch) {
         defaultBranch = exitOrDefaultBranch;
@@ -524,7 +524,7 @@ bool StructureAnalyzer::reduceSwitch(Node *entry) {
     }
 
     foreach (const auto &pair, node2branch) {
-        assert(pair.second != NULL);
+        assert(pair.second != nullptr);
 
         if (pair.second != exitBranch) {
             subregion->nodes().push_back(pair.first);
@@ -538,13 +538,13 @@ bool StructureAnalyzer::reduceSwitch(Node *entry) {
 }
 
 Region *StructureAnalyzer::insertSubregion(Region *region, std::unique_ptr<Region> subregion) {
-    assert(region != NULL);
-    assert(subregion != NULL);
+    assert(region != nullptr);
+    assert(subregion != nullptr);
 
     if (region->entry() == subregion->entry()) {
         region->setEntry(subregion.get());
     } else if (nc::contains(subregion->nodes(), region->entry())) {
-        return NULL;
+        return nullptr;
     }
 
     foreach (auto node, subregion->nodes()) {

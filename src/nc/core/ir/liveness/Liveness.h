@@ -31,7 +31,7 @@ public:
      * \return True if term is live.
      */
     bool isLive(const Term *term) const {
-        assert(term != NULL);
+        assert(term != nullptr);
         return nc::contains(liveTermSet_, term);
     }
 
@@ -41,7 +41,7 @@ public:
      * \param[in] term Valid pointer to a term.
      */
     void makeLive(const Term *term) {
-        assert(term != NULL);
+        assert(term != nullptr);
 
         if (liveTermSet_.insert(term).second) {
             liveTermList_.push_back(term);

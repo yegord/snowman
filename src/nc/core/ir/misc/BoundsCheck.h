@@ -48,19 +48,19 @@ public:
     /**
      * Constructs an invalid index check.
      */
-    BoundsCheck(): index_(NULL) {}
+    BoundsCheck(): index_(nullptr) {}
 
     /**
      * Constructs a valid index check.
      *
      * \param index     Valid pointer to the index term.
      * \param maxValue  Maximal value the index can have.
-     * \param ifFailed  Pointer to the basic block getting control if the check fails. Can be NULL.
+     * \param ifFailed  Pointer to the basic block getting control if the check fails. Can be nullptr.
      */
     BoundsCheck(const Term *index, ConstantValue maxValue, const BasicBlock *ifFailed):
         index_(index), maxValue_(maxValue), ifFailed_(ifFailed)
     {
-        assert(index_ != NULL);
+        assert(index_ != nullptr);
     }
 
     /**
@@ -75,12 +75,12 @@ public:
     ConstantValue maxValue() const { assert(*this); return maxValue_; }
 
     /**
-     * \return Pointer to the basic block getting control if the check fails. Can be NULL.
+     * \return Pointer to the basic block getting control if the check fails. Can be nullptr.
      */
     const BasicBlock *ifFailed() const { assert(*this); return ifFailed_; }
 
     /**
-     * \return A non-NULL pointer if and only if the object describes a valid index check.
+     * \return A non-nullptr pointer if and only if the object describes a valid index check.
      */
     operator const void*() const { return index_; }
 };

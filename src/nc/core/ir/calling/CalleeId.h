@@ -118,7 +118,7 @@ public:
     explicit CalleeId(const Function *function):
         kind_(FUNCTION)
     {
-        assert(function != NULL);
+        assert(function != nullptr);
         data_.function = function;
     }
 
@@ -128,19 +128,19 @@ public:
     Kind kind() const { return kind_; }
 
     /**
-     * \return Valid pointer to the address being called, if kind is ENTRY_ADDR, or NULL otherwise.
+     * \return Valid pointer to the address being called, if kind is ENTRY_ADDR, or nullptr otherwise.
      */
-    const ByteAddr *entryAddress() const { return kind_ == ENTRY_ADDR ? &data_.entryAddress : NULL; }
+    const ByteAddr *entryAddress() const { return kind_ == ENTRY_ADDR ? &data_.entryAddress : nullptr; }
 
     /**
-     * \return Valid pointer to the address of the call instruction, if kind is CALL_ADDR, or NULL otherwise.
+     * \return Valid pointer to the address of the call instruction, if kind is CALL_ADDR, or nullptr otherwise.
      */
-    const ByteAddr *callAddress() const { return kind_ == CALL_ADDR ? &data_.callAddress : NULL; }
+    const ByteAddr *callAddress() const { return kind_ == CALL_ADDR ? &data_.callAddress : nullptr; }
 
     /**
-     * \return Valid pointer to the function being called, if kind is FUNCTION, or NULL otherwise.
+     * \return Valid pointer to the function being called, if kind is FUNCTION, or nullptr otherwise.
      */
-    const Function *function() const { return kind_ == FUNCTION ? data_.function : NULL; }
+    const Function *function() const { return kind_ == FUNCTION ? data_.function : nullptr; }
 
     /**
      * \return True if this is equal to that, false otherwise.
@@ -169,9 +169,9 @@ public:
     }
 
     /**
-     * \return NULL if this id is invalid, non-null pointer otherwise.
+     * \return nullptr if this id is invalid, non-null pointer otherwise.
      */
-    operator const void *() const { return kind_ == INVALID ? NULL : this; }
+    operator const void *() const { return kind_ == INVALID ? nullptr : this; }
 
     friend struct std::hash<CalleeId>;
 };

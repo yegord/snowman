@@ -40,7 +40,7 @@ class LogView: public TextView {
     /**
      * Constructor.
      *
-     * \param[in] parent Pointer to the parent widget. Can be NULL.
+     * \param[in] parent Pointer to the parent widget. Can be nullptr.
      */
     LogView(QWidget *parent = 0);
 

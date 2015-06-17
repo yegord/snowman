@@ -33,7 +33,7 @@ void Driver::parse(Context &context, const QString &filename) {
 
     context.logToken().info(tr("Choosing a parser for %1...").arg(filename));
 
-    const input::Parser *suitableParser = NULL;
+    const input::Parser *suitableParser = nullptr;
 
     foreach(const input::Parser *parser, input::ParserRepository::instance()->parsers()) {
         context.logToken().info(tr("Trying %1 parser...").arg(parser->name()));
@@ -66,7 +66,7 @@ void Driver::disassemble(Context &context) {
 }
 
 void Driver::disassemble(Context &context, const image::Section *section) {
-    assert(section != NULL);
+    assert(section != nullptr);
 
     context.logToken().info(tr("Disassemble section %1...").arg(section->name()));
 
@@ -74,7 +74,7 @@ void Driver::disassemble(Context &context, const image::Section *section) {
 }
 
 void Driver::disassemble(Context &context, const image::ByteSource *source, ByteAddr begin, ByteAddr end) {
-    assert(source != NULL);
+    assert(source != nullptr);
 
     context.logToken().info(tr("Disassemble addresses from 0x%2 to 0x%3...").arg(begin, 0, 16).arg(end, 0, 16));
 

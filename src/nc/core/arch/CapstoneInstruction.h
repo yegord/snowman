@@ -70,7 +70,7 @@ public:
 
     void print(QTextStream &out) const override {
         auto instr = Capstone(csArchitecture_, csMode_).disassemble(addr(), &bytes_[0], size(), 1);
-        assert(instr != NULL);
+        assert(instr != nullptr);
 
         out << instr->mnemonic << " " << instr->op_str;
     }

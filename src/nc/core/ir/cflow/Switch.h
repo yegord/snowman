@@ -70,15 +70,15 @@ public:
         switchNode_(switchNode),
         switchTerm_(switchTerm),
         jumpTableSize_(jumpTableSize),
-        boundsCheckNode_(NULL),
-        defaultBasicBlock_(NULL)
+        boundsCheckNode_(nullptr),
+        defaultBasicBlock_(nullptr)
     {
         assert(switchNode);
         assert(switchTerm);
     }
 
     /**
-     * \return Pointer to the node that does table-based jump. Can be NULL.
+     * \return Pointer to the node that does table-based jump. Can be nullptr.
      */
     BasicNode *switchNode() const { return switchNode_; };
 
@@ -93,26 +93,26 @@ public:
     std::size_t jumpTableSize() const { return jumpTableSize_; }
 
     /**
-     * \return Pointer to the bounds check node. Can be NULL.
+     * \return Pointer to the bounds check node. Can be nullptr.
      */
     BasicNode *boundsCheckNode() const { return boundsCheckNode_; }
 
     /**
      * Sets the pointer to the bounds check node.
      *
-     * \param node Pointer to the node. Can be NULL.
+     * \param node Pointer to the node. Can be nullptr.
      */
     void setBoundsCheckNode(BasicNode *node) { boundsCheckNode_ = node; }
 
     /**
-     * \return Pointer to the basic block to be marked by default label. Can be NULL.
+     * \return Pointer to the basic block to be marked by default label. Can be nullptr.
      */
     const BasicBlock *defaultBasicBlock() const { return defaultBasicBlock_; }
 
     /**
      * Sets the basic block to be marked by default label.
      *
-     * \param basicBlock Pointer to the basic block. Can be NULL.
+     * \param basicBlock Pointer to the basic block. Can be nullptr.
      */
     void setDefaultBasicBlock(const BasicBlock *basicBlock) { defaultBasicBlock_ = basicBlock; }
 };

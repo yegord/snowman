@@ -81,13 +81,13 @@ public:
     /**
      * Constructor.
      *
-     * \param parent  Pointer to the parent object. Can be NULL.
-     * \param context Pointer to the context. Can be NULL.
+     * \param parent  Pointer to the parent object. Can be nullptr.
+     * \param context Pointer to the context. Can be nullptr.
      */
-    CxxDocument(QObject *parent = NULL, std::shared_ptr<const core::Context> context = NULL);
+    CxxDocument(QObject *parent = nullptr, std::shared_ptr<const core::Context> context = nullptr);
 
     /**
-     * \return Pointer to the deepest tree node at the given position. Can be NULL.
+     * \return Pointer to the deepest tree node at the given position. Can be nullptr.
      */
     const core::likec::TreeNode *getLeafAt(int position) const;
 
@@ -115,22 +115,22 @@ public:
      * \return All the tree nodes using this declaration.
      */
     const std::vector<const core::likec::TreeNode *> &getUses(const core::likec::Declaration *declaration) const {
-        assert(declaration != NULL);
+        assert(declaration != nullptr);
         return nc::find(declaration2uses_, declaration);
     }
 
     /**
      * \param declaration Valid pointer to a label declaration node.
      *
-     * \return Pointer to the matching label statement. Can be NULL.
+     * \return Pointer to the matching label statement. Can be nullptr.
      */
     const core::likec::LabelStatement *getLabelStatement(const core::likec::LabelDeclaration *declaration) const {
-        assert(declaration != NULL);
+        assert(declaration != nullptr);
         return nc::find(label2statement_, declaration);
     }
 
     const core::likec::FunctionDefinition *getFunctionDefinition(const core::likec::FunctionDeclaration *declaration) const {
-        assert(declaration != NULL);
+        assert(declaration != nullptr);
         return nc::find(functionDeclaration2definition_, declaration);
     }
 
@@ -163,7 +163,7 @@ public:
     /**
      * \param node Valid pointer to a tree node.
      *
-     * \return Declaration of whatever identifier this node is. Can be NULL.
+     * \return Declaration of whatever identifier this node is. Can be nullptr.
      */
     static const core::likec::Declaration *getDeclarationOfIdentifier(const core::likec::TreeNode *node);
 

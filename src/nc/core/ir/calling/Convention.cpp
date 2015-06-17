@@ -219,7 +219,7 @@ void Convention::addReturnValueLocation(const MemoryLocation &memoryLocation) {
 }
 
 void Convention::addEnterStatement(std::unique_ptr<Statement> statement) {
-    assert(statement != NULL);
+    assert(statement != nullptr);
     entryStatements_.push_back(std::move(statement));
 }
 

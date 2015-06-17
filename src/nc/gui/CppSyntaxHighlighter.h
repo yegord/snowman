@@ -62,9 +62,9 @@ public:
     /**
      * Constructor.
      * 
-     * \param[in] parent Pointer to the parent object. Can be NULL.
+     * \param[in] parent Pointer to the parent object. Can be nullptr.
      */
-    CppSyntaxHighlighter(QObject *parent = NULL);
+    CppSyntaxHighlighter(QObject *parent = nullptr);
 
     /**
      * Virtual destructor.

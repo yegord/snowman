@@ -54,7 +54,7 @@ public:
     If(Tree &tree,
        std::unique_ptr<Expression> condition,
        std::unique_ptr<Statement> thenStatement,
-       std::unique_ptr<Statement> elseStatement = NULL)
+       std::unique_ptr<Statement> elseStatement = nullptr)
     :  Statement(tree, IF),
        condition_(std::move(condition)),
        thenStatement_(std::move(thenStatement)),

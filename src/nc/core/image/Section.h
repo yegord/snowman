@@ -201,7 +201,7 @@ public:
     void setBss(bool isBss = true) { isBss_ = isBss; }
 
     /**
-     * \return Pointer to the external byte source. Can be NULL.
+     * \return Pointer to the external byte source. Can be nullptr.
      */
     ByteSource *externalByteSource() const { return externalByteSource_.get(); }
 
@@ -215,7 +215,7 @@ public:
     /**
      * Sets the external byte source with the content of the section.
      *
-     * \param byteSource Pointer to the new external byte source. Can be NULL.
+     * \param byteSource Pointer to the new external byte source. Can be nullptr.
      */
     void setExternalByteSource(std::unique_ptr<ByteSource> byteSource) { externalByteSource_ = std::move(byteSource); }
 

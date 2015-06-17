@@ -38,7 +38,7 @@ FunctionDeclaration::FunctionDeclaration(Tree &tree, QString identifier, const T
     type_(new FunctionPointerType(tree.pointerSize(), returnType, variadic)),
     functionIdentifier_(new FunctionIdentifier(tree, this))
 {
-    assert(returnType != NULL);
+    assert(returnType != nullptr);
 }
 
 FunctionDeclaration::FunctionDeclaration(Tree &tree, int declarationKind, QString identifier, const Type *returnType, bool variadic):
@@ -46,7 +46,7 @@ FunctionDeclaration::FunctionDeclaration(Tree &tree, int declarationKind, QStrin
     type_(new FunctionPointerType(tree.pointerSize(), returnType, variadic)),
     functionIdentifier_(new FunctionIdentifier(tree, this))
 {
-    assert(returnType != NULL);
+    assert(returnType != nullptr);
 }
 
 void FunctionDeclaration::addArgument(std::unique_ptr<ArgumentDeclaration> argument) {

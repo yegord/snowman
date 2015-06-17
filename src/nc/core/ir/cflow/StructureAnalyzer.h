@@ -147,7 +147,7 @@ private:
      * \param region Valid pointer to the region.
      * \param subregion Valid pointer to the subregion.
      *
-     * \return Pointer to the subregion on success, NULL on failure.
+     * \return Pointer to the subregion on success, nullptr on failure.
      */
     Region *insertSubregion(Region *region, std::unique_ptr<Region> subregion);
 };

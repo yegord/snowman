@@ -71,7 +71,7 @@ ArrayAccess recognizeArrayAccess(const Term *base, const Term *multiplication, c
 } // anonymous namespace
 
 ArrayAccess recognizeArrayAccess(const Term *term, const dflow::Dataflow &dataflow) {
-    assert(term != NULL);
+    assert(term != nullptr);
 
     term = dflow::getFirstCopy(term, dataflow);
 

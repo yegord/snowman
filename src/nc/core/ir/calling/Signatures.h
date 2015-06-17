@@ -36,7 +36,7 @@ public:
     /**
      * \param addr Address of a function.
      *
-     * \return Pointer to the signature of the function. Can be NULL.
+     * \return Pointer to the signature of the function. Can be nullptr.
      */
     const std::shared_ptr<FunctionSignature> &getSignature(ByteAddr addr) const {
         return nc::find(addr2signature_, addr);
@@ -46,7 +46,7 @@ public:
      * Sets the signature of a function at the given address.
      *
      * \param addr Address of the function.
-     * \param signature Pointer to the signature. Can be NULL.
+     * \param signature Pointer to the signature. Can be nullptr.
      */
     void setSignature(ByteAddr addr, std::shared_ptr<FunctionSignature> signature) {
         addr2signature_[addr] = std::move(signature);
@@ -55,10 +55,10 @@ public:
     /**
      * \param function Valid pointer to a function.
      *
-     * \return Pointer to the signature of the function. Can be NULL.
+     * \return Pointer to the signature of the function. Can be nullptr.
      */
     const std::shared_ptr<FunctionSignature> &getSignature(const Function *function) const {
-        assert(function != NULL);
+        assert(function != nullptr);
         return nc::find(function2signature_, function);
     }
 
@@ -66,20 +66,20 @@ public:
      * Sets the signature of a function.
      *
      * \param function Valid pointer to the function.
-     * \param signature Pointer to the signature. Can be NULL.
+     * \param signature Pointer to the signature. Can be nullptr.
      */
     void setSignature(const Function *function, std::shared_ptr<FunctionSignature> signature) {
-        assert(function != NULL);
+        assert(function != nullptr);
         function2signature_[function] = std::move(signature);
     }
 
     /**
      * \param call Valid pointer to a call statement.
      *
-     * \return Pointer to the signature of the call. Can be NULL.
+     * \return Pointer to the signature of the call. Can be nullptr.
      */
     const std::shared_ptr<CallSignature> &getSignature(const Call *call) const {
-        assert(call != NULL);
+        assert(call != nullptr);
         return nc::find(call2signature_, call);
     }
 
@@ -87,10 +87,10 @@ public:
      * Sets the signature of a call.
      *
      * \param call Valid pointer to the call statement.
-     * \param signature Pointer to the signature. Can be NULL.
+     * \param signature Pointer to the signature. Can be nullptr.
      */
     void setSignature(const Call *call, std::shared_ptr<CallSignature> signature) {
-        assert(call != NULL);
+        assert(call != nullptr);
         call2signature_[call] = std::move(signature);
     }
 };

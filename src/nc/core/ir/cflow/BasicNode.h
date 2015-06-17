@@ -48,7 +48,7 @@ public:
     BasicNode(const ir::BasicBlock *basicBlock):
         Node(BASIC), basicBlock_(basicBlock)
     {
-        assert(basicBlock_ != NULL);
+        assert(basicBlock_ != nullptr);
     }
 
     /**

@@ -139,7 +139,7 @@ std::unique_ptr<Function> FunctionsGenerator::makeFunction(const std::vector<con
     /* Set the entry basic block. */
     if (entry) {
         BasicBlock *clonedEntry = nc::find(clones, entry);
-        assert(clonedEntry != NULL && "Entry must have been cloned.");
+        assert(clonedEntry != nullptr && "Entry must have been cloned.");
 
         function->setEntry(clonedEntry);
     }

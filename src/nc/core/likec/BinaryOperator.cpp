@@ -162,7 +162,7 @@ const Type *BinaryOperator::getType(const Type *leftType, const Type *rightType)
         }
         default: {
             unreachable();
-            return NULL;
+            return nullptr;
         }
     }
 }

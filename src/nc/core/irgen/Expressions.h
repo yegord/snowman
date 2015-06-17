@@ -779,13 +779,13 @@ typename std::enable_if<
     JumpStatement<NullExpression, E>
 >::type
 jump(E thenAddress) {
-    return JumpStatement<NullExpression, E>(NullExpression(), std::move(thenAddress), NULL, NULL);
+    return JumpStatement<NullExpression, E>(NullExpression(), std::move(thenAddress), nullptr, nullptr);
 }
 
 inline
 JumpStatement<NullExpression, NullExpression>
 jump(ir::BasicBlock *targetBasicBlock) {
-    return JumpStatement<NullExpression, NullExpression>(NullExpression(), NullExpression(), targetBasicBlock, NULL);
+    return JumpStatement<NullExpression, NullExpression>(NullExpression(), NullExpression(), targetBasicBlock, nullptr);
 }
 
 template<class L, class R>
@@ -795,7 +795,7 @@ typename std::enable_if<
     JumpStatement<L, R>
 >::type
 jump(L condition, R thenAddress, ir::BasicBlock *elseTarget) {
-    return JumpStatement<L, R>(std::move(condition), std::move(thenAddress), NULL, elseTarget);
+    return JumpStatement<L, R>(std::move(condition), std::move(thenAddress), nullptr, elseTarget);
 }
 
 template<class E>
@@ -1261,7 +1261,7 @@ public:
         mBasicBlock(basicBlock),
         mInstruction(instruction)
     {
-        assert(basicBlock != NULL);
+        assert(basicBlock != nullptr);
     }
 
     /**

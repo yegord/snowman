@@ -62,7 +62,7 @@ public:
      * \param[in] addr Address.
      *
      * \return Pointer to the instruction starting at the given address.
-     *         Can be NULL, if there is no such instructions.
+     *         Can be nullptr, if there is no such instructions.
      */
     const std::shared_ptr<const Instruction> &get(ByteAddr addr) const { return nc::find(address2instruction_, addr); }
 
@@ -70,7 +70,7 @@ public:
      * \param[in] addr Address.
      *
      * \return Pointer to the instruction covering the given address.
-     *         Can be NULL, if there are no instructions.
+     *         Can be nullptr, if there are no instructions.
      */
     const std::shared_ptr<const Instruction> &getCovering(ByteAddr addr) const;
 
@@ -106,9 +106,9 @@ public:
      * Prints all the instructions into a stream.
      *
      * \param out Output stream.
-     * \param callback Pointer to the print callback. Can be NULL.
+     * \param callback Pointer to the print callback. Can be nullptr.
      */
-    void print(QTextStream &out, PrintCallback<const Instruction *> *callback = NULL) const;
+    void print(QTextStream &out, PrintCallback<const Instruction *> *callback = nullptr) const;
 };
 
 }}} // namespace nc::core::arch

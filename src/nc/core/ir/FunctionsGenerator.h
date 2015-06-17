@@ -66,7 +66,7 @@ public:
      *
      * \return Valid pointer to the created function.
      */
-    virtual std::unique_ptr<Function> makeFunction(const std::vector<const BasicBlock *> &basicBlocks, const BasicBlock *entry = NULL) const;
+    virtual std::unique_ptr<Function> makeFunction(const std::vector<const BasicBlock *> &basicBlocks, const BasicBlock *entry = nullptr) const;
 
     /**
      * Mapping from basic blocks to basic blocks.

@@ -41,9 +41,9 @@ namespace calling {
 
 CallHook::CallHook(const Convention *convention, const CallSignature *signature,
     const boost::optional<ByteSize> &stackArgumentsSize):
-    stackPointer_(NULL), snapshotStatement_(NULL)
+    stackPointer_(nullptr), snapshotStatement_(nullptr)
 {
-    assert(convention != NULL);
+    assert(convention != nullptr);
 
     auto &statements = patch_.statements();
 

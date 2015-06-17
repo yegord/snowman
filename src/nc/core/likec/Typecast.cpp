@@ -106,7 +106,7 @@ Expression *Typecast::rewrite() {
                                 }
                             }
                         }
-                        return NULL;
+                        return nullptr;
                     };
 
                     if (auto result = rewrite(binary->left(), binary->right())) {

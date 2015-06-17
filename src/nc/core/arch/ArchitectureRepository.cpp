@@ -38,7 +38,7 @@ ArchitectureRepository *ArchitectureRepository::instance() {
 }
 
 void ArchitectureRepository::registerArchitecture(std::unique_ptr<Architecture> architecture) {
-    assert(architecture != NULL);
+    assert(architecture != nullptr);
     assert(!getArchitecture(architecture->name()) && "Cannot register two architectures with the same name.");
 
     architectures_.push_back(std::move(architecture));
@@ -50,7 +50,7 @@ const Architecture *ArchitectureRepository::getArchitecture(const QString &name)
             return architecture;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 const std::vector<const Architecture *> &ArchitectureRepository::architectures() const {

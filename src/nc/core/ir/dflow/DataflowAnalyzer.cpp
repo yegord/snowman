@@ -132,7 +132,7 @@ void DataflowAnalyzer::analyze(const CFG &cfg) {
      * Remove information about terms that disappeared.
      * Terms can disappear if e.g. a call is deinstrumented during the analysis.
      */
-    auto disappeared = [](const Term *term){ return term->statement()->basicBlock() == NULL; };
+    auto disappeared = [](const Term *term){ return term->statement()->basicBlock() == nullptr; };
 
     std::vector<const Term *> disappearedTerms;
     foreach (auto &termAndDefinitions, dataflow().term2definitions()) {
@@ -401,7 +401,7 @@ Value *DataflowAnalyzer::computeValue(const Term *term, const MemoryLocation &me
      *
      * Heuristic: merge information only from terms that define lower bits of the term's value.
      */
-    const std::vector<const Term *> *lowerBitsDefinitions = NULL;
+    const std::vector<const Term *> *lowerBitsDefinitions = nullptr;
 
     if (byteOrder == ByteOrder::LittleEndian) {
         if (definitions.chunks().front().location().addr() == memoryLocation.addr()) {

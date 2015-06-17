@@ -91,7 +91,7 @@ void TypeAnalyzer::uniteTypesOfAssignedTerms() {
 namespace {
 
 void uniteTypes(Type *&a, Type *b) {
-    if (a == NULL) {
+    if (a == nullptr) {
         a = b;
     } else {
         a->unionSet(b);

@@ -34,7 +34,7 @@ namespace nc { namespace gui {
 TextEditSearcher::TextEditSearcher(QPlainTextEdit *textEdit):
     textEdit_(textEdit), hvalue_(-1), vvalue_(-1)
 {
-    assert(textEdit != NULL);
+    assert(textEdit != nullptr);
 }
 
 void TextEditSearcher::startTrackingViewport() {

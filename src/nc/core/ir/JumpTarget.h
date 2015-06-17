@@ -53,9 +53,9 @@ public:
      * Constructor.
      *
      * \param address    Jump target address.
-     * \param basicBlock Pointer to the target basic block. Can be NULL.
+     * \param basicBlock Pointer to the target basic block. Can be nullptr.
      * */
-    JumpTableEntry(ByteAddr address, BasicBlock *basicBlock = NULL):
+    JumpTableEntry(ByteAddr address, BasicBlock *basicBlock = nullptr):
         address_(address), basicBlock_(basicBlock)
     {}
 
@@ -72,7 +72,7 @@ public:
     /**
      * Sets the target basic block.
      *
-     * \param basicBlock Pointer to the new target basic block. Can be NULL.
+     * \param basicBlock Pointer to the new target basic block. Can be nullptr.
      */
     void setBasicBlock(BasicBlock *basicBlock) { basicBlock_ = basicBlock; }
 };
@@ -132,12 +132,12 @@ public:
     ~JumpTarget();
 
     /**
-     * \return Pointer to the term representing the jump address. Can be NULL.
+     * \return Pointer to the term representing the jump address. Can be nullptr.
      */
     Term *address() { return address_.get(); }
 
     /**
-     * \return Pointer to the term representing the jump address. Can be NULL.
+     * \return Pointer to the term representing the jump address. Can be nullptr.
      */
     const Term *address() const { return address_.get(); }
 
@@ -149,38 +149,38 @@ public:
     void setAddress(std::unique_ptr<Term> address);
 
     /**
-     * \return Pointer to the target basic block. Can be NULL.
+     * \return Pointer to the target basic block. Can be nullptr.
      */
     BasicBlock *basicBlock() const { return basicBlock_; }
 
     /**
      * Sets the target basic block.
      *
-     * \param basicBlock Pointer to the target basic block. Can be NULL.
+     * \param basicBlock Pointer to the target basic block. Can be nullptr.
      */
     void setBasicBlock(BasicBlock *basicBlock) { basicBlock_ = basicBlock; }
 
     /**
-     * \return Pointer to the jump table. Can be NULL.
+     * \return Pointer to the jump table. Can be nullptr.
      */
     JumpTable *table() { return table_.get(); }
 
     /**
-     * \return Pointer to the jump table. Can be NULL.
+     * \return Pointer to the jump table. Can be nullptr.
      */
     const JumpTable *table() const { return table_.get(); }
 
     /**
      * Sets the jump table.
      *
-     * \param[in] table Pointer to the new jump table. Can be NULL.
+     * \param[in] table Pointer to the new jump table. Can be nullptr.
      */
     void setTable(std::unique_ptr<JumpTable> table) { table_ = std::move(table); }
 
     /**
-     * \return Non-null pointer is this is a valid jump target, NULL otherwise.
+     * \return Non-null pointer is this is a valid jump target, nullptr otherwise.
      */
-    operator const void*() { return (address() || basicBlock() || table()) ? this : NULL; }
+    operator const void*() { return (address() || basicBlock() || table()) ? this : nullptr; }
 
     /**
      * Prints the textual representation of the jump target to the stream.

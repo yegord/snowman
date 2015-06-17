@@ -86,9 +86,9 @@ class Project: public QObject {
      *
      * Creates an empty project with empty context.
      *
-     * \param parent Pointer to the parent object. Can be NULL.
+     * \param parent Pointer to the parent object. Can be nullptr.
      */
-    Project(QObject *parent = NULL);
+    Project(QObject *parent = nullptr);
 
     /**
      * Destructor.
@@ -130,7 +130,7 @@ class Project: public QObject {
     void setInstructions(const std::shared_ptr<const core::arch::Instructions> &instructions);
 
     /**
-     * \return Pointer to the current context instance. Can be NULL.
+     * \return Pointer to the current context instance. Can be nullptr.
      */
     const std::shared_ptr<const core::Context> &context() const { assert(context_); return context_; }
 

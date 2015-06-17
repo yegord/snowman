@@ -74,11 +74,11 @@ public:
      * \param[in] statementKind Statement kind.
      */
     Statement(Tree &tree, int statementKind):
-        TreeNode(tree, STATEMENT), statementKind_(statementKind), statement_(NULL)
+        TreeNode(tree, STATEMENT), statementKind_(statementKind), statement_(nullptr)
     {}
 
     /**
-     * \return Pointer to the IR statement from which this statement was created. Can be NULL.
+     * \return Pointer to the IR statement from which this statement was created. Can be nullptr.
      */
     const ir::Statement *statement() const { return statement_; }
 
@@ -86,8 +86,8 @@ public:
      * \param[in] statement Valid pointer to a statement.
      */
     void setStatement(const ir::Statement *statement) {
-        assert(statement != NULL);
-        assert(statement_ == NULL); /* Must be used for initialization only. */
+        assert(statement != nullptr);
+        assert(statement_ == nullptr); /* Must be used for initialization only. */
 
         statement_ = statement;
     }

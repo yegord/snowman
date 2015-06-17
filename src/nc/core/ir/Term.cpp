@@ -29,8 +29,8 @@
 namespace nc { namespace core { namespace ir {
 
 void Term::setStatement(const Statement *statement) {
-    assert(statement_ == NULL);
-    assert(statement != NULL);
+    assert(statement_ == nullptr);
+    assert(statement != nullptr);
 
     statement_ = statement;
 
@@ -62,7 +62,7 @@ const Term *Term::source() const {
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 }}} // namespace nc::core::ir

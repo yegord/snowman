@@ -101,9 +101,9 @@ DefinitionGenerator::DefinitionGenerator(CodeGenerator &parent, const Function *
     liveness_(*parent.livenesses().at(function)),
     uses_(std::make_unique<dflow::Uses>(dataflow_)),
     dominators_(std::make_unique<Dominators>(CFG(function->basicBlocks()), canceled)),
-    definition_(NULL)
+    definition_(nullptr)
 {
-    assert(function != NULL);
+    assert(function != nullptr);
 }
 
 DefinitionGenerator::~DefinitionGenerator() {}
@@ -127,11 +127,11 @@ std::unique_ptr<likec::FunctionDefinition> DefinitionGenerator::createDefinition
     if (auto entryHook = parent().hooks().getEntryHook(function_)) {
         foreach (const auto &argument, signature()->arguments()) {
             auto term = entryHook->getArgumentTerm(argument.get());
-            assert(term != NULL && "Entry hook must have clones of all arguments in the signature.");
+            assert(term != nullptr && "Entry hook must have clones of all arguments in the signature.");
             assert(dataflow_.getMemoryLocation(term) && "Argument must have a memory location.");
 
             auto variable = parent().variables().getVariable(term);
-            assert(variable != NULL && "Each term with a memory location must belong to a variable.");
+            assert(variable != nullptr && "Each term with a memory location must belong to a variable.");
 
             if (variable->memoryLocation() == dataflow_.getMemoryLocation(term)) {
                 auto &variableDeclaration = variableDeclarations_[variable];
@@ -152,13 +152,13 @@ std::unique_ptr<likec::FunctionDefinition> DefinitionGenerator::createDefinition
     computeSubstitutions();
 
     SwitchContext switchContext;
-    makeStatements(graph_.root(), definition()->block(), NULL, NULL, NULL, switchContext);
+    makeStatements(graph_.root(), definition()->block(), nullptr, nullptr, nullptr, switchContext);
 
     return functionDefinition;
 }
 
 likec::VariableDeclaration *DefinitionGenerator::makeLocalVariableDeclaration(const vars::Variable *variable) {
-    assert(variable != NULL);
+    assert(variable != nullptr);
     assert(variable->isLocal());
 
     likec::VariableDeclaration *&result = variableDeclarations_[variable];
@@ -176,7 +176,7 @@ likec::VariableDeclaration *DefinitionGenerator::makeLocalVariableDeclaration(co
 }
 
 likec::VariableDeclaration *DefinitionGenerator::makeVariableDeclaration(const vars::Variable *variable) {
-    assert(variable != NULL);
+    assert(variable != nullptr);
 
     if (variable->isGlobal()) {
         return parent().makeGlobalVariableDeclaration(variable);
@@ -201,8 +201,8 @@ likec::LabelDeclaration *DefinitionGenerator::makeLabel(const BasicBlock *basicB
 }
 
 void DefinitionGenerator::addLabels(const BasicBlock *basicBlock, likec::Block *block, SwitchContext &switchContext) {
-    assert(basicBlock != NULL);
-    assert(block != NULL);
+    assert(basicBlock != nullptr);
+    assert(block != nullptr);
 
     /* Add usual label. */
     block->addStatement(std::make_unique<likec::LabelStatement>(tree(), std::make_unique<likec::LabelIdentifier>(tree(), makeLabel(basicBlock))));
@@ -280,7 +280,7 @@ void DefinitionGenerator::makeStatements(const cflow::Node *node, likec::Block *
         }
         case cflow::Region::IF_THEN: {
             assert(region->nodes().size() == 2);
-            assert(region->exitBasicBlock() != NULL);
+            assert(region->exitBasicBlock() != nullptr);
 
             std::unique_ptr<likec::Expression> condition(makeExpression(region->nodes()[0], block,
                 region->nodes()[1]->getEntryBasicBlock(), region->exitBasicBlock(), switchContext));
@@ -310,13 +310,13 @@ void DefinitionGenerator::makeStatements(const cflow::Node *node, likec::Block *
         }
         case cflow::Region::WHILE: {
             assert(region->nodes().size() > 0);
-            assert(region->exitBasicBlock() != NULL);
+            assert(region->exitBasicBlock() != nullptr);
 
             addLabels(region->entry()->getEntryBasicBlock(), block, switchContext);
 
             cflow::Node *bodyEntry = region->entry()->uniqueSuccessor();
 
-            auto condition = makeExpression(region->entry(), NULL,
+            auto condition = makeExpression(region->entry(), nullptr,
                 bodyEntry ? bodyEntry->getEntryBasicBlock() : region->entry()->getEntryBasicBlock(),
                 region->exitBasicBlock(), switchContext);
 
@@ -341,8 +341,8 @@ void DefinitionGenerator::makeStatements(const cflow::Node *node, likec::Block *
         }
         case cflow::Region::DO_WHILE: {
             assert(region->nodes().size() > 0);
-            assert(region->exitBasicBlock() != NULL);
-            assert(region->loopCondition() != NULL);
+            assert(region->exitBasicBlock() != nullptr);
+            assert(region->loopCondition() != nullptr);
 
             cflow::Dfs dfs(region);
             auto &nodes = dfs.preordering();
@@ -380,7 +380,7 @@ void DefinitionGenerator::makeStatements(const cflow::Node *node, likec::Block *
                 auto iend = --basicBlock->statements().end();
                 for (auto i = basicBlock->statements().begin(); i != iend; ++i) {
                     /* We do not care about breakBB and others: we will not create gotos. */
-                    if (auto likecStatement = makeStatement(*i, NULL, NULL, NULL)) {
+                    if (auto likecStatement = makeStatement(*i, nullptr, nullptr, nullptr)) {
                         block->addStatement(std::move(likecStatement));
                     }
                 }
@@ -396,12 +396,12 @@ void DefinitionGenerator::makeStatements(const cflow::Node *node, likec::Block *
 
             /* The jump via the jump table. */
             const Jump *jump = witch->switchNode()->basicBlock()->getJump();
-            assert(jump != NULL);
+            assert(jump != nullptr);
             assert(jump->isUnconditional());
 
             /* The jump table. */
             const JumpTable *jumpTable = jump->thenTarget().table();
-            assert(jumpTable != NULL);
+            assert(jumpTable != nullptr);
 
             /*
              * Make a new switch context.
@@ -491,9 +491,9 @@ void DefinitionGenerator::makeStatements(const std::vector<cflow::Node *> &nodes
 }
 
 std::unique_ptr<likec::Expression> DefinitionGenerator::makeExpression(const cflow::Node *node, likec::Block *block, const BasicBlock *thenBB, const BasicBlock *elseBB, SwitchContext &switchContext) {
-    assert(node != NULL);
-    assert(thenBB != NULL);
-    assert(elseBB != NULL);
+    assert(node != nullptr);
+    assert(thenBB != nullptr);
+    assert(elseBB != nullptr);
     assert(node->isCondition() && "Can only generate expressions from condition nodes.");
 
     std::unique_ptr<likec::Expression> result;
@@ -518,7 +518,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeExpression(const cfl
                     expression = std::make_unique<likec::UnaryOperator>(tree(), likec::UnaryOperator::LOGICAL_NOT,
                         std::move(expression));
                 }
-            } else if (auto stmt = makeStatement(statement, NULL, NULL, NULL)) {
+            } else if (auto stmt = makeStatement(statement, nullptr, nullptr, nullptr)) {
                 if (block) {
                     block->addStatement(std::move(stmt));
                 } else if (likec::ExpressionStatement *expressionStatement = stmt->as<likec::ExpressionStatement>()) {
@@ -561,20 +561,20 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeExpression(const cfl
         }
 
         const cflow::BasicNode *b = n->as<cflow::BasicNode>();
-        assert(b != NULL);
+        assert(b != nullptr);
 
         const Jump *j = b->basicBlock()->getJump();
-        assert(j != NULL);
+        assert(j != nullptr);
 
         if (j->thenTarget().basicBlock() == thenBB || j->elseTarget().basicBlock() == thenBB) {
             auto left  = makeExpression(region->nodes()[0], block, thenBB, region->nodes()[1]->getEntryBasicBlock(), switchContext);
-            auto right = makeExpression(region->nodes()[1], NULL, thenBB, elseBB, switchContext);
+            auto right = makeExpression(region->nodes()[1], nullptr, thenBB, elseBB, switchContext);
 
             result = std::make_unique<likec::BinaryOperator>(tree(), likec::BinaryOperator::LOGICAL_OR,
                 std::move(left), std::move(right));
         } else if (j->thenTarget().basicBlock() == elseBB || j->elseTarget().basicBlock() == elseBB) {
             auto left  = makeExpression(region->nodes()[0], block, region->nodes()[1]->getEntryBasicBlock(), elseBB, switchContext);
-            auto right = makeExpression(region->nodes()[1], NULL, thenBB, elseBB, switchContext);
+            auto right = makeExpression(region->nodes()[1], nullptr, thenBB, elseBB, switchContext);
 
             result = std::make_unique<likec::BinaryOperator>(tree(), likec::BinaryOperator::LOGICAL_AND,
                 std::move(left), std::move(right));
@@ -585,7 +585,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeExpression(const cfl
         assert(!"Node must be a basic block node or a region.");
     }
 
-    assert(result != NULL && "Something is very wrong.");
+    assert(result != nullptr && "Something is very wrong.");
 
     return result;
 }
@@ -594,23 +594,23 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::makeStatement(const State
     assert(statement);
 
     if (nc::contains(invisibleStatements_, statement)) {
-        return NULL;
+        return nullptr;
     }
 
     auto result = doMakeStatement(statement, nextBB, breakBB, continueBB);
 
-    if (result != NULL) {
+    if (result != nullptr) {
         class StatementSetter {
             const ir::Statement *statement_;
 
         public:
             StatementSetter(const ir::Statement *statement): statement_(statement) {
-                assert(statement != NULL);
+                assert(statement != nullptr);
             }
 
             void operator()(likec::TreeNode *node) {
                 if (auto stmt = node->as<likec::Statement>()) {
-                    if (stmt->statement() == NULL) {
+                    if (stmt->statement() == nullptr) {
                         stmt->setStatement(statement_);
                         stmt->callOnChildren(*this);
                     }
@@ -634,11 +634,11 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
             const Assignment *assignment = statement->asAssignment();
 
             if (!liveness_.isLive(assignment->left())) {
-                return NULL;
+                return nullptr;
             }
 
             if (nc::contains(intermediateTerms_, assignment->left())) {
-                return NULL;
+                return nullptr;
             }
 
             std::unique_ptr<likec::Expression> left(makeExpression(assignment->left()));
@@ -668,9 +668,9 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
                 auto elseJump = makeJump(jump->elseTarget(), nextBB, breakBB, continueBB);
                 auto condition = makeExpression(jump->condition());
 
-                if (thenJump == NULL) {
-                    if (elseJump == NULL) {
-                        return NULL;
+                if (thenJump == nullptr) {
+                    if (elseJump == nullptr) {
+                        return nullptr;
                     } else {
                         std::swap(thenJump, elseJump);
                         condition = std::make_unique<likec::UnaryOperator>(tree(), likec::UnaryOperator::LOGICAL_NOT, std::move(condition));
@@ -723,23 +723,23 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
             return std::make_unique<likec::ExpressionStatement>(tree(), std::move(callOperator));
         }
         case Statement::HALT: {
-            return NULL;
+            return nullptr;
         }
         case Statement::TOUCH: {
-            return NULL;
+            return nullptr;
         }
         case Statement::CALLBACK: {
-            return NULL;
+            return nullptr;
         }
     }
 
     unreachable();
-    return NULL;
+    return nullptr;
 }
 
 std::unique_ptr<likec::Statement> DefinitionGenerator::makeJump(const BasicBlock *target, const BasicBlock *nextBB, const BasicBlock *breakBB, const BasicBlock *continueBB) {
     if (target == nextBB) {
-        return NULL;
+        return nullptr;
     } else if (target == breakBB) {
         return std::make_unique<likec::Break>(tree());
     } else if (target == continueBB) {
@@ -761,22 +761,22 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::makeJump(const JumpTarget
 }
 
 std::unique_ptr<likec::Expression> DefinitionGenerator::makeExpression(const Term *term) {
-    assert(term != NULL);
+    assert(term != nullptr);
 
     auto result = doMakeExpression(term);
-    assert(result != NULL);
+    assert(result != nullptr);
 
     class TermSetter {
         const ir::Term *term_;
 
     public:
         TermSetter(const ir::Term *term): term_(term) {
-            assert(term != NULL);
+            assert(term != nullptr);
         }
 
         virtual void operator()(likec::TreeNode *node) {
             if (auto expression = node->as<likec::Expression>()) {
-                if (expression->term() == NULL) {
+                if (expression->term() == nullptr) {
                     expression->setTerm(term_);
                     expression->callOnChildren(*this);
                 }
@@ -834,7 +834,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::doMakeExpression(const T
         }
         case Term::MEMORY_LOCATION_ACCESS: {
             assert(!"The term must belong to a variable.");
-            return NULL;
+            return nullptr;
         }
         case Term::DEREFERENCE: {
             assert(!dataflow_.getMemoryLocation(term) && "The term must belong to a variable.");
@@ -864,7 +864,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::doMakeExpression(const T
         }
         default: {
             unreachable();
-            return NULL;
+            return nullptr;
         }
     }
 }
@@ -903,7 +903,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::doMakeExpression(const U
         }
         default:
             unreachable();
-            return NULL;
+            return nullptr;
     }
 }
 
@@ -1007,7 +1007,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::doMakeExpression(const B
 
         default:
             unreachable();
-            return NULL;
+            return nullptr;
     }
 }
 
@@ -1059,13 +1059,13 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeConstant(const Term 
 }
 
 std::unique_ptr<likec::Expression> DefinitionGenerator::makeVariableAccess(const Term *term) {
-    assert(term != NULL);
+    assert(term != nullptr);
 
     const auto &termLocation = dataflow_.getMemoryLocation(term);
     assert(termLocation);
 
     auto variable = parent().variables().getVariable(term);
-    assert(variable != NULL);
+    assert(variable != nullptr);
 
     auto identifier = std::make_unique<likec::VariableIdentifier>(tree(), makeVariableDeclaration(variable));
 
@@ -1105,9 +1105,9 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeVariableAccess(const
 }
 
 bool DefinitionGenerator::isDominating(const Term *write, const Term *read) const {
-    assert(write != NULL);
+    assert(write != nullptr);
     assert(write->isWrite());
-    assert(read != NULL);
+    assert(read != nullptr);
     assert(read->isRead());
 
     if (write->statement()->basicBlock() == read->statement()->basicBlock()) {
@@ -1134,18 +1134,18 @@ void DefinitionGenerator::computeSubstitutions() {
         if (termAndLocation.second &&
             termAndLocation.first->isWrite() &&
             liveness_.isLive(termAndLocation.first) &&
-            termAndLocation.first->source() != NULL &&
+            termAndLocation.first->source() != nullptr &&
             !nc::contains(invisibleStatements_, termAndLocation.first->statement()) &&
             parent().variables().getVariable(termAndLocation.first)->isLocal())
         {
-            const Term *onlyUse = NULL;
+            const Term *onlyUse = nullptr;
             const auto &uses = uses_->getUses(termAndLocation.first);
             foreach (const auto &use, uses) {
                 if (liveness_.isLive(use.term())) {
-                    if (onlyUse == NULL) {
+                    if (onlyUse == nullptr) {
                         onlyUse = use.term();
                     } else {
-                        onlyUse = NULL;
+                        onlyUse = nullptr;
                         break;
                     }
                 }

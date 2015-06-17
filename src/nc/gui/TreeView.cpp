@@ -191,7 +191,7 @@ void TreeView::setDocumentFont(const QFont &font) {
 }
 
 void TreeView::selectFont() {
-    setDocumentFont(QFontDialog::getFont(NULL, documentFont(), this));
+    setDocumentFont(QFontDialog::getFont(nullptr, documentFont(), this));
 }
 
 bool TreeView::eventFilter(QObject *watched, QEvent *event) {

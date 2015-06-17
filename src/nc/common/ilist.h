@@ -27,7 +27,7 @@ protected:
     /**
      * Protected constructor.
      */
-    ilist_item() noexcept: next_(NULL), prev_(NULL) {}
+    ilist_item() noexcept: next_(nullptr), prev_(nullptr) {}
 
 private:
     /**
@@ -101,12 +101,12 @@ public:
      * Constructor.
      *
      * \param list      Reference to the data of the list being iterated.
-     * \param element   Pointer to the element this iterator points to. Can be NULL.
+     * \param element   Pointer to the element this iterator points to. Can be nullptr.
      */
-    explicit ilist_iterator(const ilist_data *list, ilist_item *element = NULL) noexcept:
+    explicit ilist_iterator(const ilist_data *list, ilist_item *element = nullptr) noexcept:
         element_(element), list_(list)
     {
-        assert(list != NULL);
+        assert(list != nullptr);
     }
 
 private:
@@ -140,7 +140,7 @@ public:
      * Prefix increment.
      */
     ilist_iterator &operator++() noexcept {
-        if (element_ != NULL) {
+        if (element_ != nullptr) {
             element_ = element_->next_;
         } else {
             element_ = list_->front_;
@@ -161,7 +161,7 @@ public:
      * Prefix decrement.
      */
     ilist_iterator &operator--() noexcept {
-        if (element_ != NULL) {
+        if (element_ != nullptr) {
             element_ = element_->prev_;
         } else {
             element_ = list_->back_;
@@ -240,8 +240,8 @@ public:
     ilist(const deleter_type &deleter = deleter_type()):
         deleter_(deleter)
     {
-        front_ = NULL;
-        back_ = NULL;
+        front_ = nullptr;
+        back_ = nullptr;
     }
 
     /**
@@ -256,8 +256,8 @@ public:
         front_ = that.front_;
         back_ = that.back_;
 
-        that.front_ = NULL;
-        that.back_ = NULL;
+        that.front_ = nullptr;
+        that.back_ = nullptr;
     }
 
     /**
@@ -280,8 +280,8 @@ public:
         front_ = that.front_;
         back_ = that.back_;
 
-        that.front_ = NULL;
-        that.back_ = NULL;
+        that.front_ = nullptr;
+        that.back_ = nullptr;
 
         return *this;
     }
@@ -308,29 +308,29 @@ public:
     const deleter_type &get_deleter() const noexcept { return deleter_; }
 
     /**
-     * \return Pointer to the first element. Will be NULL if the list is empty.
+     * \return Pointer to the first element. Will be nullptr if the list is empty.
      */
     pointer front() noexcept { return static_cast<pointer>(front_); }
 
     /**
-     * \return Pointer to the first element. Will be NULL if the list is empty.
+     * \return Pointer to the first element. Will be nullptr if the list is empty.
      */
     const_pointer front() const noexcept { return static_cast<pointer>(front_); }
 
     /**
-     * \return Pointer to the last element. Will be NULL if the list is empty.
+     * \return Pointer to the last element. Will be nullptr if the list is empty.
      */
     pointer back() noexcept { return static_cast<pointer>(back_); }
 
     /**
-     * \return Pointer to the last element. Will be NULL if the list is empty.
+     * \return Pointer to the last element. Will be nullptr if the list is empty.
      */
     const_pointer back() const noexcept { return static_cast<pointer>(back_); }
 
     /**
      * \return True if the list is empty, false otherwise.
      */
-    bool empty() const noexcept { return front() == NULL; }
+    bool empty() const noexcept { return front() == nullptr; }
 
     /**
      * Removes and destroys all the elements in the list.
@@ -349,7 +349,7 @@ public:
      * \return Valid pointer to the removed element.
      */
     unique_ptr erase(const_pointer element) {
-        assert(element != NULL);
+        assert(element != nullptr);
 
         ilist_item *item = const_cast<pointer>(element);
 
@@ -367,8 +367,8 @@ public:
             item->next_->prev_ = item->prev_;
         }
 
-        item->next_ = NULL;
-        item->prev_ = NULL;
+        item->next_ = nullptr;
+        item->prev_ = nullptr;
 
         return unique_ptr(const_cast<pointer>(element), deleter_);
     }
@@ -412,23 +412,23 @@ public:
      */
     pointer insert(const_iterator position, unique_ptr element) noexcept {
         assert(position.list_ == this);
-        assert(element != NULL);
+        assert(element != nullptr);
 
         auto item = static_cast<ilist_item *>(element.get());
 
-        assert(item->next_ == NULL);
-        assert(item->prev_ == NULL);
+        assert(item->next_ == nullptr);
+        assert(item->prev_ == nullptr);
 
         item->next_ = const_cast<pointer>(*position);
         item->prev_ = const_cast<pointer>(*--position);
 
-        if (item->next_ != NULL) {
+        if (item->next_ != nullptr) {
             item->next_->prev_ = item;
         } else {
             back_ = item;
         }
 
-        if (item->prev_ != NULL) {
+        if (item->prev_ != nullptr) {
             item->prev_->next_ = element.get();
         } else {
             front_ = item;
@@ -478,20 +478,20 @@ public:
         result.front_ = const_cast<pointer>(*first);
         result.back_ = const_cast<pointer>(*--last);
 
-        assert(result.front_ != NULL);
-        assert(result.back_ != NULL);
+        assert(result.front_ != nullptr);
+        assert(result.back_ != nullptr);
 
         if (result.front_ == front_) {
             front_ = result.back_->next_;
             if (front_) {
-                front_->prev_ = NULL;
+                front_->prev_ = nullptr;
             }
         }
 
         if (result.back_ == back_) {
             back_ = result.front_->prev_;
             if (back_) {
-                back_->next_ = NULL;
+                back_->next_ = nullptr;
             }
         }
 
@@ -502,8 +502,8 @@ public:
             result.back_->next_->prev_ = result.front_->prev_;
         }
 
-        result.front_->prev_ = NULL;
-        result.back_->next_ = NULL;
+        result.front_->prev_ = nullptr;
+        result.back_->next_ = nullptr;
 
         return result;
     }
@@ -574,7 +574,7 @@ public:
      * \return Iterator pointing to the given element.
      */
     iterator get_iterator(const_pointer element) noexcept {
-        assert(element != NULL);
+        assert(element != nullptr);
         return iterator(this, const_cast<pointer>(element));
     }
 
@@ -584,7 +584,7 @@ public:
      * \return Constant iterator pointing to the given element.
      */
     const_iterator get_iterator(const_pointer element) const noexcept {
-        assert(element != NULL);
+        assert(element != nullptr);
         return const_iterator(this, element);
     }
 

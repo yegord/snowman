@@ -88,12 +88,12 @@ public:
     /**
      * Constructor.
      *
-     * \param[in] parent Pointer to the parent widget. Can be NULL.
+     * \param[in] parent Pointer to the parent widget. Can be nullptr.
      */
-    CxxView(QWidget *parent = NULL);
+    CxxView(QWidget *parent = nullptr);
 
     /**
-     * \return Pointer to the C++ document being viewed. Can be NULL.
+     * \return Pointer to the C++ document being viewed. Can be nullptr.
      */
     CxxDocument *document() const { return document_; }
 
@@ -118,7 +118,7 @@ public:
     const std::vector<const core::arch::Instruction *> &selectedInstructions() const { return selectedInstructions_; }
 
     /**
-     * \return Pointer to the node under cursor. Can be NULL.
+     * \return Pointer to the node under cursor. Can be nullptr.
      */
     const core::likec::TreeNode *getNodeUnderCursor() const;
 
@@ -128,12 +128,12 @@ public:
     boost::optional<ConstantValue> getIntegerUnderCursor() const;
 
     /**
-     * \return Pointer to the declaration of the identifier under cursor. Can be NULL.
+     * \return Pointer to the declaration of the identifier under cursor. Can be nullptr.
      */
     const core::likec::Declaration *getDeclarationOfIdentifierUnderCursor() const;
 
     /**
-     * \return Pointer to the declaration of the function whose identifier or declaration is under cursor. Can be NULL.
+     * \return Pointer to the declaration of the function whose identifier or declaration is under cursor. Can be nullptr.
      */
     const core::likec::FunctionDefinition *getDefinitionOfFunctionUnderCursor() const;
 
@@ -141,7 +141,7 @@ public Q_SLOTS:
     /**
      * Sets the document being viewed.
      *
-     * \param document Pointer to the new document. Can be NULL.
+     * \param document Pointer to the new document. Can be nullptr.
      */
     void setDocument(CxxDocument *document);
 

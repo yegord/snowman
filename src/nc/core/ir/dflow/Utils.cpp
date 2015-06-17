@@ -43,7 +43,7 @@ class Term;
 namespace dflow {
 
 const Term *getFirstCopy(const Term *term, const Dataflow &dataflow) {
-    assert(term != NULL);
+    assert(term != nullptr);
 
     /* Terms that were already seen. */
     boost::unordered_set<const Term *> visited;
@@ -83,7 +83,7 @@ const Term *getFirstCopy(const Term *term, const Dataflow &dataflow) {
 }
 
 bool isReturn(const Jump *jump, const Dataflow &dataflow) {
-    assert(jump != NULL);
+    assert(jump != nullptr);
 
     if (jump->isConditional()) {
         return false;

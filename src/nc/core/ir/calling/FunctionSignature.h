@@ -74,7 +74,7 @@ public:
     void setVariadic(bool value = true) { variadic_ = value; }
 
     /**
-     * \return Pointer to the term containing the return value. Can be NULL.
+     * \return Pointer to the term containing the return value. Can be nullptr.
      */
     const std::shared_ptr<const Term> &returnValue() const { return returnValue_; }
 

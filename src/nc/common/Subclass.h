@@ -33,7 +33,7 @@ public:                                                                 \
         if (is<T>()) {                                                  \
             return nc::checked_cast<T *>(this);                         \
         }                                                               \
-        return NULL;                                                    \
+        return nullptr;                                                 \
     }                                                                   \
                                                                         \
     template<class T>                                                   \
@@ -41,7 +41,7 @@ public:                                                                 \
         if (is<T>()) {                                                  \
             return nc::checked_cast<const T *>(this);                   \
         }                                                               \
-        return NULL;                                                    \
+        return nullptr;                                                 \
     }                                                                   \
 private: 
 

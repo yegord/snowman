@@ -49,12 +49,6 @@
 #   define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #endif
 
-/* Use C++11 features without changing the syntax! */
-#ifdef NULL
-#   undef NULL
-#endif
-#define NULL nullptr
-
 /* Use expression-template-based string concatenation in Qt. */
 #define QT_USE_FAST_CONCATENATION
 #define QT_USE_FAST_OPERATOR_PLUS

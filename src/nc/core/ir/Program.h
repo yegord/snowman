@@ -93,14 +93,14 @@ public:
     /**
      * \param address       Address.
      *
-     * \return Pointer to the basic block starting at given address. Can be NULL.
+     * \return Pointer to the basic block starting at given address. Can be nullptr.
      */
     BasicBlock *getBasicBlockStartingAt(ByteAddr address) const;
 
     /**
      * \param address       Address.
      *
-     * \return Pointer to the basic block covering given address. Can be NULL.
+     * \return Pointer to the basic block covering given address. Can be nullptr.
      */
     BasicBlock *getBasicBlockCovering(ByteAddr address) const;
 

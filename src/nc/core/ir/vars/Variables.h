@@ -69,10 +69,10 @@ public:
     /**
      * \param term Valid pointer to a term.
      *
-     * \return Pointer to the variable corresponding to the term. Can be NULL.
+     * \return Pointer to the variable corresponding to the term. Can be nullptr.
      */
     const Variable *getVariable(const Term *term) const {
-        assert(term != NULL);
+        assert(term != nullptr);
         return nc::find(term2variable_, term);
     }
 };

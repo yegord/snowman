@@ -43,7 +43,7 @@ namespace nc { namespace gui {
 
 CxxView::CxxView(QWidget *parent):
     TextView(tr("C++"), parent),
-    document_(NULL)
+    document_(nullptr)
 {
     highlighter_ = new CppSyntaxHighlighter(this);
 
@@ -171,14 +171,14 @@ const core::likec::TreeNode *CxxView::getNodeUnderCursor() const {
     if (document()) {
         return document()->getLeafAt(textEdit()->textCursor().position());
     }
-    return NULL;
+    return nullptr;
 }
 
 const core::likec::Declaration *CxxView::getDeclarationOfIdentifierUnderCursor() const {
     if (auto node = getNodeUnderCursor()) {
         return document()->getDeclarationOfIdentifier(node);
     }
-    return NULL;
+    return nullptr;
 }
 
 const core::likec::FunctionDefinition *CxxView::getDefinitionOfFunctionUnderCursor() const {
@@ -193,7 +193,7 @@ const core::likec::FunctionDefinition *CxxView::getDefinitionOfFunctionUnderCurs
             }
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 void CxxView::gotoDeclaration() {

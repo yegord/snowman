@@ -36,8 +36,8 @@ namespace arch {
 Architecture::Architecture():
     mBitness(0),
     mMaxInstructionSize(0),
-    mMasterAnalyzer(NULL),
-    mRegisters(NULL)
+    mMasterAnalyzer(nullptr),
+    mRegisters(nullptr)
 {}
 
 Architecture::~Architecture() {}
@@ -64,15 +64,15 @@ void Architecture::setMaxInstructionSize(SmallBitSize size) {
 }
 
 void Architecture::setMasterAnalyzer(const MasterAnalyzer *masterAnalyzer) {
-    assert(masterAnalyzer != NULL);
-    assert(mMasterAnalyzer == NULL && "Master analyzer is already set.");
+    assert(masterAnalyzer != nullptr);
+    assert(mMasterAnalyzer == nullptr && "Master analyzer is already set.");
 
     mMasterAnalyzer = masterAnalyzer;
 }
 
 void Architecture::setRegisters(Registers *registers) {
-    assert(registers != NULL);
-    assert(mRegisters == NULL && "Register container is already set.");
+    assert(registers != nullptr);
+    assert(mRegisters == nullptr && "Register container is already set.");
 
     mRegisters = registers;
 }
@@ -82,8 +82,8 @@ bool Architecture::isGlobalMemory(const ir::MemoryLocation &memoryLocation) cons
 }
 
 void Architecture::addCallingConvention(std::unique_ptr<ir::calling::Convention> convention) {
-    assert(convention != NULL);
-    assert(getCallingConvention(convention->name()) == NULL &&
+    assert(convention != nullptr);
+    assert(getCallingConvention(convention->name()) == nullptr &&
            "No two calling conventions with the same name allowed.");
 
     conventions_.push_back(std::move(convention));
@@ -95,7 +95,7 @@ const ir::calling::Convention *Architecture::getCallingConvention(const QString 
             return convention;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 } // namespace arch

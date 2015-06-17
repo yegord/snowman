@@ -290,7 +290,7 @@ private:
             }
 
             auto value = symbol.Value;
-            const core::image::Section *section = NULL;
+            const core::image::Section *section = nullptr;
 
             std::size_t sectionNumber = symbol.SectionNumber - 1;
             if (sectionNumber < image_->sections().size()) {

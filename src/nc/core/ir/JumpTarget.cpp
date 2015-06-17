@@ -34,24 +34,24 @@ namespace nc {
 namespace core {
 namespace ir {
 
-JumpTarget::JumpTarget(): basicBlock_(NULL) {}
+JumpTarget::JumpTarget(): basicBlock_(nullptr) {}
 
 JumpTarget::JumpTarget(std::unique_ptr<Term> address):
-    address_(std::move(address)), basicBlock_(NULL)
+    address_(std::move(address)), basicBlock_(nullptr)
 {
-    assert(address_ != NULL);
+    assert(address_ != nullptr);
 }
 
 JumpTarget::JumpTarget(BasicBlock *basicBlock):
     basicBlock_(basicBlock)
 {
-    assert(basicBlock != NULL);
+    assert(basicBlock != nullptr);
 }
 
 JumpTarget::JumpTarget(const JumpTarget &other):
-    address_(other.address_ ? other.address_->clone() : NULL),
+    address_(other.address_ ? other.address_->clone() : nullptr),
     basicBlock_(other.basicBlock_),
-    table_(other.table_ ? new JumpTable(*other.table_) : NULL)
+    table_(other.table_ ? new JumpTable(*other.table_) : nullptr)
 {}
 
 JumpTarget::JumpTarget(JumpTarget &&other):
@@ -61,7 +61,7 @@ JumpTarget::JumpTarget(JumpTarget &&other):
 JumpTarget::~JumpTarget() {}
 
 void JumpTarget::setAddress(std::unique_ptr<Term> address) {
-    assert(address != NULL);
+    assert(address != nullptr);
     address_ = std::move(address);
 }
 

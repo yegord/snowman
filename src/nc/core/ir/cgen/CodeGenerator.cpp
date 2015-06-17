@@ -98,11 +98,11 @@ const likec::StructType *CodeGenerator::makeStructuralType(const types::Type *ty
     assert(typeTraits->findSet() == typeTraits);
 
     if (!typeTraits->isPointer()) {
-        return NULL;
+        return nullptr;
     }
 
     if (typeTraits->offsets().size() < 2) {
-        return NULL;
+        return nullptr;
     }
 
     auto i = traits2structType_.find(typeTraits);
@@ -125,7 +125,7 @@ const likec::StructType *CodeGenerator::makeStructuralType(const types::Type *ty
         }
     }
     if (!isStruct) {
-        return NULL;
+        return nullptr;
     }
 
     auto typeDeclaration = std::make_unique<likec::StructTypeDeclaration>(tree_, QString("s%1").arg(traits2structType_.size()));
@@ -159,7 +159,7 @@ const likec::StructType *CodeGenerator::makeStructuralType(const types::Type *ty
 #endif
 
 const likec::Type *CodeGenerator::makeVariableType(const vars::Variable *variable) {
-    assert(variable != NULL);
+    assert(variable != nullptr);
 
     foreach (auto termAndLocation, variable->termsAndLocations()) {
         if (termAndLocation.location == variable->memoryLocation()) {
@@ -171,7 +171,7 @@ const likec::Type *CodeGenerator::makeVariableType(const vars::Variable *variabl
 }
 
 likec::VariableDeclaration *CodeGenerator::makeGlobalVariableDeclaration(const vars::Variable *variable) {
-    assert(variable != NULL);
+    assert(variable != nullptr);
     assert(variable->isGlobal());
 
     if (auto result = nc::find(variableDeclarations_, variable)) {
@@ -197,7 +197,7 @@ likec::VariableDeclaration *CodeGenerator::makeGlobalVariableDeclaration(const v
 
 std::unique_ptr<likec::Expression> CodeGenerator::makeInitialValue(const MemoryLocation &memoryLocation, const likec::Type *type) {
     assert(memoryLocation);
-    assert(type != NULL);
+    assert(type != nullptr);
 
     if (memoryLocation.domain() == MemoryDomain::MEMORY &&
         memoryLocation.addr() % CHAR_BIT == 0 &&
@@ -218,13 +218,13 @@ std::unique_ptr<likec::Expression> CodeGenerator::makeInitialValue(const MemoryL
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 likec::FunctionDeclaration *CodeGenerator::makeFunctionDeclaration(ByteAddr addr) {
     auto signature = signatures().getSignature(addr).get();
     if (!signature) {
-        return NULL;
+        return nullptr;
     }
 
     if (auto declaration = nc::find(signature2declaration_, signature)) {
@@ -243,11 +243,11 @@ likec::FunctionDefinition *CodeGenerator::makeFunctionDefinition(const Function 
 }
 
 void CodeGenerator::setFunctionDeclaration(const calling::FunctionSignature *signature, likec::FunctionDeclaration *declaration) {
-    assert(signature != NULL);
-    assert(declaration != NULL);
+    assert(signature != nullptr);
+    assert(declaration != nullptr);
 
     auto &currentDeclaration = signature2declaration_[signature];
-    if (currentDeclaration == NULL) {
+    if (currentDeclaration == nullptr) {
         currentDeclaration = declaration;
     } else {
         declaration->setFirstDeclaration(currentDeclaration);

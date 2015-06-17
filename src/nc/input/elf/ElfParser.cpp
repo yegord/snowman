@@ -305,7 +305,7 @@ private:
                     break;
             }
 
-            const core::image::Section *section = NULL;
+            const core::image::Section *section = nullptr;
             if (sym.st_shndx < sections_.size() && sym.st_shndx != SHN_UNDEF) {
                 section = sections_[sym.st_shndx].get();
             }

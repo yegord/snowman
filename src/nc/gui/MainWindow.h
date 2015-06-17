@@ -105,9 +105,9 @@ public:
      * Constructor.
      *
      * \param[in] branding  Branding.
-     * \param[in] parent    Pointer to the parent widget. Can be NULL.
+     * \param[in] parent    Pointer to the parent widget. Can be nullptr.
      */
-    MainWindow(Branding branding, QWidget *parent = NULL);
+    MainWindow(Branding branding, QWidget *parent = nullptr);
 
     /**
      * Destructor.
@@ -135,7 +135,7 @@ public:
     QAction *quitAction() const { return quitAction_; }
 
     /**
-     * \return Valid pointer to the project. Can be NULL.
+     * \return Valid pointer to the project. Can be nullptr.
      */
     Project *project() { return project_.get(); }
 

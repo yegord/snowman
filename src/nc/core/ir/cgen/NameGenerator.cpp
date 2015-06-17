@@ -49,7 +49,7 @@ NameAndComment NameGenerator::getFunctionName(ByteAddr addr) const {
 }
 
 NameAndComment NameGenerator::getFunctionName(const image::Symbol *symbol) const {
-    assert(symbol != NULL);
+    assert(symbol != nullptr);
 
     QString name = cleanName(symbol->name());
     QString comment;
@@ -95,7 +95,7 @@ NameAndComment NameGenerator::getGlobalVariableName(ByteAddr addr) const {
 }
 
 NameAndComment NameGenerator::getGlobalVariableName(const image::Symbol *symbol) const {
-    assert(symbol != NULL);
+    assert(symbol != nullptr);
 
     auto name = cleanName(symbol->name());
     if (name == symbol->name()) {

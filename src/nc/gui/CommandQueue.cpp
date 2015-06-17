@@ -86,7 +86,7 @@ void CommandQueue::executeNext() {
 }
 
 void CommandQueue::commandFinished() {
-    assert(front_ != NULL);
+    assert(front_ != nullptr);
     front_.reset();
     executeNext();
 }

@@ -53,7 +53,7 @@ public:
     ParentTracker(boost::unordered_map<const core::likec::TreeNode *, const core::likec::TreeNode *> &map):
         map_(map)
     {
-        stack_.push_back(NULL);
+        stack_.push_back(nullptr);
     }
 
     /**

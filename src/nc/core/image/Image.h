@@ -74,7 +74,7 @@ public:
     ~Image();
 
     /**
-     * \return Pointer to the architecture. Can be NULL.
+     * \return Pointer to the architecture. Can be nullptr.
      */
     const arch::Architecture *architecture() const { return architecture_; }
 
@@ -119,7 +119,7 @@ public:
      * \param[in] addr Linear address.
      *
      * \return A valid pointer to allocated section containing given
-     *         virtual address or NULL if there is no such section.
+     *         virtual address or nullptr if there is no such section.
      */
     const Section *getSectionContainingAddress(ByteAddr addr) const;
 
@@ -127,7 +127,7 @@ public:
      * \param[in] name Section name.
      *
      * \return Valid pointer to a section with the given name,
-     *         NULL if there is no such section.
+     *         nullptr if there is no such section.
      */
     const Section *getSectionByName(const QString &name) const;
 
@@ -158,7 +158,7 @@ public:
      *
      * \param value Value of the symbol.
      *
-     * \return Pointer to a symbol with the given value. Can be NULL.
+     * \return Pointer to a symbol with the given value. Can be nullptr.
      */
     const Symbol *getSymbol(ConstantValue value) const;
 
@@ -174,7 +174,7 @@ public:
     /**
      * \param address Virtual address.
      *
-     * \return Pointer to a relocation for this address. Can be NULL.
+     * \return Pointer to a relocation for this address. Can be nullptr.
      */
     const Relocation *getRelocation(ByteAddr address) const;
 

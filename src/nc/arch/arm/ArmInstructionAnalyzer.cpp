@@ -67,14 +67,14 @@ public:
     {}
 
     void createStatements(const ArmInstruction *instruction, core::ir::Program *program) {
-        assert(instruction != NULL);
-        assert(program != NULL);
+        assert(instruction != nullptr);
+        assert(program != nullptr);
 
         program_ = program;
         instruction_ = instruction;
 
         instr_ = disassemble(instruction);
-        assert(instr_ != NULL);
+        assert(instr_ != nullptr);
         detail_ = &instr_->detail->arm;
 
         auto instructionBasicBlock = program_->getBasicBlockForInstruction(instruction_);
@@ -617,7 +617,7 @@ private:
     static std::unique_ptr<core::ir::Term> createShiftValue(const cs_arm_op &operand) {
         switch (operand.shift.type) {
             case ARM_SFT_INVALID:
-                return NULL;
+                return nullptr;
             case ARM_SFT_ASR: /* FALLTHROUGH */
             case ARM_SFT_LSL: /* FALLTHROUGH */
             case ARM_SFT_LSR: /* FALLTHROUGH */

@@ -44,7 +44,7 @@ namespace nc { namespace gui {
 SearchWidget::SearchWidget(std::unique_ptr<Searcher> searcher, QWidget *parent):
     QWidget(parent), searcher_(std::move(searcher))
 {
-    assert(searcher_ != NULL);
+    assert(searcher_ != nullptr);
 
     auto supportedFlags = searcher_->supportedFlags();
 

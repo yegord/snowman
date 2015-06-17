@@ -36,7 +36,7 @@ namespace core {
 namespace ir {
 namespace cflow {
 
-Graph::Graph(): root_(NULL) {}
+Graph::Graph(): root_(nullptr) {}
 
 Graph::~Graph() {}
 

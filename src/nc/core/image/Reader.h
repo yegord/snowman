@@ -57,7 +57,7 @@ public:
     Reader(const ByteSource *externalByteSource):
         externalByteSource_(externalByteSource)
     {
-        assert(externalByteSource_ != NULL);
+        assert(externalByteSource_ != nullptr);
     }
 
     /**
@@ -112,7 +112,7 @@ public:
      * \param[in] addr      Linear address of the first byte to read.
      * \param[in] maxSize   Max number of bytes to read.
      *
-     * \return ASCIIZ string without zero char terminator on success, NULL string on failure.
+     * \return ASCIIZ string without zero char terminator on success, nullptr string on failure.
      */
     QString readAsciizString(ByteAddr addr, ByteSize maxSize) const;
 };

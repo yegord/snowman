@@ -48,9 +48,9 @@ DeclarationGenerator::DeclarationGenerator(CodeGenerator &parent, const calling:
     parent_(parent),
     calleeId_(calleeId),
     signature_(signature),
-    declaration_(NULL)
+    declaration_(nullptr)
 {
-    assert(signature != NULL);
+    assert(signature != nullptr);
 }
 
 void DeclarationGenerator::setDeclaration(likec::FunctionDeclaration *declaration) {

@@ -67,14 +67,14 @@ public:
     Jump(JumpTarget thenTarget);
 
     /**
-     * \return Pointer to the term representing jump condition. NULL for unconditional jump.
+     * \return Pointer to the term representing jump condition, nullptr for unconditional jump.
      */
     const Term *condition() const { return condition_.get(); }
 
     /**
      * \return True if this is a conditional jump, false if this is an unconditional jump.
      */
-    bool isConditional() const { return condition() != NULL; }
+    bool isConditional() const { return condition() != nullptr; }
 
     /**
      * \return True if this is a unconditional jump, false if this is an conditional jump.
