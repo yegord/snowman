@@ -24,3 +24,4 @@ gmon.out
 
 # Python's byte code files.
 *.pyc
+bin/*
