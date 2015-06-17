@@ -10,7 +10,7 @@
 namespace nc { namespace arch { namespace mips {
 
 /**
- * Container class for ARM registers.
+ * Container class for MIPS registers.
  */
 class MipsRegisters: public core::arch::StaticRegisters<MipsRegisters> {
 public:

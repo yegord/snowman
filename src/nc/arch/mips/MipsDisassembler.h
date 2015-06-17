@@ -17,9 +17,9 @@ namespace mips {
 class MipsArchitecture;
 
 /**
- * Disassembler for ARM architecture.
+ * Disassembler for MIPS architecture.
  *
- * TODO: Support for THUMB instructions.
+ * TODO: Support for MIPS16 instructions.
  */
 class MipsDisassembler: public core::arch::Disassembler {
     std::unique_ptr<core::arch::Capstone> capstone_;
@@ -27,7 +27,7 @@ class MipsDisassembler: public core::arch::Disassembler {
 
 public:
     /**
-     * \param architecture Valid pointer to the ARM architecture.
+     * \param architecture Valid pointer to the MIPS architecture.
      */
     MipsDisassembler(const MipsArchitecture *architecture);
 

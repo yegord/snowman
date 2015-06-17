@@ -12,7 +12,7 @@ namespace arch {
 namespace mips {
 
 /**
- * 32-bit ARM Architecture.
+ * 32-bit MIPS Architecture.
  */
 class MipsArchitecture: public nc::core::arch::Architecture {
     ByteOrder byteOrder_;
