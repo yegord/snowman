@@ -176,6 +176,13 @@ private:
                     image_->setArchitecture(QLatin1String("arm-be"));
                 }
                 break;
+            case EM_MIPS:
+                if (byteOrder_ == ByteOrder::LittleEndian) {
+                    image_->setArchitecture(QLatin1String("mips-le"));
+                } else {
+                    image_->setArchitecture(QLatin1String("mips-be"));
+                }
+                break;
             default:
                 throw core::input::ParseError(tr("Unknown machine id: %1.").arg(ehdr_.e_machine));
         }

@@ -653,6 +653,7 @@ void MainWindow::about() {
         "<p>This is version %2.</p>"
         "<p>%1 supports the following architectures (powered by <a href=\"http://www.capstone-engine.org/\">Capstone</a>):<ul>"
         "<li>ARM (little endian, big endian),</li>"
+        "<li>MIPS (little endian, big endian),</li>"
         "<li>Intel x86,</li>"
         "<li>Intel x86-64.</li>"
         "</ul></p>"
