@@ -176,7 +176,8 @@ private:
                     image_->setArchitecture(QLatin1String("arm-be"));
                 }
                 break;
-            case EM_MIPS:
+            case EM_MIPS: /* FALL Through */
+            case EM_MIPS_RS3_LE:
                 if (byteOrder_ == ByteOrder::LittleEndian) {
                     image_->setArchitecture(QLatin1String("mips-le"));
                 } else {
