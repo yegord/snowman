@@ -243,6 +243,7 @@ private:
         case ARM_INS_LDREX: { // TODO: atomic
             _[operand(0) ^= operand(1)];
             handleWriteback(bodyBasicBlock, 1);
+            handleWriteToPC(bodyBasicBlock);
             break;
         }
         case ARM_INS_LDRH:
@@ -250,12 +251,14 @@ private:
         case ARM_INS_LDREXH: { // TODO: atomic
             _[operand(0) ^= zero_extend(operand(1, 16))];
             handleWriteback(bodyBasicBlock, 1);
+            handleWriteToPC(bodyBasicBlock);
             break;
         }
         case ARM_INS_LDRSH:
         case ARM_INS_LDRSHT: {
             _[operand(0) ^= sign_extend(operand(1, 16))];
             handleWriteback(bodyBasicBlock, 1);
+            handleWriteToPC(bodyBasicBlock);
             break;
         }
         case ARM_INS_LDRB:
@@ -263,12 +266,14 @@ private:
         case ARM_INS_LDREXB: { // TODO: atomic
             _[operand(0) ^= zero_extend(operand(1, 8))];
             handleWriteback(bodyBasicBlock, 1);
+            handleWriteToPC(bodyBasicBlock);
             break;
         }
         case ARM_INS_LDRSB:
         case ARM_INS_LDRSBT: {
             _[operand(0) ^= sign_extend(operand(1, 8))];
             handleWriteback(bodyBasicBlock, 1);
+            handleWriteToPC(bodyBasicBlock);
             break;
         }
         // TODO case ARM_INS_LDRD:

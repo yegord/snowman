@@ -44,6 +44,8 @@
 #include "X86Instruction.h"
 #include "X86Registers.h"
 
+#include "udis86.h"
+
 namespace nc {
 namespace arch {
 namespace x86 {
@@ -113,7 +115,9 @@ void X86MasterAnalyzer::detectCallingConventions(core::Context &context) const {
             context.conventions()->setStackArgumentsSize(calleeId, *argumentsSize);
         }
 
-        core::arch::Capstone capstone(CS_ARCH_X86, 0);
+        ud_t ud_obj_;
+        ud_init(&ud_obj_);
+        ud_set_mode(&ud_obj_, context.image()->architecture()->bitness());
 
         foreach (auto function, context.functions()->list()) {
             if (!function->entry()->address()) {
@@ -129,23 +133,25 @@ void X86MasterAnalyzer::detectCallingConventions(core::Context &context) const {
                     continue;
                 }
 
-                capstone.setMode(instruction->csMode());
-                auto capstoneInstruction =
-                    capstone.disassemble(instruction->addr(), instruction->bytes(), instruction->size());
-                assert(capstoneInstruction);
+                ud_set_pc(&ud_obj_, instruction->addr());
+                ud_set_input_buffer(&ud_obj_, const_cast<uint8_t *>(instruction->bytes()),
+                                    checked_cast<std::size_t>(instruction->size()));
+                ud_disassemble(&ud_obj_);
 
-                if (capstoneInstruction->id != X86_INS_RET) {
+                assert(ud_obj_.mnemonic != UD_Iinvalid);
+
+                if (ud_obj_.mnemonic != UD_Iret) {
                     continue;
                 }
-                auto detail = &capstoneInstruction->detail->x86;
-                if (detail->op_count != 1) {
+
+                if (ud_obj_.operand[0].type == UD_NONE) {
                     continue;
                 }
-                assert(detail->operands[0].type == X86_OP_IMM);
+                assert(ud_obj_.operand[0].type == UD_OP_IMM && ud_obj_.operand[0].size == 16);
 
                 CalleeId calleeId(EntryAddress(*function->entry()->address()));
                 context.conventions()->setConvention(calleeId, stdcall32);
-                context.conventions()->setStackArgumentsSize(calleeId, detail->operands[0].imm);
+                context.conventions()->setStackArgumentsSize(calleeId, ud_obj_.operand[0].lval.uword);
             }
         }
     }

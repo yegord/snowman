@@ -26,10 +26,9 @@ class ArmDisassembler: public core::arch::Disassembler {
     int mode_;
 
 public:
-    /**
-     * \param architecture Valid pointer to the ARM architecture.
-     */
     ArmDisassembler(const ArmArchitecture *architecture);
+
+    virtual ~ArmDisassembler();
 
     std::shared_ptr<core::arch::Instruction> disassembleSingleInstruction(ByteAddr pc, const void *buffer, ByteSize size) override;
 };

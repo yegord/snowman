@@ -16,12 +16,6 @@ namespace nc {
 namespace core {
 namespace arch {
 
-/**
- * An instruction containing sufficient information to be disassembled by Capstone.
- *
- * \tparam csArchitecture_ Architecture id, as in Capstone.
- * \tparal maxSize_ Max size of the instruction on this architecture.
- */
 template<cs_arch csArchitecture_, SmallByteSize maxSize_>
 class CapstoneInstruction: public Instruction {
     /** Encoding mode of this instruction, as denoted in Capstone. */

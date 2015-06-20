@@ -55,7 +55,7 @@ X86Architecture::X86Architecture(Mode mode) {
         unreachable();
     }
 
-    setMaxInstructionSize(X86Instruction::maxSize());
+    setMaxInstructionSize(X86Instruction::MAX_SIZE);
 }
 
 X86Architecture::~X86Architecture() {}
