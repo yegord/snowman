@@ -24,6 +24,8 @@ MipsDisassembler::MipsDisassembler(const MipsArchitecture *architecture):
     capstone_ = std::make_unique<core::arch::Capstone>(CS_ARCH_MIPS, mode_);
 }
 
+MipsDisassembler::~MipsDisassembler() {}
+
 std::shared_ptr<core::arch::Instruction> MipsDisassembler::disassembleSingleInstruction(ByteAddr pc, const void *buffer, ByteSize size) {
     if (auto instr = capstone_->disassemble(pc, buffer, size, 1)) {
         /* Instructions must be aligned to their size. */

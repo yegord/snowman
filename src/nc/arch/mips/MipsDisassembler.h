@@ -31,6 +31,8 @@ public:
      */
     MipsDisassembler(const MipsArchitecture *architecture);
 
+    virtual ~MipsDisassembler();
+
     std::shared_ptr<core::arch::Instruction> disassembleSingleInstruction(ByteAddr pc, const void *buffer, ByteSize size) override;
 };
 
