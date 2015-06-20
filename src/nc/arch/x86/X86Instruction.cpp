@@ -22,37 +22,29 @@
 // along with SmartDec decompiler.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "X86Disassembler.h"
-
-#include <nc/common/CheckedCast.h>
-
-#include "X86Architecture.h"
 #include "X86Instruction.h"
+
+#include <QTextStream>
+
+#include "udis86.h"
 
 namespace nc {
 namespace arch {
 namespace x86 {
 
-X86Disassembler::X86Disassembler(const X86Architecture *architecture): core::arch::Disassembler(architecture) {
-    ud_init(&ud_obj_);
-    ud_set_mode(&ud_obj_, architecture->bitness());
-}
+void X86Instruction::print(QTextStream &out) const {
+    ud_t ud_obj;
 
-std::shared_ptr<core::arch::Instruction> X86Disassembler::disassembleSingleInstruction(ByteAddr pc, const void *buffer, ByteSize size) {
-    ud_set_pc(&ud_obj_, pc);
-    ud_set_input_buffer(&ud_obj_, const_cast<uint8_t *>(static_cast<const uint8_t *>(buffer)), checked_cast<std::size_t>(size));
+    ud_init(&ud_obj);
+    ud_set_mode(&ud_obj, bitness_);
+    ud_set_syntax(&ud_obj, UD_SYN_INTEL);
+    ud_set_pc(&ud_obj, addr());
+    ud_set_input_buffer(&ud_obj, const_cast<uint8_t *>(bytes()), size());
+    ud_disassemble(&ud_obj);
 
-    SmallByteSize instructionSize = ud_disassemble(&ud_obj_);
-    if (!instructionSize || ud_obj_.mnemonic == UD_Iinvalid) {
-        return nullptr;
-    }
+    assert(ud_obj.mnemonic != UD_Iinvalid);
 
-    if (instructionSize > X86Instruction::MAX_SIZE) {
-        /* Too many prefixes. Skip them. */
-        return nullptr;
-    }
-
-    return std::make_shared<X86Instruction>(ud_obj_.dis_mode, pc, instructionSize, buffer);
+    out << ud_insn_asm(&ud_obj);
 }
 
 } // namespace x86

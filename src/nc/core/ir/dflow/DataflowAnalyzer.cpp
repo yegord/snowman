@@ -219,6 +219,7 @@ Value *DataflowAnalyzer::computeValue(const Term *term, const ExecutionContext &
             value->setAbstractValue(constant->value());
             value->makeNotStackOffset();
             value->makeNotProduct();
+            value->makeNotReturnAddress();
             return value;
         }
         case Term::INTRINSIC: {
@@ -439,7 +440,7 @@ Value *DataflowAnalyzer::computeValue(const Term *term, const MemoryLocation &me
             auto definitionValue = dataflow().getValue(definition);
             if (definitionValue->isNotReturnAddress()) {
                 value->makeNotReturnAddress();
-            } else {
+            } else if (definitionValue->isReturnAddress()) {
                 value->makeReturnAddress();
             }
         }

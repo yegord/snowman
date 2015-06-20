@@ -37,7 +37,7 @@ void Disassembler::disassemble(const image::ByteSource *source, ByteAddr begin, 
 
         if (instruction) {
             assert(instruction->size() > 0);
-            pc += instruction->size();
+            pc = instruction->endAddr();
             callback(std::move(instruction));
         } else {
             ++pc;
