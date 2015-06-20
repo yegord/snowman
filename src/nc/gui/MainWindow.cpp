@@ -651,14 +651,9 @@ void MainWindow::about() {
         "<h3>About %1</h3>"
         "<p>%1 is a native code to C/C++ decompiler.</p>"
         "<p>This is version %2.</p>"
-<<<<<<< HEAD
-        "<p>%1 supports the following architectures (powered by <a href=\"http://www.capstone-engine.org/\">Capstone</a>):<ul>"
-        "<li>ARM (little endian, big endian),</li>"
-        "<li>MIPS (little endian, big endian),</li>"
-=======
         "<p>%1 supports the following architectures:<ul>"
         "<li>ARM (little endian, big endian, powered by <a href=\"http://http://www.capstone-engine.org/\">Capstone</a>),</li>"
->>>>>>> 3d6ff23a8ff6ecee60e527728009ffddd379a496
+        "<li>MIPS (little endian, big endian, powered by <a href=\"http://http://www.capstone-engine.org/\">Capstone</a>),</li>"
         "<li>Intel x86,</li>"
         "<li>Intel x86-64.</li>"
         "</ul></p>"
