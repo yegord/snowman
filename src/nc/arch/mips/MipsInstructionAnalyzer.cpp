@@ -36,18 +36,8 @@ public:
 
 typedef core::irgen::expressions::ExpressionFactoryCallback<MipsExpressionFactory> MipsExpressionFactoryCallback;
 
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, z)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, n)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, c)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, v)
-
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, pseudo_flags)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, less)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, less_or_equal)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, below_or_equal)
-
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, zero)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, sp)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, pc)
 
 } // anonymous namespace
 
@@ -78,23 +68,18 @@ public:
         detail_ = &instr_->detail->mips;
 
         auto instructionBasicBlock = program_->getBasicBlockForInstruction(instruction_);
-#if 0
-        if (detail_->cc == ARM_CC_AL) {
-            createBody(instructionBasicBlock);
-        } else {
-            auto directSuccessor = program_->createBasicBlock(instruction_->endAddr());
+        
+        auto directSuccessor = program_->createBasicBlock(instruction_->endAddr());
 
-            auto bodyBasicBlock = program_->createBasicBlock();
-            createCondition(instructionBasicBlock, bodyBasicBlock, directSuccessor);
-            createBody(bodyBasicBlock);
+        auto bodyBasicBlock = program_->createBasicBlock();
+        createCondition(instructionBasicBlock, bodyBasicBlock, directSuccessor);
+        createBody(bodyBasicBlock);
 
-            if (!bodyBasicBlock->getTerminator()) {
+         if (!bodyBasicBlock->getTerminator()) {
                 using namespace core::irgen::expressions;
                 MipsExpressionFactoryCallback _(factory_, bodyBasicBlock, instruction);
                 _[jump(directSuccessor)];
-            }
-        }
-#endif
+          }
     }
 
 private:
@@ -311,7 +296,7 @@ private:
         }
         case ARM_INS_POP: {
             for (int i = 0; i < detail_->op_count; ++i) {
-                if (getOperandRegister(i) != ARM_REG_SP) {
+                if (getOperandRegister(i) != MIPS_REG_SP) {
                     _[operand(i) ^= *(sp + constant(4 * i))];
                 }
             }
@@ -417,11 +402,11 @@ private:
             throw core::irgen::InvalidInstructionException(tr("Strange number of registers."));
         }
         for (int i = 0; i < memOperandIndex; ++i) {
-            if (detail_->operands[i].type != ARM_OP_REG) {
+            if (detail_->operands[i].type != MIPS_OP_REG) {
                 throw core::irgen::InvalidInstructionException(tr("Expected the first %1 operand(s) to be register(s).").arg(memOperandIndex));
             }
         }
-        if (detail_->operands[memOperandIndex].type != ARM_OP_MEM) {
+        if (detail_->operands[memOperandIndex].type != MIPS_OP_MEM) {
             throw core::irgen::InvalidInstructionException(tr("Expected the %1s operand to be a memory operand.").arg(memOperandIndex));
         }
 
@@ -443,7 +428,7 @@ private:
     }
 
     bool handleWriteToPC(core::ir::BasicBlock *bodyBasicBlock, int modifiedOperandIndex = 0) {
-        if (getOperandRegister(modifiedOperandIndex) == ARM_REG_PC) {
+        if (getOperandRegister(modifiedOperandIndex) == MIPS_REG_PC) {
             using namespace core::irgen::expressions;
             MipsExpressionFactoryCallback _(factory_, bodyBasicBlock, instruction_);
             _[jump(pc)];
@@ -462,7 +447,7 @@ private:
         if (operand.type == ARM_OP_REG) {
             return operand.reg;
         } else {
-            return ARM_REG_INVALID;
+            return MIPS_REG_INVALID;
         }
     }
 
@@ -651,120 +636,40 @@ private:
     static const core::arch::Register *getRegister(int reg) {
         switch (reg) {
         #define REG(lowercase, uppercase) \
-            case ARM_REG_##uppercase: return MipsRegisters::lowercase();
-        REG(apsr,       APSR)
-        REG(apsr_nzcv,  APSR_NZCV)
-        REG(cpsr,       CPSR)
-        REG(fpexc,      FPEXC)
-        REG(fpinst,     FPINST)
-        REG(fpinst2,    FPINST2)
-        REG(fpscr,      FPSCR)
-        REG(fpscr_nzcv, FPSCR_NZCV)
-        REG(fpsid,      FPSID)
-        REG(itstate,    ITSTATE)
-        REG(lr,         LR)
-        REG(mvfr0,      MVFR0)
-        REG(mvfr1,      MVFR1)
-        REG(mvfr2,      MVFR2)
-        REG(pc,         PC)
-        REG(sp,         SP)
-        REG(spsr,       SPSR)
-
-        REG(r0,         R0)
-        REG(r1,         R1)
-        REG(r2,         R2)
-        REG(r3,         R3)
-        REG(r4,         R4)
-        REG(r5,         R5)
-        REG(r6,         R6)
-        REG(r7,         R7)
-        REG(r8,         R8)
-        REG(r9,         R9)
-        REG(r10,        R10)
-        REG(r11,        R11)
-        REG(r12,        R12)
-        REG(s0,         S0)
-        REG(s1,         S1)
-        REG(s2,         S2)
-        REG(s3,         S3)
-        REG(s4,         S4)
-        REG(s5,         S5)
-        REG(s6,         S6)
-        REG(s7,         S7)
-        REG(s8,         S8)
-        REG(s9,         S9)
-        REG(s10,        S10)
-        REG(s11,        S11)
-        REG(s12,        S12)
-        REG(s13,        S13)
-        REG(s14,        S14)
-        REG(s15,        S15)
-        REG(s16,        S16)
-        REG(s17,        S17)
-        REG(s18,        S18)
-        REG(s19,        S19)
-        REG(s20,        S20)
-        REG(s21,        S21)
-        REG(s22,        S22)
-        REG(s23,        S23)
-        REG(s24,        S24)
-        REG(s25,        S25)
-        REG(s26,        S26)
-        REG(s27,        S27)
-        REG(s28,        S28)
-        REG(s29,        S29)
-        REG(s30,        S30)
-        REG(s31,        S31)
-
-        REG(d0,         D0)
-        REG(d1,         D1)
-        REG(d2,         D2)
-        REG(d3,         D3)
-        REG(d4,         D4)
-        REG(d5,         D5)
-        REG(d6,         D6)
-        REG(d7,         D7)
-        REG(d8,         D8)
-        REG(d9,         D9)
-        REG(d10,        D10)
-        REG(d11,        D11)
-        REG(d12,        D12)
-        REG(d13,        D13)
-        REG(d14,        D14)
-        REG(d15,        D15)
-        REG(d16,        D16)
-        REG(d17,        D17)
-        REG(d18,        D18)
-        REG(d19,        D19)
-        REG(d20,        D20)
-        REG(d21,        D21)
-        REG(d22,        D22)
-        REG(d23,        D23)
-        REG(d24,        D24)
-        REG(d25,        D25)
-        REG(d26,        D26)
-        REG(d27,        D27)
-        REG(d28,        D28)
-        REG(d29,        D29)
-        REG(d30,        D30)
-        REG(d31,        D31)
-
-        REG(q0,         Q0)
-        REG(q1,         Q1)
-        REG(q2,         Q2)
-        REG(q3,         Q3)
-        REG(q4,         Q4)
-        REG(q5,         Q5)
-        REG(q6,         Q6)
-        REG(q7,         Q7)
-        REG(q8,         Q8)
-        REG(q9,         Q9)
-        REG(q10,        Q10)
-        REG(q11,        Q11)
-        REG(q12,        Q12)
-        REG(q13,        Q13)
-        REG(q14,        Q14)
-        REG(q15,        Q15)
+            case MIPS_REG_##uppercase: return MipsRegisters::lowercase();
+			REG(zero,	ZERO)
+			REG(at,     AT)
+			REG(v0,     V0)
+			REG(v1,     V1)
+			REG(a0,     A0)
+			REG(a1,     A1)
+			REG(a2,     A2)
+			REG(a3,     A3)
+			REG(t0,     T0)
+			REG(t1,     T1)
+			REG(t2,     T2)
+			REG(t3,     T3)
+			REG(t4,     T4)
+			REG(t5,     T5)
+			REG(t6,     T6)
+			REG(t7,     T7)
+			REG(s0,     S0)
+			REG(s1,     S1)
+			REG(s2,     S2)
+			REG(s3,     S3)
+			REG(s4,     S4)
+			REG(s5,     S5)
+			REG(s6,     S6)
+			REG(s7,     S7)
+			REG(t8,     T8)
+			REG(t9,     T9)
+			REG(k0,     K0)
+			REG(k1,     K1)
+			REG(gp,     GP)
+			REG(sp,     SP)
+			REG(fp,     FP)
+			/*REG(s8,     S8)*/
+			REG(ra,     RA)
         #undef REG
 
         default:
