@@ -139,13 +139,17 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 # This is used to produce standalone bundles on Windows.
 include(DeployQt4)
 
-add_subdirectory(3rd-party)
 add_subdirectory(nc)
 add_subdirectory(nocode)
 add_subdirectory(snowman)
-
 if(${IDA_PLUGIN_ENABLED})
     add_subdirectory(ida-plugin)
 endif()
+
+# Prevent 3rd-party modules from installing anything.
+macro(install)
+endmacro(install)
+
+add_subdirectory(3rd-party)
 
 # vim:set et sts=4 sw=4 nospell:
