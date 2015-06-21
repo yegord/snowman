@@ -29,11 +29,12 @@ DefaultCallingConvention::DefaultCallingConvention():
     args.push_back(MipsRegisters::a3()->memoryLocation());
     addArgumentGroup(std::move(args));
 
-    addReturnValueLocation(MipsRegisters::r0()->memoryLocation());
+    addReturnValueLocation(MipsRegisters::v0()->memoryLocation());
+    addReturnValueLocation(MipsRegisters::v1()->memoryLocation());
 
     addEnterStatement(std::make_unique<core::ir::Assignment>(
-        std::make_unique<core::ir::MemoryLocationAccess>(MipsRegisters::lr()->memoryLocation()),
-        std::make_unique<core::ir::Intrinsic>(core::ir::Intrinsic::RETURN_ADDRESS, MipsRegisters::lr()->size())
+        std::make_unique<core::ir::MemoryLocationAccess>(MipsRegisters::ra()->memoryLocation()),
+        std::make_unique<core::ir::Intrinsic>(core::ir::Intrinsic::RETURN_ADDRESS, MipsRegisters::ra()->size())
     ));
 }
 
