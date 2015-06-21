@@ -24,7 +24,7 @@
 REG(zero,	ZERO,	0,	0,	32, "Always contains zero")
 REG(at,     AT, 	0,	1,	32, "Assembler temporary register")
 REG(v0,     V0, 	0,	2,	32, "Return value 0")
-REG(v1,     V1 		0,	3,	32, "Return value 1")
+REG(v1,     V1, 	0,	3,	32, "Return value 1")
 REG(a0,     A0, 	0,	4,	32, "Calling value 0")
 REG(a1,     A1, 	0,	5,	32, "Calling value 1")
 REG(a2,     A2, 	0,	6,	32, "Calling value 2")

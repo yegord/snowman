@@ -23,10 +23,10 @@ DefaultCallingConvention::DefaultCallingConvention():
     setArgumentAlignment(32);
 
     std::vector<core::ir::MemoryLocation> args;
-    args.push_back(MipsRegisters::r0()->memoryLocation());
-    args.push_back(MipsRegisters::r1()->memoryLocation());
-    args.push_back(MipsRegisters::r2()->memoryLocation());
-    args.push_back(MipsRegisters::r3()->memoryLocation());
+    args.push_back(MipsRegisters::a0()->memoryLocation());
+    args.push_back(MipsRegisters::a1()->memoryLocation());
+    args.push_back(MipsRegisters::a2()->memoryLocation());
+    args.push_back(MipsRegisters::a3()->memoryLocation());
     addArgumentGroup(std::move(args));
 
     addReturnValueLocation(MipsRegisters::r0()->memoryLocation());
