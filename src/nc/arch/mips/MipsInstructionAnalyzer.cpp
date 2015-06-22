@@ -64,7 +64,9 @@ public:
         instruction_ = instruction;
 
         instr_ = disassemble(instruction);
-        assert(instr_ != nullptr);
+        /*assert(instr_ != nullptr);*/
+        if(instr_ == nullptr)
+        	return;
         detail_ = &instr_->detail->mips;
 
         auto instructionBasicBlock = program_->getBasicBlockForInstruction(instruction_);
