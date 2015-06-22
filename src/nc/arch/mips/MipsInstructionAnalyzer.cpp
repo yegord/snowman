@@ -92,72 +92,18 @@ private:
         using namespace core::irgen::expressions;
 
         MipsExpressionFactoryCallback _(factory_, conditionBasicBlock, instruction_);
-#if 0
-        switch (detail_->cc) {
-        case ARM_CC_INVALID:
-            throw core::irgen::InvalidInstructionException(tr("Invalid condition code."));
-        case ARM_CC_EQ:
-            _[jump( z, bodyBasicBlock, directSuccessor)];
-            break;
-        case ARM_CC_NE:
-            _[jump(~z, bodyBasicBlock, directSuccessor)];
-            break;
-        case ARM_CC_HS:
-            _[jump( c, bodyBasicBlock, directSuccessor)];
-            break;
-        case ARM_CC_LO:
-            _[jump(~c, bodyBasicBlock, directSuccessor)];
-            break;
-        case ARM_CC_MI:
-            _[jump( n, bodyBasicBlock, directSuccessor)];
-            break;
-        case ARM_CC_PL:
-            _[jump(~n, bodyBasicBlock, directSuccessor)];
-            break;
-        case ARM_CC_VS:
-            _[jump( v, bodyBasicBlock, directSuccessor)];
-            break;
-        case ARM_CC_VC:
-            _[jump(~v, bodyBasicBlock, directSuccessor)];
-            break;
-        case ARM_CC_HI:
-            _[jump(~choice(below_or_equal, ~c | z), bodyBasicBlock, directSuccessor)];
-            break;
-        case ARM_CC_LS:
-            _[jump(choice(below_or_equal, ~c | z), bodyBasicBlock, directSuccessor)];
-            break;
-        case ARM_CC_GE:
-            _[jump(~choice(less, ~(n == v)), bodyBasicBlock, directSuccessor)];
-            break;
-        case ARM_CC_LT:
-            _[jump(choice(less, ~(n == v)), bodyBasicBlock, directSuccessor)];
-            break;
-        case ARM_CC_GT:
-            _[jump(~choice(less_or_equal, z | ~(n == v)), bodyBasicBlock, directSuccessor)];
-            break;
-        case ARM_CC_LE:
-            _[jump(choice(less_or_equal, z | ~(n == v)), bodyBasicBlock, directSuccessor)];
-            break;
-        default:
-            unreachable();
-        };
-#endif
-    }
+     }
 
     void createBody(core::ir::BasicBlock *bodyBasicBlock) {
         using namespace core::irgen::expressions;
 
         MipsExpressionFactoryCallback _(factory_, bodyBasicBlock, instruction_);
-#if 0
-        /*
-         * When executing an ARM instruction, PC reads as the address of the current instruction plus 8.
-         * When executing a Thumb instruction, PC reads as the address of the current instruction plus 4.
-         * Writing an address to PC causes a branch to that address.
-         */
-        _[
-            pc ^= constant(instruction_->addr() + 2 * instruction_->size())
-        ];
+
         switch (instr_->id) {
+        case MIPS_INS_NOP: {
+        	break;
+        }
+#if 0
         case ARM_INS_ADD: {
             _[operand(0) ^= operand(1) + operand(2)];
             if (!handleWriteToPC(bodyBasicBlock)) {
@@ -388,12 +334,13 @@ private:
             ];
             break;
         }
+#endif
         default: {
             _(std::make_unique<core::ir::InlineAssembly>());
             break;
         }
         } /* switch */
-#endif
+
     }
 
     void handleWriteback(core::ir::BasicBlock *bodyBasicBlock, int memOperandIndex) {
@@ -423,19 +370,12 @@ private:
             auto base = regizter(getRegister(detail_->operands[memOperandIndex].mem.base));
             _[base ^= base + constant(detail_->operands[memOperandIndex].mem.disp)];
         }
+#else
+      if (detail_->op_count == memOperandIndex + 2) {
+            auto base = regizter(getRegister(detail_->operands[memOperandIndex].mem.base));
+                _[base ^= base + operand(memOperandIndex + 1)];
+      }
 #endif
-    }
-
-    bool handleWriteToPC(core::ir::BasicBlock *bodyBasicBlock, int modifiedOperandIndex = 0) {
-#if 0
-        if (getOperandRegister(modifiedOperandIndex) == MIPS_REG_PC) {
-            using namespace core::irgen::expressions;
-            MipsExpressionFactoryCallback _(factory_, bodyBasicBlock, instruction_);
-            _[jump(pc)];
-            return true;
-        }
-#endif
-        return false;
     }
 
     unsigned int getOperandRegister(std::size_t index) const {
@@ -462,18 +402,11 @@ private:
 
     static std::unique_ptr<core::ir::Term> createTermForOperand(const cs_mips_op &operand, SmallBitSize sizeHint) {
         switch (operand.type) {
-            case ARM_OP_REG:
-                return applyShift(operand, std::make_unique<core::ir::MemoryLocationAccess>(
-                                               getRegister(operand.reg)->memoryLocation().resized(sizeHint)));
-            case ARM_OP_CIMM:
-                throw core::irgen::InvalidInstructionException(tr("Don't know how to deal with CIMM operands."));
-            case ARM_OP_PIMM:
-                throw core::irgen::InvalidInstructionException(tr("Don't know how to deal with PIMM operands."));
-            case ARM_OP_IMM:
+            case MIPS_OP_REG:
+                return applyShift(operand, std::make_unique<core::ir::MemoryLocationAccess>(getRegister(operand.reg)->memoryLocation().resized(sizeHint)));
+            case MIPS_OP_IMM:
                 return applyShift(operand, std::make_unique<core::ir::Constant>(SizedValue(sizeHint, operand.imm)));
-            case ARM_OP_FP:
-                throw core::irgen::InvalidInstructionException(tr("Don't know how to deal with FP operands."));
-            case ARM_OP_MEM:
+            case MIPS_OP_MEM:
                 return std::make_unique<core::ir::Dereference>(createDereferenceAddress(operand), core::ir::MemoryDomain::MEMORY, sizeHint);
             default:
                 unreachable();
@@ -481,7 +414,7 @@ private:
     }
 
     static std::unique_ptr<core::ir::Term> createDereferenceAddress(const cs_mips_op &operand) {
-        if (operand.type != ARM_OP_MEM) {
+        if (operand.type != MIPS_OP_MEM) {
             throw core::irgen::InvalidInstructionException(tr("Expected the operand to be a memory operand"));
         }
 
@@ -514,8 +447,10 @@ private:
 
     static std::unique_ptr<core::ir::Term> applyShift(const cs_mips_op &operand, std::unique_ptr<core::ir::Term> result) {
         auto size = result->size();
+        return result;
 #if 0
         switch (operand.shift.type) {
+
             case ARM_SFT_INVALID: {
                 return result;
             }
@@ -603,31 +538,6 @@ private:
                     std::move(bb),
                     size),
                 size);
-    }
-
-    static std::unique_ptr<core::ir::Term> createShiftValue(const cs_mips_op &operand) {
-#if 0
-        switch (operand.shift.type) {
-            case ARM_SFT_INVALID:
-                return nullptr;
-            case ARM_SFT_ASR: /* FALLTHROUGH */
-            case ARM_SFT_LSL: /* FALLTHROUGH */
-            case ARM_SFT_LSR: /* FALLTHROUGH */
-            case ARM_SFT_ROR: /* FALLTHROUGH */
-            case ARM_SFT_RRX: {
-                return std::make_unique<core::ir::Constant>(SizedValue(sizeof(operand.shift.value) * CHAR_BIT, operand.shift.value));
-            }
-            case ARM_SFT_ASR_REG: /* FALLTHROUGH */
-            case ARM_SFT_LSL_REG: /* FALLTHROUGH */
-            case ARM_SFT_LSR_REG: /* FALLTHROUGH */
-            case ARM_SFT_ROR_REG: /* FALLTHROUGH */
-            case ARM_SFT_RRX_REG: {
-                auto reg = getRegister(operand.shift.value);
-                return std::make_unique<core::ir::MemoryLocationAccess>(reg->memoryLocation());
-            }
-        }
-        unreachable();
-#endif
     }
 
     static std::unique_ptr<core::ir::Term> createRegisterAccess(int reg) {
