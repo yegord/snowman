@@ -44,6 +44,7 @@ NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, sp)
 class MipsInstructionAnalyzerImpl {
     Q_DECLARE_TR_FUNCTIONS(MipsInstructionAnalyzerImpl)
 
+	const MipsArchitecture *architecture_;
     core::arch::Capstone capstone_;
     MipsExpressionFactory factory_;
     core::ir::Program *program_;
@@ -69,42 +70,41 @@ public:
         	return;
         detail_ = &instr_->detail->mips;
 
-        auto instructionBasicBlock = program_->getBasicBlockForInstruction(instruction_);
-        
-        auto directSuccessor = program_->createBasicBlock(instruction_->endAddr());
+                
+        core::ir::BasicBlock *cachedDirectSuccessor = nullptr;
+        auto directSuccessor = [&]() -> core::ir::BasicBlock * {
+            if (!cachedDirectSuccessor) {
+                cachedDirectSuccessor = program->createBasicBlock(instruction->endAddr());
+            }
+            return cachedDirectSuccessor;
+        };
 
-        auto bodyBasicBlock = program_->createBasicBlock();
-        createCondition(instructionBasicBlock, bodyBasicBlock, directSuccessor);
-        createBody(bodyBasicBlock);
+  
+        MipsExpressionFactory factory(architecture_);
+        MipsExpressionFactoryCallback _(factory, program->getBasicBlockForInstruction(instruction), instruction);
 
-         if (!bodyBasicBlock->getTerminator()) {
-                using namespace core::irgen::expressions;
-                MipsExpressionFactoryCallback _(factory_, bodyBasicBlock, instruction);
-                _[jump(directSuccessor)];
-          }
-    }
-
-private:
-    core::arch::CapstoneInstructionPtr disassemble(const MipsInstruction *instruction) {
-        capstone_.setMode(instruction->csMode());
-        return capstone_.disassemble(instruction->addr(), instruction->bytes(), instruction->size());
-    }
-
-    void createCondition(core::ir::BasicBlock *conditionBasicBlock, core::ir::BasicBlock *bodyBasicBlock, core::ir::BasicBlock *directSuccessor) {
         using namespace core::irgen::expressions;
 
-        MipsExpressionFactoryCallback _(factory_, conditionBasicBlock, instruction_);
-     }
-
-    void createBody(core::ir::BasicBlock *bodyBasicBlock) {
-        using namespace core::irgen::expressions;
-
-        MipsExpressionFactoryCallback _(factory_, bodyBasicBlock, instruction_);
-
+        /* Describing semantics */
         switch (instr_->id) {
         case MIPS_INS_NOP: {
         	break;
         }
+        case MIPS_INS_ADDIU: {
+			_[
+				zero ^= constant(0),
+				operand(0) ^= operand(1) + operand(2)
+			];
+        	break;
+        }
+      case MIPS_INS_MOVE: {
+			_[
+				zero ^= constant(0),
+				operand(0) ^= operand(1)
+			];
+        	break;
+        }
+
 #if 0
         case ARM_INS_ADD: {
             _[operand(0) ^= operand(1) + operand(2)];
@@ -342,44 +342,16 @@ private:
             break;
         }
         } /* switch */
-
     }
 
-    void handleWriteback(core::ir::BasicBlock *bodyBasicBlock, int memOperandIndex) {
-        if (detail_->op_count != memOperandIndex + 1 && detail_->op_count != memOperandIndex + 2) {
-            throw core::irgen::InvalidInstructionException(tr("Strange number of registers."));
-        }
-        for (int i = 0; i < memOperandIndex; ++i) {
-            if (detail_->operands[i].type != MIPS_OP_REG) {
-                throw core::irgen::InvalidInstructionException(tr("Expected the first %1 operand(s) to be register(s).").arg(memOperandIndex));
-            }
-        }
-        if (detail_->operands[memOperandIndex].type != MIPS_OP_MEM) {
-            throw core::irgen::InvalidInstructionException(tr("Expected the %1s operand to be a memory operand.").arg(memOperandIndex));
-        }
-
-        using namespace core::irgen::expressions;
-        MipsExpressionFactoryCallback _(factory_, bodyBasicBlock, instruction_);
-#if 0
-        if (detail_->op_count == memOperandIndex + 2) {
-            auto base = regizter(getRegister(detail_->operands[memOperandIndex].mem.base));
-            if (detail_->operands[memOperandIndex + 1].subtracted) {
-                _[base ^= base - operand(memOperandIndex + 1)];
-            } else {
-                _[base ^= base + operand(memOperandIndex + 1)];
-            }
-        } else if (detail_->writeback) {
-            auto base = regizter(getRegister(detail_->operands[memOperandIndex].mem.base));
-            _[base ^= base + constant(detail_->operands[memOperandIndex].mem.disp)];
-        }
-#else
-      if (detail_->op_count == memOperandIndex + 2) {
-            auto base = regizter(getRegister(detail_->operands[memOperandIndex].mem.base));
-                _[base ^= base + operand(memOperandIndex + 1)];
-      }
-#endif
+private:
+    core::arch::CapstoneInstructionPtr disassemble(const MipsInstruction *instruction) {
+        capstone_.setMode(instruction->csMode());
+        return capstone_.disassemble(instruction->addr(), instruction->bytes(), instruction->size());
     }
 
+
+ 
     unsigned int getOperandRegister(std::size_t index) const {
         if (index >= detail_->op_count) {
             throw core::irgen::InvalidInstructionException(tr("There is no operand %1.").arg(index));
@@ -405,9 +377,9 @@ private:
     static std::unique_ptr<core::ir::Term> createTermForOperand(const cs_mips_op &operand, SmallBitSize sizeHint) {
         switch (operand.type) {
             case MIPS_OP_REG:
-                return applyShift(operand, std::make_unique<core::ir::MemoryLocationAccess>(getRegister(operand.reg)->memoryLocation().resized(sizeHint)));
+                return std::make_unique<core::ir::MemoryLocationAccess>(getRegister(operand.reg)->memoryLocation().resized(sizeHint));
             case MIPS_OP_IMM:
-                return applyShift(operand, std::make_unique<core::ir::Constant>(SizedValue(sizeHint, operand.imm)));
+                return std::make_unique<core::ir::Constant>(SizedValue(sizeHint, operand.imm));
             case MIPS_OP_MEM:
                 return std::make_unique<core::ir::Dereference>(createDereferenceAddress(operand), core::ir::MemoryDomain::MEMORY, sizeHint);
             default:
@@ -433,102 +405,7 @@ private:
             );
         }
 
-        return applyShift(operand, std::move(result));
-    }
-
-    static std::unique_ptr<core::ir::Term> applyShift(const cs_mips_op &operand, std::unique_ptr<core::ir::Term> result) {
-        auto size = result->size();
         return result;
-#if 0
-        switch (operand.shift.type) {
-
-            case ARM_SFT_INVALID: {
-                return result;
-            }
-            case ARM_SFT_ASR: /* FALLTHROUGH */
-            case ARM_SFT_ASR_REG: {
-                return std::make_unique<core::ir::BinaryOperator>(
-                    core::ir::BinaryOperator::SAR,
-                    std::move(result),
-                    createShiftValue(operand),
-                    size);
-            }
-            case ARM_SFT_LSL: /* FALLTHROUGH */
-            case ARM_SFT_LSL_REG: {
-                return std::make_unique<core::ir::BinaryOperator>(
-                    core::ir::BinaryOperator::SHL,
-                    std::move(result),
-                    createShiftValue(operand),
-                    size);
-            }
-            case ARM_SFT_LSR: /* FALLTHROUGH */
-            case ARM_SFT_LSR_REG: {
-                return std::make_unique<core::ir::BinaryOperator>(
-                    core::ir::BinaryOperator::SHR,
-                    std::move(result),
-                    createShiftValue(operand),
-                    size);
-            }
-            case ARM_SFT_ROR: /* FALLTHROUGH */
-            case ARM_SFT_ROR_REG: {
-                return ror(std::move(result), createShiftValue(operand));
-            }
-            case ARM_SFT_RRX: /* FALLTHROUGH */
-            case ARM_SFT_RRX_REG: {
-                auto size = result->size();
-
-                result = std::make_unique<core::ir::BinaryOperator>(
-                    core::ir::BinaryOperator::OR,
-                    std::make_unique<core::ir::UnaryOperator>(
-                        core::ir::UnaryOperator::ZERO_EXTEND,
-                        std::move(result),
-                        size + 1
-                    ),
-                    std::make_unique<core::ir::BinaryOperator>(
-                        core::ir::BinaryOperator::SHL,
-                        std::make_unique<core::ir::UnaryOperator>(
-                            core::ir::UnaryOperator::ZERO_EXTEND,
-                            std::make_unique<core::ir::MemoryLocationAccess>(MipsRegisters::c()->memoryLocation()),
-                            size + 1),
-                        std::make_unique<core::ir::Constant>(SizedValue(sizeof(SmallBitSize), size + 1)),
-                        size + 1),
-                    size + 1);
-
-                result = ror(std::move(result), createShiftValue(operand));
-
-                return std::make_unique<core::ir::UnaryOperator>(
-                    core::ir::UnaryOperator::TRUNCATE,
-                    std::move(result),
-                    size
-                );
-            }
-        }
-        unreachable();
-#endif
-    }
-
-    static std::unique_ptr<core::ir::Term> ror(std::unique_ptr<core::ir::Term> a, std::unique_ptr<core::ir::Term> b) {
-        auto size = a->size();
-        auto aa = a->clone();
-        auto bb = std::make_unique<core::ir::BinaryOperator>(
-            core::ir::BinaryOperator::SUB,
-            std::make_unique<core::ir::Constant>(SizedValue(b->size(), size)),
-            b->clone(),
-            b->size());
-
-        return std::make_unique<core::ir::BinaryOperator>(
-            core::ir::BinaryOperator::OR,
-                std::make_unique<core::ir::BinaryOperator>(
-                    core::ir::BinaryOperator::SHR,
-                    std::move(a),
-                    std::move(b),
-                    size),
-                std::make_unique<core::ir::BinaryOperator>(
-                    core::ir::BinaryOperator::SHL,
-                    std::move(aa),
-                    std::move(bb),
-                    size),
-                size);
     }
 
     static std::unique_ptr<core::ir::Term> createRegisterAccess(int reg) {
