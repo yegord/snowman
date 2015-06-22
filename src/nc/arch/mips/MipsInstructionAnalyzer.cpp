@@ -148,7 +148,7 @@ private:
         using namespace core::irgen::expressions;
 
         MipsExpressionFactoryCallback _(factory_, bodyBasicBlock, instruction_);
-
+#if 0
         /*
          * When executing an ARM instruction, PC reads as the address of the current instruction plus 8.
          * When executing a Thumb instruction, PC reads as the address of the current instruction plus 4.
@@ -157,7 +157,6 @@ private:
         _[
             pc ^= constant(instruction_->addr() + 2 * instruction_->size())
         ];
-#if 0
         switch (instr_->id) {
         case ARM_INS_ADD: {
             _[operand(0) ^= operand(1) + operand(2)];
@@ -428,12 +427,14 @@ private:
     }
 
     bool handleWriteToPC(core::ir::BasicBlock *bodyBasicBlock, int modifiedOperandIndex = 0) {
+#if 0
         if (getOperandRegister(modifiedOperandIndex) == MIPS_REG_PC) {
             using namespace core::irgen::expressions;
             MipsExpressionFactoryCallback _(factory_, bodyBasicBlock, instruction_);
             _[jump(pc)];
             return true;
         }
+#endif
         return false;
     }
 
@@ -444,7 +445,7 @@ private:
 
         const auto &operand = detail_->operands[index];
 
-        if (operand.type == ARM_OP_REG) {
+        if (operand.type == MIPS_OP_REG) {
             return operand.reg;
         } else {
             return MIPS_REG_INVALID;
@@ -670,6 +671,44 @@ private:
 			REG(fp,     FP)
 			/*REG(s8,     S8)*/
 			REG(ra,     RA)
+			
+			REG(f0,		F0)
+			REG(f1,		F1)
+			REG(f2,		F2)
+			REG(f3,		F3)
+			REG(f4,		F4)
+			REG(f5,		F5)
+			REG(f6,		F6)
+			REG(f7,		F7)
+			REG(f8,		F8)
+			REG(f9,		F9)
+			REG(f10,	F10)
+			REG(f11,	F11)
+			REG(f12,	F12)
+			/*REG(fa0,	FA0)*/
+			REG(f13,	F13)
+			REG(f14,	F14)
+			/*REG(fa1,	FA1)*/
+			REG(f15,	F15)
+			REG(f16,	F16)
+			REG(f17,	F17)
+			REG(f18,	F18)
+			REG(f19,	F19)
+			REG(f20,	F20)
+			REG(f21,	F21)
+			REG(f22,	F22)
+			REG(f23,	F23)
+			REG(f24,	F24)
+			REG(f25,	F25)
+			REG(f26,	F26)
+			REG(f27,	F27)
+			REG(f28,	F28)
+			REG(f29,	F29)
+			REG(f30,	F30)
+			REG(f31,	F31)
+
+			REG(hi,     HI)
+			REG(lo,     LO)
         #undef REG
 
         default:
