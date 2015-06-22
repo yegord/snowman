@@ -421,18 +421,7 @@ private:
         const auto &mem = operand.mem;
 
         auto result = createRegisterAccess(mem.base);
-#if 0
-        if (mem.index != ARM_REG_INVALID) {
-            assert(mem.scale == 1 || mem.scale == -1);
 
-            result = std::make_unique<core::ir::BinaryOperator>(
-                mem.scale == 1 ? core::ir::BinaryOperator::ADD : core::ir::BinaryOperator::SUB,
-                std::move(result),
-                createRegisterAccess(mem.index),
-                result->size()
-            );
-        }
-#endif
         if (mem.disp != 0) {
             result = std::make_unique<core::ir::BinaryOperator>(
                 core::ir::BinaryOperator::ADD,
