@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -65,12 +65,12 @@ public:
 
     /**
      * \param number                   Register number.
-     * \returns                        Register for the given number, or NULL if
+     * \returns                        Register for the given number, or nullptr if
      *                                 no such register exists.
      */
     const Register *getRegister(int number) const {
         if(number < 0 || static_cast<std::size_t>(number) >= mRegisterByNumber.size())
-            return NULL;
+            return nullptr;
 
         return mRegisterByNumber[number];
     }
@@ -78,10 +78,10 @@ public:
     /**
      * \param location                 Register's memory location.
      * \returns                        Register for the given memory location,
-     *                                 or NULL if there is no such register.
+     *                                 or nullptr if there is no such register.
      */
     const Register *getRegister(const ir::MemoryLocation &location) const {
-        return mRegisterByLocation.value(location, NULL);
+        return mRegisterByLocation.value(location, nullptr);
     }
 
 protected:
@@ -92,8 +92,8 @@ protected:
      * \param[in] reg   Valid pointer to a register.
      */
     void registerRegister(Register *reg) {
-        assert(reg != NULL);
-        assert(getRegister(reg->number()) == NULL); /* Re-registration not allowed. */
+        assert(reg != nullptr);
+        assert(getRegister(reg->number()) == nullptr); /* Re-registration not allowed. */
 
         mRegisters.push_back(reg);
 

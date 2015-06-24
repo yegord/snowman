@@ -22,7 +22,6 @@ We use the following features of C++11:
     * `std::unique_ptr` (supersedes `std::auto_ptr`);
     * static assertions;
     * explicit overrides (`<nc/config.h>` defines `override` to an empty string on compilers not supporting this feature);
-    * `nullptr` (`<nc/config.h>` automatically defines `NULL` to `nullptr` on decent compilers, so always use `NULL` for a null pointer).
 
 Wikipedia contains a good survey of these and other $$C++11$$ enhancements:
 
@@ -84,4 +83,4 @@ Doxygen
 ~~~~~~~
 We use http://www.doxygen.org/[Doxygen] comments for documenting code.
 
-When describing function's parameters or return values having (plain or smart) pointer types, we use phrases 'Valid pointer to XXX' and 'Pointer to XXX. Can be NULL'.
+When describing function's parameters or return values having (plain or smart) pointer types, we use phrases 'Valid pointer to XXX' and 'Pointer to XXX. Can be nullptr'.

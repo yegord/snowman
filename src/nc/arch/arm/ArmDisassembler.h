@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 #pragma once
 
@@ -7,9 +7,8 @@
 
 #include <memory>
 
+#include <nc/core/arch/Capstone.h>
 #include <nc/core/arch/Disassembler.h>
-
-#include "CapstoneDisassembler.h"
 
 namespace nc {
 namespace arch {
@@ -23,7 +22,7 @@ class ArmArchitecture;
  * TODO: Support for THUMB instructions.
  */
 class ArmDisassembler: public core::arch::Disassembler {
-    std::unique_ptr<CapstoneDisassembler> capstone_;
+    std::unique_ptr<core::arch::Capstone> capstone_;
     int mode_;
 
 public:

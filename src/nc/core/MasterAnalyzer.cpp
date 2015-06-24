@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -94,6 +94,10 @@ void MasterAnalyzer::createHooks(Context &context) const {
     context.hooks()->setConventionDetector([this, &context](const ir::calling::CalleeId &calleeId) {
         this->detectCallingConvention(context, calleeId);
     });
+}
+
+void MasterAnalyzer::detectCallingConventions(Context &) const {
+    return;
 }
 
 void MasterAnalyzer::detectCallingConvention(Context &context, const ir::calling::CalleeId &calleeId) const {
@@ -228,6 +232,9 @@ void MasterAnalyzer::decompile(Context &context) const {
     context.cancellationToken().poll();
 
     createHooks(context);
+    context.cancellationToken().poll();
+
+    detectCallingConventions(context);
     context.cancellationToken().poll();
 
     dataflowAnalysis(context);

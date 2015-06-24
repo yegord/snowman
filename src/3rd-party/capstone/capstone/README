@@ -5,7 +5,7 @@ Created by Nguyen Anh Quynh, then developed and maintained by a small community,
 Capstone offers some unparalleled features:
 
 - Support multiple hardware architectures: ARM, ARM64 (ARMv8), Mips, PPC, Sparc,
-  SystemZ, XCore and X86.
+  SystemZ, XCore and X86 (including X86_64).
 
 - Having clean/simple/lightweight/intuitive architecture-neutral API.
 
@@ -15,8 +15,8 @@ Capstone offers some unparalleled features:
   registers read & written.
 
 - Implemented in pure C language, with lightweight wrappers for C++, C#, Go,
-  Java, NodeJS, Ocaml, Python, Ruby & Vala ready (available in main code,
-  or provided externally by the community).
+  Java, Lua, NodeJS, Ocaml, Python, Ruby, Rust & Vala ready (available in
+  main code, or provided externally by the community).
 
 - Native support for all popular platforms: Windows, Mac OSX, iOS, Android,
   Linux, *BSD, Solaris, etc.
@@ -24,6 +24,9 @@ Capstone offers some unparalleled features:
 - Thread-safe by design.
 
 - Special support for embedding into firmware or OS kernel.
+
+- High performance & suitable for malware analysis (capable of handling various
+  X86 malware tricks).
 
 - Distributed under the open source BSD license.
 
@@ -33,6 +36,11 @@ Further information is available at http://www.capstone-engine.org
 [Compile]
 
 See COMPILE.TXT file for how to compile and install Capstone.
+
+
+[Documentation]
+
+See docs/README for how to customize & program your own tools with Capstone.
 
 
 [Hack]

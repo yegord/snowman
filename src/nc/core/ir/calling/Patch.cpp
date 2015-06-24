@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 #include "Patch.h"
 
@@ -15,7 +15,7 @@ namespace calling {
 Patch::~Patch() {}
 
 void Patch::insertAfter(Statement *after) {
-    assert(after != NULL);
+    assert(after != nullptr);
 
     while (!statements_.empty()) {
         insertedStatements_.push_back(after->basicBlock()->insertAfter(after, statements_.pop_back()));

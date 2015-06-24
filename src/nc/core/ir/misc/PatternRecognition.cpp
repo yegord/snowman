@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -71,7 +71,7 @@ ArrayAccess recognizeArrayAccess(const Term *base, const Term *multiplication, c
 } // anonymous namespace
 
 ArrayAccess recognizeArrayAccess(const Term *term, const dflow::Dataflow &dataflow) {
-    assert(term != NULL);
+    assert(term != nullptr);
 
     term = dflow::getFirstCopy(term, dataflow);
 

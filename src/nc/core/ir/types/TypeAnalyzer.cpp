@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -91,7 +91,7 @@ void TypeAnalyzer::uniteTypesOfAssignedTerms() {
 namespace {
 
 void uniteTypes(Type *&a, Type *b) {
-    if (a == NULL) {
+    if (a == nullptr) {
         a = b;
     } else {
         a->unionSet(b);

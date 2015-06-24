@@ -10,16 +10,30 @@ gen_const:
 	cd .. && python const_generator.py python
 
 install:
-	rm -rf $(OBJDIR)
-	python setup.py build -b $(OBJDIR) install
+	rm -rf $(OBJDIR) src/
+	rm -rf prebuilt/win64/capstone.dll
+	rm -rf prebuilt/win32/capstone.dll
+	if test -n "${DESTDIR}"; then \
+		python setup.py build -b $(OBJDIR) install --root="${DESTDIR}"; \
+	else \
+		python setup.py build -b $(OBJDIR) install; \
+	fi
 
 install3:
-	rm -rf $(OBJDIR)
-	python3 setup.py build -b $(OBJDIR) install
+	rm -rf $(OBJDIR) src/
+	rm -rf prebuilt/win64/capstone.dll
+	rm -rf prebuilt/win32/capstone.dll
+	if test -n "${DESTDIR}"; then \
+		python3 setup.py build -b $(OBJDIR) install --root="${DESTDIR}"; \
+	else \
+		python3 setup.py build -b $(OBJDIR) install; \
+	fi
 
 # NOTE: Newer cython can be installed by: sudo pip install --upgrade cython
 install_cython:
-	rm -rf $(OBJDIR)
+	rm -rf $(OBJDIR) src/ dist/
+	rm -rf prebuilt/win64/capstone.dll
+	rm -rf prebuilt/win32/capstone.dll
 	mkdir -p $(OBJDIR)/pyx
 	cp setup_cython.py $(OBJDIR)
 	cp pyx/ccapstone* $(OBJDIR)/pyx/
@@ -44,9 +58,45 @@ install_cython:
 	mv $(OBJDIR)/build/lib/python/capstone/* capstone
 	cd $(OBJDIR) && python setup_cython.py build -b ./tmp install
 
+# build & upload PyPi package with source code of the core
+sdist:
+	rm -rf src/ dist/
+	rm -rf prebuilt/win64/capstone.dll
+	rm -rf prebuilt/win32/capstone.dll
+	cp README.pypi-src README
+	cp PKG-INFO.src PKG-INFO
+	python setup.py sdist register upload
+
+# build & upload PyPi package with source code of the core
+sdist3:
+	rm -rf src/ dist/
+	rm -rf prebuilt/win64/capstone.dll
+	rm -rf prebuilt/win32/capstone.dll
+	cp README.pypi-src README
+	cp PKG-INFO.src PKG-INFO
+	python3 setup.py sdist register upload
+
+# build & upload PyPi package with prebuilt core
+# NOTE: be sure to have precompiled core under prebuilt/win*/ beforehand
+sdist_win:
+	rm -rf src/ dist/
+	cp README.pypi-win README
+	cp PKG-INFO.win PKG-INFO
+	python setup.py sdist register upload
+
+# build & upload PyPi package with prebuilt core
+# NOTE: be sure to have precompiled core under prebuilt/win*/ beforehand
+sdist3_win:
+	rm -rf src/ dist/
+	cp README.pypi-win README
+	cp PKG-INFO.win PKG-INFO
+	python3 setup.py sdist register upload
+
 clean:
-	rm -rf $(OBJDIR)
+	rm -rf $(OBJDIR) src/ dist/ README
 	rm -f capstone/*.so
+	rm -rf prebuilt/win64/capstone.dll
+	rm -rf prebuilt/win32/capstone.dll
 
 
 TESTS = test.py test_detail.py test_arm.py test_arm64.py test_mips.py test_ppc.py

@@ -200,16 +200,16 @@ let _ARM64_BARRIER_SY = 0xf;;
 
 let _ARM64_OP_INVALID = 0;;
 let _ARM64_OP_REG = 1;;
-let _ARM64_OP_CIMM = 2;;
-let _ARM64_OP_IMM = 3;;
+let _ARM64_OP_IMM = 2;;
+let _ARM64_OP_MEM = 3;;
 let _ARM64_OP_FP = 4;;
-let _ARM64_OP_MEM = 5;;
-let _ARM64_OP_REG_MRS = 6;;
-let _ARM64_OP_REG_MSR = 7;;
-let _ARM64_OP_PSTATE = 8;;
-let _ARM64_OP_SYS = 9;;
-let _ARM64_OP_PREFETCH = 10;;
-let _ARM64_OP_BARRIER = 11;;
+let _ARM64_OP_CIMM = 64;;
+let _ARM64_OP_REG_MRS = 65;;
+let _ARM64_OP_REG_MSR = 66;;
+let _ARM64_OP_PSTATE = 67;;
+let _ARM64_OP_SYS = 68;;
+let _ARM64_OP_PREFETCH = 69;;
+let _ARM64_OP_BARRIER = 70;;
 
 (* TLBI operations *)
 
@@ -1031,9 +1031,13 @@ let _ARM64_INS_ENDING = 452;;
 (* Group of ARM64 instructions *)
 
 let _ARM64_GRP_INVALID = 0;;
-let _ARM64_GRP_CRYPTO = 1;;
-let _ARM64_GRP_FPARMV8 = 2;;
-let _ARM64_GRP_NEON = 3;;
-let _ARM64_GRP_CRC = 4;;
-let _ARM64_GRP_JUMP = 5;;
-let _ARM64_GRP_ENDING = 6;;
+
+(* Generic groups *)
+let _ARM64_GRP_JUMP = 1;;
+
+(* Architecture-specific groups *)
+let _ARM64_GRP_CRYPTO = 128;;
+let _ARM64_GRP_FPARMV8 = 129;;
+let _ARM64_GRP_NEON = 130;;
+let _ARM64_GRP_CRC = 131;;
+let _ARM64_GRP_ENDING = 132;;

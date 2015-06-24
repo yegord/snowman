@@ -11,8 +11,8 @@ let _PPC_BC_GT = (1 lsl 5) lor 12;;
 let _PPC_BC_NE = (2 lsl 5) lor 4;;
 let _PPC_BC_UN = (3 lsl 5) lor 12;;
 let _PPC_BC_NU = (3 lsl 5) lor 4;;
-let _PPC_BC_SO = 4 lsl 5;;
-let _PPC_BC_NS = 4 lsl 5;;
+let _PPC_BC_SO = (4 lsl 5) lor 12;;
+let _PPC_BC_NS = (4 lsl 5) lor 4;;
 
 (* PPC branch hint for some branch instructions *)
 
@@ -26,6 +26,7 @@ let _PPC_OP_INVALID = 0;;
 let _PPC_OP_REG = 1;;
 let _PPC_OP_IMM = 2;;
 let _PPC_OP_MEM = 3;;
+let _PPC_OP_CRX = 64;;
 
 (* PPC registers *)
 
@@ -1150,15 +1151,19 @@ let _PPC_INS_ENDING = 934;;
 (* Group of PPC instructions *)
 
 let _PPC_GRP_INVALID = 0;;
-let _PPC_GRP_ALTIVEC = 1;;
-let _PPC_GRP_MODE32 = 2;;
-let _PPC_GRP_MODE64 = 3;;
-let _PPC_GRP_BOOKE = 4;;
-let _PPC_GRP_NOTBOOKE = 5;;
-let _PPC_GRP_SPE = 6;;
-let _PPC_GRP_VSX = 7;;
-let _PPC_GRP_E500 = 8;;
-let _PPC_GRP_PPC4XX = 9;;
-let _PPC_GRP_PPC6XX = 10;;
-let _PPC_GRP_JUMP = 11;;
-let _PPC_GRP_ENDING = 12;;
+
+(* Generic groups *)
+let _PPC_GRP_JUMP = 1;;
+
+(* Architecture-specific groups *)
+let _PPC_GRP_ALTIVEC = 128;;
+let _PPC_GRP_MODE32 = 129;;
+let _PPC_GRP_MODE64 = 130;;
+let _PPC_GRP_BOOKE = 131;;
+let _PPC_GRP_NOTBOOKE = 132;;
+let _PPC_GRP_SPE = 133;;
+let _PPC_GRP_VSX = 134;;
+let _PPC_GRP_E500 = 135;;
+let _PPC_GRP_PPC4XX = 136;;
+let _PPC_GRP_PPC6XX = 137;;
+let _PPC_GRP_ENDING = 138;;

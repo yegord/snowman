@@ -17,6 +17,8 @@ void SStream_concat0(SStream *ss, char *s);
 
 void printInt64Bang(SStream *O, int64_t val);
 
+void printUInt64Bang(SStream *O, uint64_t val);
+
 void printInt64(SStream *O, int64_t val);
 
 void printInt32Bang(SStream *O, int32_t val);
@@ -26,5 +28,8 @@ void printInt32(SStream *O, int32_t val);
 void printUInt32Bang(SStream *O, uint32_t val);
 
 void printUInt32(SStream *O, uint32_t val);
+
+// print number in decimal mode
+void printInt32BangDec(SStream *O, int32_t val);
 
 #endif

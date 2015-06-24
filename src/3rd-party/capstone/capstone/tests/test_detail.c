@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "../inttypes.h"
+#include "../myinttypes.h"
 
 #include <capstone.h>
 
@@ -39,11 +39,15 @@ static void test()
 #define ARM_CODE2 "\x10\xf1\x10\xe7\x11\xf2\x31\xe7\xdc\xa1\x2e\xf3\xe8\x4e\x62\xf3"
 #define THUMB_CODE "\x70\x47\xeb\x46\x83\xb0\xc9\x68"
 #define THUMB_CODE2 "\x4f\xf0\x00\x01\xbd\xe8\x00\x88\xd1\xe8\x00\xf0"
+#define THUMB_MCLASS "\xef\xf3\x02\x80"
+#define ARMV8 "\xe0\x3b\xb2\xee\x42\x00\x01\xe1\x51\xf0\x7f\xf5"
 #define MIPS_CODE "\x0C\x10\x00\x97\x00\x00\x00\x00\x24\x02\x00\x0c\x8f\xa2\x00\x00\x34\x21\x34\x56\x00\x80\x04\x08"
 //#define MIPS_CODE "\x21\x38\x00\x01"
 //#define MIPS_CODE "\x21\x30\xe6\x70"
 //#define MIPS_CODE "\x1c\x00\x40\x14"
 #define MIPS_CODE2 "\x56\x34\x21\x34\xc2\x17\x01\x00"
+#define MIPS_32R6M "\x00\x07\x00\x07\x00\x11\x93\x7c\x01\x8c\x8b\x7c\x00\xc7\x48\xd0"
+#define MIPS_32R6 "\xec\x80\x00\x19\x7c\x43\x22\xa0"
 //#define ARM64_CODE "\xe1\x0b\x40\xb9"	// ldr		w1, [sp, #0x8]
 //#define ARM64_CODE "\x00\x40\x21\x4b"	// 	sub		w0, w0, w1, uxtw
 //#define ARM64_CODE "\x21\x7c\x02\x9b"	// mul	x1, x1, x2
@@ -120,18 +124,46 @@ static void test()
 			"THUMB"
 		},
 		{
+			CS_ARCH_ARM,
+			(cs_mode)(CS_MODE_THUMB + CS_MODE_MCLASS),
+			(unsigned char*)THUMB_MCLASS,
+			sizeof(THUMB_MCLASS) - 1,
+			"Thumb-MClass"
+		},
+		{
+			CS_ARCH_ARM,
+			(cs_mode)(CS_MODE_ARM + CS_MODE_V8),
+			(unsigned char*)ARMV8,
+			sizeof(ARMV8) - 1,
+			"Arm-V8"
+		},
+		{
 			CS_ARCH_MIPS,
-			(cs_mode)(CS_MODE_32 + CS_MODE_BIG_ENDIAN),
+			(cs_mode)(CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN),
 			(unsigned char *)MIPS_CODE,
 			sizeof(MIPS_CODE) - 1,
 			"MIPS-32 (Big-endian)"
 		},
 		{
 			CS_ARCH_MIPS,
-			(cs_mode)(CS_MODE_64 + CS_MODE_LITTLE_ENDIAN),
+			(cs_mode)(CS_MODE_MIPS64 + CS_MODE_LITTLE_ENDIAN),
 			(unsigned char *)MIPS_CODE2,
 			sizeof(MIPS_CODE2) - 1,
 			"MIPS-64-EL (Little-endian)"
+		},
+		{
+			CS_ARCH_MIPS,
+			(cs_mode)(CS_MODE_MIPS32R6 + CS_MODE_MICRO + CS_MODE_BIG_ENDIAN),
+			(unsigned char*)MIPS_32R6M,
+			sizeof(MIPS_32R6M) - 1,
+			"MIPS-32R6 | Micro (Big-endian)"
+		},
+		{
+			CS_ARCH_MIPS,
+			(cs_mode)(CS_MODE_MIPS32R6 + CS_MODE_BIG_ENDIAN),
+			(unsigned char*)MIPS_32R6,
+			sizeof(MIPS_32R6) - 1,
+			"MIPS-32R6 (Big-endian)"
 		},
 		{
 			CS_ARCH_ARM64,
@@ -215,9 +247,6 @@ static void test()
 
 				// print implicit registers used by this instruction
 				detail = i->detail;
-				// detail can be NULL on "data" instruction since we turned on SKIPDATA option above.
-				if (!detail)
-					continue;
 
 				if (detail->regs_read_count > 0) {
 					printf("\tImplicit registers read: ");

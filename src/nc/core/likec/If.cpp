@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -38,7 +38,7 @@ void If::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
     fun(condition());
     fun(thenStatement());
 
-    if (elseStatement() != NULL) {
+    if (elseStatement() != nullptr) {
         fun(elseStatement());
     }
 }

@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 #include "ArmInstructionAnalyzer.h"
 
@@ -12,6 +12,7 @@
 #include <nc/common/Unreachable.h>
 #include <nc/common/make_unique.h>
 
+#include <nc/core/arch/Capstone.h>
 #include <nc/core/ir/Program.h>
 #include <nc/core/irgen/Expressions.h>
 #include <nc/core/irgen/InvalidInstructionException.h>
@@ -19,7 +20,6 @@
 #include "ArmArchitecture.h"
 #include "ArmInstruction.h"
 #include "ArmRegisters.h"
-#include "CapstoneDisassembler.h"
 
 namespace nc {
 namespace arch {
@@ -54,27 +54,27 @@ NC_DEFINE_REGISTER_EXPRESSION(ArmRegisters, pc)
 class ArmInstructionAnalyzerImpl {
     Q_DECLARE_TR_FUNCTIONS(ArmInstructionAnalyzerImpl)
 
-    CapstoneDisassembler disassembler_;
+    core::arch::Capstone capstone_;
     ArmExpressionFactory factory_;
     core::ir::Program *program_;
     const ArmInstruction *instruction_;
-    CapstoneInstructionPtr instr_;
+    core::arch::CapstoneInstructionPtr instr_;
     const cs_arm *detail_;
 
 public:
     ArmInstructionAnalyzerImpl(const ArmArchitecture *architecture):
-        disassembler_(CS_ARCH_ARM, CS_MODE_ARM), factory_(architecture)
+        capstone_(CS_ARCH_ARM, CS_MODE_ARM), factory_(architecture)
     {}
 
     void createStatements(const ArmInstruction *instruction, core::ir::Program *program) {
-        assert(instruction != NULL);
-        assert(program != NULL);
+        assert(instruction != nullptr);
+        assert(program != nullptr);
 
         program_ = program;
         instruction_ = instruction;
 
         instr_ = disassemble(instruction);
-        assert(instr_ != NULL);
+        assert(instr_ != nullptr);
         detail_ = &instr_->detail->arm;
 
         auto instructionBasicBlock = program_->getBasicBlockForInstruction(instruction_);
@@ -97,9 +97,9 @@ public:
     }
 
 private:
-    CapstoneInstructionPtr disassemble(const ArmInstruction *instruction) {
-        disassembler_.setMode(instruction->mode());
-        return disassembler_.disassemble(instruction->addr(), instruction->bytes(), instruction->size());
+    core::arch::CapstoneInstructionPtr disassemble(const ArmInstruction *instruction) {
+        capstone_.setMode(instruction->csMode());
+        return capstone_.disassemble(instruction->addr(), instruction->bytes(), instruction->size());
     }
 
     void createCondition(core::ir::BasicBlock *conditionBasicBlock, core::ir::BasicBlock *bodyBasicBlock, core::ir::BasicBlock *directSuccessor) {
@@ -243,6 +243,7 @@ private:
         case ARM_INS_LDREX: { // TODO: atomic
             _[operand(0) ^= operand(1)];
             handleWriteback(bodyBasicBlock, 1);
+            handleWriteToPC(bodyBasicBlock);
             break;
         }
         case ARM_INS_LDRH:
@@ -250,12 +251,14 @@ private:
         case ARM_INS_LDREXH: { // TODO: atomic
             _[operand(0) ^= zero_extend(operand(1, 16))];
             handleWriteback(bodyBasicBlock, 1);
+            handleWriteToPC(bodyBasicBlock);
             break;
         }
         case ARM_INS_LDRSH:
         case ARM_INS_LDRSHT: {
             _[operand(0) ^= sign_extend(operand(1, 16))];
             handleWriteback(bodyBasicBlock, 1);
+            handleWriteToPC(bodyBasicBlock);
             break;
         }
         case ARM_INS_LDRB:
@@ -263,12 +266,14 @@ private:
         case ARM_INS_LDREXB: { // TODO: atomic
             _[operand(0) ^= zero_extend(operand(1, 8))];
             handleWriteback(bodyBasicBlock, 1);
+            handleWriteToPC(bodyBasicBlock);
             break;
         }
         case ARM_INS_LDRSB:
         case ARM_INS_LDRSBT: {
             _[operand(0) ^= sign_extend(operand(1, 8))];
             handleWriteback(bodyBasicBlock, 1);
+            handleWriteToPC(bodyBasicBlock);
             break;
         }
         // TODO case ARM_INS_LDRD:
@@ -392,6 +397,14 @@ private:
                     ];
                 }
             }
+            break;
+        }
+        case ARM_INS_TST: {
+            _[
+                n ^= signed_(operand(0) & operand(1)) < constant(0),
+                z ^= (operand(0) & operand(1)) == constant(0),
+                c ^= intrinsic()
+            ];
             break;
         }
         default: {
@@ -609,7 +622,7 @@ private:
     static std::unique_ptr<core::ir::Term> createShiftValue(const cs_arm_op &operand) {
         switch (operand.shift.type) {
             case ARM_SFT_INVALID:
-                return NULL;
+                return nullptr;
             case ARM_SFT_ASR: /* FALLTHROUGH */
             case ARM_SFT_LSL: /* FALLTHROUGH */
             case ARM_SFT_LSR: /* FALLTHROUGH */

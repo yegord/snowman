@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -34,7 +34,7 @@ namespace nc { namespace gui {
 TextEditSearcher::TextEditSearcher(QPlainTextEdit *textEdit):
     textEdit_(textEdit), hvalue_(-1), vvalue_(-1)
 {
-    assert(textEdit != NULL);
+    assert(textEdit != nullptr);
 }
 
 void TextEditSearcher::startTrackingViewport() {
@@ -52,7 +52,9 @@ void TextEditSearcher::rememberViewport() {
 }
 
 void TextEditSearcher::restoreViewport() {
-    assert(hvalue_ != -1);
+    if (hvalue_ == -1) {
+        return;
+    }
 
     textEdit_->setTextCursor(cursor_);
     textEdit_->horizontalScrollBar()->setValue(hvalue_);

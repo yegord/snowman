@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -143,7 +143,7 @@ void LivenessAnalyzer::computeLiveness(const Statement *statement) {
 }
 
 void LivenessAnalyzer::propagateLiveness(const Term *term) {
-    assert(term != NULL);
+    assert(term != nullptr);
 
 #ifdef NC_PREFER_CONSTANTS_TO_EXPRESSIONS
     if (term->isRead() && dataflow_.getValue(term)->abstractValue().isConcrete()) {
@@ -215,7 +215,7 @@ void LivenessAnalyzer::propagateLiveness(const Term *term) {
 }
 
 void LivenessAnalyzer::makeLive(const Term *term) {
-    assert(term != NULL);
+    assert(term != nullptr);
     if (!liveness_.isLive(term)) {
         liveness_.makeLive(term);
         propagateLiveness(term);

@@ -3,12 +3,16 @@
 
 #include <stdint.h>
 #include <stdarg.h>
+#if defined(CAPSTONE_HAS_OSXKERNEL)
+#include <libkern/libkern.h>
+#else
 #include <stdio.h>
+#endif
 #include <string.h>
 
 #include "SStream.h"
 #include "cs_priv.h"
-#include "inttypes.h"
+#include "myinttypes.h"
 #include "utils.h"
 
 #ifdef _MSC_VER
@@ -24,7 +28,7 @@ void SStream_Init(SStream *ss)
 void SStream_concat0(SStream *ss, char *s)
 {
 #ifndef CAPSTONE_DIET
-	unsigned int len = strlen(s);
+	unsigned int len = (unsigned int) strlen(s);
 
 	memcpy(ss->buffer + ss->index, s, len);
 	ss->index += len;
@@ -61,6 +65,14 @@ void printInt64Bang(SStream *O, int64_t val)
 	}
 }
 
+void printUInt64Bang(SStream *O, uint64_t val)
+{
+	if (val > HEX_THRESHOLD)
+		SStream_concat(O, "#0x%"PRIx64, val);
+	else
+		SStream_concat(O, "#%"PRIu64, val);
+}
+
 // print number
 void printInt64(SStream *O, int64_t val)
 {
@@ -75,6 +87,15 @@ void printInt64(SStream *O, int64_t val)
 		else
 			SStream_concat(O, "-%"PRIu64, -val);
 	}
+}
+
+// print number in decimal mode
+void printInt32BangDec(SStream *O, int32_t val)
+{
+	if (val >= 0)
+		SStream_concat(O, "#%u", val);
+	else
+		SStream_concat(O, "#-%u", -val);
 }
 
 void printInt32Bang(SStream *O, int32_t val)

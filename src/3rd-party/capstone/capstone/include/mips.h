@@ -21,10 +21,10 @@ extern "C" {
 
 //> Operand type for instruction's operands
 typedef enum mips_op_type {
-	MIPS_OP_INVALID = 0,	// Uninitialized.
-	MIPS_OP_REG,	// Register operand.
-	MIPS_OP_IMM,	// Immediate operand.
-	MIPS_OP_MEM,	// Memory operand
+	MIPS_OP_INVALID = 0, // = CS_OP_INVALID (Uninitialized).
+	MIPS_OP_REG, // = CS_OP_REG (Register operand).
+	MIPS_OP_IMM, // = CS_OP_IMM (Immediate operand).
+	MIPS_OP_MEM, // = CS_OP_MEM (Memory operand).
 } mips_op_type;
 
 // Instruction's operand referring to memory
@@ -197,7 +197,6 @@ typedef enum mips_reg {
 
 	MIPS_REG_HI,
 	MIPS_REG_LO,
-	MIPS_REG_PC,
 
 	MIPS_REG_P0,
 	MIPS_REG_P1,
@@ -853,9 +852,14 @@ typedef enum mips_insn {
 
 //> Group of MIPS instructions
 typedef enum mips_insn_group {
-	MIPS_GRP_INVALID = 0,
+	MIPS_GRP_INVALID = 0, // = CS_GRP_INVALID
 
-	MIPS_GRP_BITCOUNT,
+	//> Generic groups
+	// all jump instructions (conditional+direct+indirect jumps)
+	MIPS_GRP_JUMP,	// = CS_GRP_JUMP
+
+	//> Architecture-specific groups
+	MIPS_GRP_BITCOUNT = 128,
 	MIPS_GRP_DSP,
 	MIPS_GRP_DSPR2,
 	MIPS_GRP_FPIDX,
@@ -888,8 +892,6 @@ typedef enum mips_insn_group {
 	MIPS_GRP_MIPS5_32R2,
 	MIPS_GRP_GP32BIT,
 	MIPS_GRP_GP64BIT,
-
-	MIPS_GRP_JUMP,	// all jump instructions (conditional+direct+indirect jumps)
 
 	MIPS_GRP_ENDING,
 } mips_insn_group;

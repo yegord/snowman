@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -34,7 +34,7 @@ namespace nc { namespace gui {
 
 InstructionsView::InstructionsView(QWidget *parent):
     TreeView(tr("Instructions"), parent),
-    model_(NULL)
+    model_(nullptr)
 {
     treeView()->setHeaderHidden(true);
     treeView()->setItemsExpandable(false);

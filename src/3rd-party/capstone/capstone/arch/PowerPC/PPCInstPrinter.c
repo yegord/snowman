@@ -112,12 +112,20 @@ void PPC_printInst(MCInst *MI, SStream *O, void *Info)
 			else
 				SStream_concat(O, ", %u", (unsigned int)SH);
 
+			if (MI->csh->detail) {
+				cs_ppc *ppc = &MI->flat_insn->detail->ppc;
+
+				ppc->operands[ppc->op_count].type = PPC_OP_IMM;
+				ppc->operands[ppc->op_count].imm = SH;
+				++ppc->op_count;
+			}
+
 			return;
 		}
 	}
 
 	if ((MCInst_getOpcode(MI) == PPC_OR || MCInst_getOpcode(MI) == PPC_OR8) &&
-			MCOperand_getReg(MCInst_getOperand(MI, 1)) == MCOperand_getReg(MCInst_getOperand(MI, 1))) {
+			MCOperand_getReg(MCInst_getOperand(MI, 1)) == MCOperand_getReg(MCInst_getOperand(MI, 2))) {
 		SStream_concat0(O, "mr\t");
 		MCInst_setOpcodePub(MI, PPC_INS_MR);
 		printOperand(MI, 0, O);
@@ -514,7 +522,6 @@ static void printBranchOperand(MCInst *MI, unsigned OpNo, SStream *O)
 
 	// Branches can take an immediate operand.  This is used by the branch
 	// selection pass to print .+8, an eight byte displacement from the PC.
-	//SStream_concat0(O, ".+");
 	printAbsBranchOperand(MI, OpNo, O);
 }
 
@@ -533,7 +540,7 @@ static void printAbsBranchOperand(MCInst *MI, unsigned OpNo, SStream *O)
 		imm = (int)MI->address + imm;
 	}
 
-	SStream_concat(O, ".0x%x", imm);
+	SStream_concat(O, "0x%x", imm);
 
 	if (MI->csh->detail) {
 		MI->flat_insn->detail->ppc.operands[MI->flat_insn->detail->ppc.op_count].type = PPC_OP_IMM;
@@ -608,18 +615,11 @@ static void printTLSCall(MCInst *MI, unsigned OpNo, SStream *O)
 
 	// On PPC64, VariantKind is VK_None, but on PPC32, it's VK_PLT, and it must
 	// come at the _end_ of the expression.
-	// MCOperand *Op;
-	// Op = MCInst_getOperand(MI, OpNo);
-	//const MCSymbolRefExpr &refExp = cast<MCSymbolRefExpr>(*Op.getExpr());
-	//O << refExp.getSymbol().getName();
 
 	SStream_concat0(O, "(");
 	printOperand(MI, OpNo + 1, O);
 	SStream_concat0(O, ")");
 	set_mem_access(MI, false);
-
-	//if (refExp.getKind() != MCSymbolRefExpr::VK_None)
-	//	O << '@' << MCSymbolRefExpr::getVariantKindName(refExp.getKind());
 }
 
 #ifndef CAPSTONE_DIET
@@ -907,10 +907,6 @@ static char *printAliasInstrEx(MCInst *MI, SStream *OS, void *info)
 			(MCOperand_getImm(MCInst_getOperand(MI, 0)) < 16)) {
 		int cr = getBICR(MCOperand_getReg(MCInst_getOperand(MI, 1)));
 
-		if (cr != PPC_CR0) {
-			op_addReg(MI, PPC_REG_CR0 + cr - PPC_CR0);
-		}
-
 		if (decCtr) {
 			needComma = true;
 			SStream_concat0(&ss, " ");
@@ -938,10 +934,22 @@ static char *printAliasInstrEx(MCInst *MI, SStream *OS, void *info)
 					op_addBC(MI, PPC_BC_SO);
 					break;
 			}
+
+			cr = getBICR(MCOperand_getReg(MCInst_getOperand(MI, 1)));
+			if (cr > PPC_CR0) {
+				if (MI->csh->detail) {
+					MI->flat_insn->detail->ppc.operands[MI->flat_insn->detail->ppc.op_count].type = PPC_OP_CRX;
+					MI->flat_insn->detail->ppc.operands[MI->flat_insn->detail->ppc.op_count].crx.scale = 4;
+					MI->flat_insn->detail->ppc.operands[MI->flat_insn->detail->ppc.op_count].crx.reg = PPC_REG_CR0 + cr - PPC_CR0;
+					MI->flat_insn->detail->ppc.operands[MI->flat_insn->detail->ppc.op_count].crx.cond = MI->flat_insn->detail->ppc.bc;
+					MI->flat_insn->detail->ppc.op_count++;
+				}
+			}
 		} else {
 			if (cr > PPC_CR0) {
 				needComma = true;
 				SStream_concat(&ss, " cr%d", cr - PPC_CR0);
+				op_addReg(MI, PPC_REG_CR0 + cr - PPC_CR0);
 			}
 		}
 	}

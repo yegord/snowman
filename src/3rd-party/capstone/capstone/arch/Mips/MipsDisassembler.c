@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../../inttypes.h"
+#include "../../myinttypes.h"
 
 #include "../../utils.h"
 
@@ -205,7 +205,13 @@ static DecodeStatus DecodeBlezGroupBranch_4(MCInst *MI,
 // Hacky: enable all features for disassembler
 static uint64_t getFeatureBits(int mode)
 {
-	uint64_t Bits = (uint64_t)-1;	// include every features by default
+	uint64_t Bits = (uint64_t)-1;	// include every features at first
+
+	// By default we do not support Mips1
+	Bits &= ~Mips_FeatureMips1;
+
+	// No MicroMips
+	Bits &= ~Mips_FeatureMicroMips;
 
 	// ref: MipsGenDisassemblerTables.inc::checkDecoderPredicate()
 	// some features are mutually execlusive
@@ -221,20 +227,25 @@ static uint64_t getFeatureBits(int mode)
 	} else if (mode & CS_MODE_32) {
 		Bits &= ~Mips_FeatureMips16;
 		Bits &= ~Mips_FeatureFP64Bit;
+		Bits &= ~Mips_FeatureMips64r2;
 		Bits &= ~Mips_FeatureMips32r6;
 		Bits &= ~Mips_FeatureMips64r6;
 	} else if (mode & CS_MODE_64) {
 		Bits &= ~Mips_FeatureMips16;
 		Bits &= ~Mips_FeatureMips64r6;
+		Bits &= ~Mips_FeatureMips32r6;
+	} else if (mode & CS_MODE_MIPS32R6) {
+		Bits |= Mips_FeatureMips32r6;
+		Bits &= ~Mips_FeatureMips16;
+		Bits &= ~Mips_FeatureFP64Bit;
 		Bits &= ~Mips_FeatureMips64r6;
+		Bits &= ~Mips_FeatureMips64r2;
 	}
 
 	if (mode & CS_MODE_MICRO) {
 		Bits |= Mips_FeatureMicroMips;
 		Bits &= ~Mips_FeatureMips4_32r2;
 		Bits &= ~Mips_FeatureMips2;
-	} else {
-		Bits &= ~Mips_FeatureMicroMips;
 	}
 
 	return Bits;
@@ -265,11 +276,11 @@ void Mips_init(MCRegisterInfo *MRI)
 	// 		MipsRegEncodingTable);
 
 	MCRegisterInfo_InitMCRegisterInfo(MRI, MipsRegDesc, 394,
-			0, 0, 
+			0, 0,
 			MipsMCRegisterClasses, 48,
-			0, 0, 
+			0, 0,
 			MipsRegDiffLists,
-			0, 
+			0,
 			MipsSubRegIdxLists, 12,
 			0);
 }
@@ -337,6 +348,8 @@ static DecodeStatus MipsDisassembler_getInstruction(int mode, MCInst *instr,
 		return MCDisassembler_Fail;
 	}
 
+#if 0
+	// TODO: properly handle this in the future with MIPS1/2 modes
 	if (((mode & CS_MODE_32) == 0) && ((mode & CS_MODE_MIPS3) == 0)) {	// COP3
 		// DEBUG(dbgs() << "Trying COP3_ table (32-bit opcodes):\n");
 		Result = decodeInstruction(DecoderTableCOP3_32, instr, Insn, Address, MRI, mode);
@@ -345,6 +358,7 @@ static DecodeStatus MipsDisassembler_getInstruction(int mode, MCInst *instr,
 			return Result;
 		}
 	}
+#endif
 
 	if (((mode & CS_MODE_MIPS32R6) != 0) && ((mode & CS_MODE_MIPSGP64) != 0)) {
 		// DEBUG(dbgs() << "Trying Mips32r6_64r6 (GPR64) table (32-bit opcodes):\n");
@@ -395,8 +409,17 @@ static DecodeStatus Mips64Disassembler_getInstruction(int mode, MCInst *instr,
 		uint64_t Address, bool isBigEndian, MCRegisterInfo *MRI)
 {
 	uint32_t Insn;
+	DecodeStatus Result;
 
-	DecodeStatus Result = readInstruction32((unsigned char*)code, &Insn, isBigEndian, false);
+	if (code_len < 4)
+		// not enough data
+		return MCDisassembler_Fail;
+
+	if (instr->flat_insn->detail) {
+		memset(instr->flat_insn->detail, 0, sizeof(cs_detail));
+	}
+
+	Result = readInstruction32((unsigned char*)code, &Insn, isBigEndian, false);
 	if (Result == MCDisassembler_Fail)
 		return MCDisassembler_Fail;
 
@@ -410,6 +433,7 @@ static DecodeStatus Mips64Disassembler_getInstruction(int mode, MCInst *instr,
 		*Size = 4;
 		return Result;
 	}
+
 	// If we fail to decode in Mips64 decoder space we can try in Mips32
 	Result = decodeInstruction(DecoderTableMips32, instr, Insn, Address, MRI, mode);
 	if (Result != MCDisassembler_Fail) {
@@ -767,7 +791,7 @@ static DecodeStatus DecodeGPR32RegisterClass(MCInst *Inst,
 static DecodeStatus DecodePtrRegisterClass(MCInst *Inst,
 		unsigned RegNo, uint64_t Address, MCRegisterInfo *Decoder)
 {
-	if (Inst->csh->mode & CS_MODE_N64)
+	if (Inst->csh->mode & CS_MODE_64)
 		return DecodeGPR64RegisterClass(Inst, RegNo, Address, Decoder);
 
 	return DecodeGPR32RegisterClass(Inst, RegNo, Address, Decoder);
@@ -1205,8 +1229,8 @@ static DecodeStatus DecodeCOP2RegisterClass(MCInst *Inst,
 static DecodeStatus DecodeBranchTarget(MCInst *Inst,
 		unsigned Offset, uint64_t Address, MCRegisterInfo *Decoder)
 {
-	int32_t BranchOffset = (SignExtend32(Offset, 16) * 4) + 4;
-	MCOperand_CreateImm0(Inst, BranchOffset);
+	uint64_t TargetAddress = (SignExtend32(Offset, 16) * 4) + Address + 4;
+	MCOperand_CreateImm0(Inst, TargetAddress);
 
 	return MCDisassembler_Success;
 }
@@ -1214,8 +1238,8 @@ static DecodeStatus DecodeBranchTarget(MCInst *Inst,
 static DecodeStatus DecodeJumpTarget(MCInst *Inst,
 		unsigned Insn, uint64_t Address, MCRegisterInfo *Decoder)
 {
-	unsigned JumpOffset = fieldFromInstruction(Insn, 0, 26) << 2;
-	MCOperand_CreateImm0(Inst, JumpOffset);
+	uint64_t TargetAddress = (fieldFromInstruction(Insn, 0, 26) << 2) | ((Address + 4) & ~0x0FFFFFFF);
+	MCOperand_CreateImm0(Inst, TargetAddress);
 
 	return MCDisassembler_Success;
 }

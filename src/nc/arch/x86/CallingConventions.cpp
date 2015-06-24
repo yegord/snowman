@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 #include "CallingConventions.h"
 
@@ -103,6 +103,9 @@ Cdecl32CallingConvention::Cdecl32CallingConvention(const X86Architecture *archit
     setFirstArgumentOffset(architecture->bitness());
     setArgumentAlignment(architecture->bitness());
 
+    addArgumentGroup(std::vector<core::ir::MemoryLocation>(1, X86Registers::ecx()->memoryLocation()));
+    addArgumentGroup(std::vector<core::ir::MemoryLocation>());
+
     addReturnValueLocation(X86Registers::eax()->memoryLocation());
     addReturnValueLocation(X86Registers::st0()->memoryLocation());
 
@@ -145,6 +148,9 @@ Stdcall32CallingConvention::Stdcall32CallingConvention(const X86Architecture *ar
     setFirstArgumentOffset(architecture->bitness());
     setArgumentAlignment(architecture->bitness());
     setCalleeCleanup(true);
+
+    addArgumentGroup(std::vector<core::ir::MemoryLocation>(1, X86Registers::ecx()->memoryLocation()));
+    addArgumentGroup(std::vector<core::ir::MemoryLocation>());
 
     addReturnValueLocation(X86Registers::ax()->memoryLocation());
     addReturnValueLocation(X86Registers::st0()->memoryLocation());

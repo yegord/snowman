@@ -289,20 +289,22 @@ public class Capstone {
   public static final int CS_ARCH_ALL = 0xFFFF; // query id for cs_support()
 
   // disasm mode
-  public static final int CS_MODE_LITTLE_ENDIAN = 0;  // default mode
+  public static final int CS_MODE_LITTLE_ENDIAN = 0;  // little-endian mode (default mode)
   public static final int CS_MODE_ARM = 0;	          // 32-bit ARM
-  public static final int CS_MODE_16 = 1 << 1;
-  public static final int CS_MODE_32 = 1 << 2;
-  public static final int CS_MODE_64 = 1 << 3;
+  public static final int CS_MODE_16 = 1 << 1;		// 16-bit mode for X86
+  public static final int CS_MODE_32 = 1 << 2;		// 32-bit mode for X86
+  public static final int CS_MODE_64 = 1 << 3;		// 64-bit mode for X86, PPC
   public static final int CS_MODE_THUMB = 1 << 4;	  // ARM's Thumb mode, including Thumb-2
   public static final int CS_MODE_MCLASS = 1 << 5;	  // ARM's Cortex-M series
+  public static final int CS_MODE_V8 = 1 << 6;	      // ARMv8 A32 encodings for ARM
   public static final int CS_MODE_MICRO = 1 << 4;	  // MicroMips mode (Mips arch)
-  public static final int CS_MODE_N64 = 1 << 5;	      // Nintendo-64 mode (Mips arch)
-  public static final int CS_MODE_MIPS3 = 1 << 6;     // Mips III ISA
-  public static final int CS_MODE_MIPS32R6 = 1 << 7;  // Mips32r6 ISA
-  public static final int CS_MODE_MIPSGP64 = 1 << 8;  // General Purpose Registers are 64-bit wide (MIPS arch)
-  public static final int CS_MODE_BIG_ENDIAN = 1 << 31;
+  public static final int CS_MODE_MIPS3 = 1 << 5;     // Mips III ISA
+  public static final int CS_MODE_MIPS32R6 = 1 << 6;  // Mips32r6 ISA
+  public static final int CS_MODE_MIPSGP64 = 1 << 7;  // General Purpose Registers are 64-bit wide (MIPS arch)
+  public static final int CS_MODE_BIG_ENDIAN = 1 << 31; // big-endian mode
   public static final int CS_MODE_V9 = 1 << 4;	      // SparcV9 mode (Sparc arch)
+  public static final int CS_MODE_MIPS32 = CS_MODE_32; // Mips32 ISA
+  public static final int CS_MODE_MIPS64 = CS_MODE_64; // Mips64 ISA
 
   // Capstone error
   public static final int CS_ERR_OK = 0;
@@ -332,8 +334,24 @@ public class Capstone {
   public static final int CS_OPT_ON = 3;  // Turn ON an option (CS_OPT_DETAIL)
   public static final int CS_OPT_SYNTAX_NOREGNAME = 3; // PPC asm syntax: Prints register name with only number (CS_OPT_SYNTAX)
 
-  // query id for cs_support()
+  // Common instruction operand types - to be consistent across all architectures.
+  public static final int CS_OP_INVALID = 0;
+  public static final int CS_OP_REG = 1;
+  public static final int CS_OP_IMM = 2;
+  public static final int CS_OP_MEM = 3;
+  public static final int CS_OP_FP  = 4;
+
+  // Common instruction groups - to be consistent across all architectures.
+  public static final int CS_GRP_INVALID = 0;  // uninitialized/invalid group.
+  public static final int CS_GRP_JUMP    = 1;  // all jump instructions (conditional+direct+indirect jumps)
+  public static final int CS_GRP_CALL    = 2;  // all call instructions
+  public static final int CS_GRP_RET     = 3;  // all return instructions
+  public static final int CS_GRP_INT     = 4;  // all interrupt instructions (int+syscall)
+  public static final int CS_GRP_IRET    = 5;  // all interrupt return instructions
+
+  // Query id for cs_support()
   public static final int CS_SUPPORT_DIET = CS_ARCH_ALL+1;	  // diet mode
+  public static final int CS_SUPPORT_X86_REDUCE = CS_ARCH_ALL+2;  // X86 reduce mode
 
   protected class NativeStruct {
       private NativeLong csh;
@@ -401,7 +419,13 @@ public class Capstone {
 
   // destructor automatically caled at destroyed time.
   protected void finalize() {
-    cs.cs_close(ns.handleRef);
+    // FIXME: crashed on Ubuntu 14.04 64bit, OpenJDK java 1.6.0_33
+    // cs.cs_close(ns.handleRef);
+  }
+
+  // destructor automatically caled at destroyed time.
+  public int close() {
+    return cs.cs_close(ns.handleRef);
   }
 
   // disassemble until either no more code, or encounter broken insn.
@@ -427,4 +451,3 @@ public class Capstone {
     return allInsn;
   }
 }
-

@@ -72,7 +72,7 @@ set(SOURCES
     TreeViewSearcher.cpp
 )
 
-qt4_wrap_cpp(SOURCES ${MOC_HEADERS})
+qt4_wrap_cpp(SOURCES ${MOC_HEADERS} OPTIONS -DQ_MOC_RUN)
 
 add_library(nc-gui ${SOURCES})
 target_link_libraries(nc-gui nc-core ${Boost_LIBRARIES} ${QT_LIBRARIES})

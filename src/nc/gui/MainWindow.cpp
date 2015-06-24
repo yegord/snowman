@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -268,7 +268,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 }
 
 void MainWindow::loadSettings() {
-    if (parent() == NULL) {
+    if (parent() == nullptr) {
         restoreGeometry(settings_->value("geometry", saveGeometry()).toByteArray());
     }
     restoreState(settings_->value("windowState", saveState()).toByteArray());
@@ -288,7 +288,7 @@ void MainWindow::loadSettings() {
 }
 
 void MainWindow::saveSettings() {
-    if (parent() == NULL) {
+    if (parent() == nullptr) {
         settings_->setValue("geometry", saveGeometry());
     }
     settings_->setValue("windowState", saveState());
@@ -308,10 +308,10 @@ void MainWindow::saveSettings() {
 }
 
 void MainWindow::updateGuiState() {
-    exportCfgAction_->setEnabled(project() != NULL);
-    disassembleAction_->setEnabled(project() != NULL);
-    decompileAction_->setEnabled(project() != NULL);
-    cancelAllAction_->setEnabled(project() != NULL && project()->commandQueue()->front() != NULL);
+    exportCfgAction_->setEnabled(project() != nullptr);
+    disassembleAction_->setEnabled(project() != nullptr);
+    decompileAction_->setEnabled(project() != nullptr);
+    cancelAllAction_->setEnabled(project() != nullptr && project()->commandQueue()->front() != nullptr);
 
     if (project() && !project()->name().isEmpty()) {
         setWindowTitle(tr("%1 - %2").arg(project()->name()).arg(branding_.applicationName()));
@@ -661,7 +661,7 @@ void MainWindow::about() {
         "<li>PE (32 and 64-bit).</li>"
         "</ul></p>"
         "<p>Report bugs to <a href=\"mailto:%3\">%3</a>.</p>"
-        "<p>The software is distributed under the <a href=\"%5\">%4</a> license.</p>")
+        "<p>The software is distributed under the terms of <a href=\"%5\">%4</a>.</p>")
         .arg(branding_.applicationName())
         .arg(branding_.applicationVersion())
         .arg(branding_.reportBugsTo())

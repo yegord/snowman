@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 #pragma once
 
@@ -69,7 +69,7 @@ public:
      * \param[in] buffer Valid pointer to the buffer containing the instruction.
      * \param[in] size Buffer size.
      *
-     * \return Pointer to the instruction disassembled from the buffer if disassembling succeeded, NULL otherwise.
+     * \return Pointer to the instruction disassembled from the buffer if disassembling succeeded, nullptr otherwise.
      */
     virtual std::shared_ptr<Instruction> disassembleSingleInstruction(ByteAddr pc, const void *buffer, ByteSize size) = 0;
 
@@ -79,7 +79,7 @@ public:
      * \param[in] pc Virtual address of the instruction.
      * \param[in] source Valid pointer to the byte source containing the instruction.
      *
-     * \return Pointer to the instruction disassembled from the buffer if disassembling succeeded, NULL otherwise.
+     * \return Pointer to the instruction disassembled from the buffer if disassembling succeeded, nullptr otherwise.
      */
     virtual std::shared_ptr<Instruction> disassembleSingleInstruction(ByteAddr pc, const image::ByteSource *source);
 };

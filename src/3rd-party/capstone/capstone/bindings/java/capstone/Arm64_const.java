@@ -203,16 +203,16 @@ public class Arm64_const {
 
 	public static final int ARM64_OP_INVALID = 0;
 	public static final int ARM64_OP_REG = 1;
-	public static final int ARM64_OP_CIMM = 2;
-	public static final int ARM64_OP_IMM = 3;
+	public static final int ARM64_OP_IMM = 2;
+	public static final int ARM64_OP_MEM = 3;
 	public static final int ARM64_OP_FP = 4;
-	public static final int ARM64_OP_MEM = 5;
-	public static final int ARM64_OP_REG_MRS = 6;
-	public static final int ARM64_OP_REG_MSR = 7;
-	public static final int ARM64_OP_PSTATE = 8;
-	public static final int ARM64_OP_SYS = 9;
-	public static final int ARM64_OP_PREFETCH = 10;
-	public static final int ARM64_OP_BARRIER = 11;
+	public static final int ARM64_OP_CIMM = 64;
+	public static final int ARM64_OP_REG_MRS = 65;
+	public static final int ARM64_OP_REG_MSR = 66;
+	public static final int ARM64_OP_PSTATE = 67;
+	public static final int ARM64_OP_SYS = 68;
+	public static final int ARM64_OP_PREFETCH = 69;
+	public static final int ARM64_OP_BARRIER = 70;
 
 	// TLBI operations
 
@@ -1034,10 +1034,14 @@ public class Arm64_const {
 	// Group of ARM64 instructions
 
 	public static final int ARM64_GRP_INVALID = 0;
-	public static final int ARM64_GRP_CRYPTO = 1;
-	public static final int ARM64_GRP_FPARMV8 = 2;
-	public static final int ARM64_GRP_NEON = 3;
-	public static final int ARM64_GRP_CRC = 4;
-	public static final int ARM64_GRP_JUMP = 5;
-	public static final int ARM64_GRP_ENDING = 6;
+
+	// Generic groups
+	public static final int ARM64_GRP_JUMP = 1;
+
+	// Architecture-specific groups
+	public static final int ARM64_GRP_CRYPTO = 128;
+	public static final int ARM64_GRP_FPARMV8 = 129;
+	public static final int ARM64_GRP_NEON = 130;
+	public static final int ARM64_GRP_CRC = 131;
+	public static final int ARM64_GRP_ENDING = 132;
 }

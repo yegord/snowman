@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../../inttypes.h"
+#include "../../myinttypes.h"
 
 #include "XCoreInstPrinter.h"
 #include "../../MCInst.h"
@@ -237,6 +237,9 @@ static void _printOperand(MCInst *MI, MCOperand *MO, SStream *O)
 
 static void printOperand(MCInst *MI, int OpNum, SStream *O)
 {
+	if (OpNum >= MI->size)
+		return;
+
 	_printOperand(MI, MCInst_getOperand(MI, OpNum), O);
 }
 

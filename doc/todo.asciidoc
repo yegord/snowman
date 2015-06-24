@@ -5,17 +5,15 @@ Yegor Derevenets <yegor.derevenets@gmail.com>
 
 Here is a list of things that should be done, sorted by descending priority.
 
+Robustness against Fuzzying
+---------------------------
+Snowman might crash or eat all the memory on some malformed input files, obtained, e.g., via fuzzying.
+See `tests/malformed-elf` for examples.
+One must debug these examples and add additional checks to fix the crashes.
+
 Custom Shortcuts in IDA plugin
 ------------------------------
 One should make F3 and Ctrl-F3 changeable to something else.
-
-Reusing Running Demangler
--------------------------
-Currently the demangler serves only one request.
-It should serve multiple requests.
-This will reduce tests running time by half.
-However, one must be careful about the destruction of QProcess.
-On Windows, destroying it in a thread to which it does not belong results in a crash.
 
 No-return Functions
 -------------------
@@ -25,10 +23,8 @@ Use Names from IDA
 ------------------
 Use names assigned to registers and structs created by the user in IDA in the decompiler's output.
 
-ARM
----
-Support for ARM architecture is wanted.
-A prototype is available in the `arm` branch.
+Better support for ARM
+----------------------
 Needed: more descriptions of instructions, description of the calling convention, testing.
 
 x86 Floating-Point Arithmetic

@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 #include "ArmDisassembler.h"
 
@@ -21,7 +21,7 @@ ArmDisassembler::ArmDisassembler(const ArmArchitecture *architecture):
     } else if (architecture->byteOrder() == ByteOrder::BigEndian) {
         mode_ |= CS_MODE_BIG_ENDIAN;
     }
-    capstone_ = std::make_unique<CapstoneDisassembler>(CS_ARCH_ARM, mode_);
+    capstone_ = std::make_unique<core::arch::Capstone>(CS_ARCH_ARM, mode_);
 }
 
 ArmDisassembler::~ArmDisassembler() {}
@@ -33,7 +33,7 @@ std::shared_ptr<core::arch::Instruction> ArmDisassembler::disassembleSingleInstr
             return std::make_shared<ArmInstruction>(mode_, instr->address, instr->size, buffer);
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 }}} // namespace nc::arch::arm

@@ -1,0 +1,86 @@
+Snowman: Integration Tests
+==========================
+:toc:
+Yegor Derevenets <yegor.derevenets@gmail.com>
+
+Introduction
+------------
+Snowman has some integration/regression tests. These tests consist in
+running the decompiler against some input files and checking its output
+against the reference output. Currently two kinds of comparisons are
+supported: comparisons against a reference file, using diff, and
+checking whether the output file contains strings matching given regular
+expression, using grep.
+
+Running tests consists of two steps: launching a Python tool that
+generates a Ninja build file containing the test commands, and starting
+Ninja that actually runs the decompiler and checks its output.
+
+Prerequisites
+-------------
+To run the tests, you will need:
+
+    * http://python.org/[Python] >= 2.7
+    * https://martine.github.io/ninja/[Ninja]
+
+Running Tests
+-------------
+1. link:build.asciidoc[Build the decompiler].
+
+2. Clone the tests:
++
+-------------------------------------------------------
+git clone https://github.com/yegord/snowman-tests tests
+-------------------------------------------------------
++
+3. Create the Ninja build file:
++
+---------------------------------------------------------------
+tests/configure.py --decompiler build/nocode/nocode build/tests
+---------------------------------------------------------------
++
+Here we assume that the decompiler was built in the `build` directory.
++
+4. Run the tests:
++
+---------------------------
+ninja -C build/tests -k 100
+---------------------------
++
+Here, `-k 100` specifies that Ninja should stop only after 100 tests
+fail.
+
+Adding Tests
+------------
+To add a test, you need to add a test input file to some directory where
+the `configure.py` will find it (read `configure.py` for the list of
+file patterns being looked for). Assuming you have saved the test input
+file as `tests/hand-made/100_my_test.exe`, you can put correct output
+for this test into `tests/hand-made/cookies/100_my_test.exe.stdout`. You
+can specify a list of regular expressions that the standard output must
+match in `tests/hand-made/cookies/100_my_test.exe.stdout.regexp`, one
+expression by line, lines starting starting with `#` are ignored. You
+can add checks on the stderr content in a similar way. You can specify
+the desired exit code of the decompiler in
+`tests/hand-made/cookies/100_my_test.exe.exitCode`. By default, 0 is
+expected.
+
+[NOTE]
+Once you added or updated a test, you will need to rerun `configure.py`
+to update the Ninja build script.
+
+FAQ
+---
+    * *Q:* Why not CTest?
+
+    * *A:* It is really painful to write automatic generation of test
+      cases in CMake language.
+
+    * *Q:* Some tests fail.
+
+    * *A:* I know, please fix the decompiler and
+      link:https://github.com/yegord/snowman/pulls[submit a patch].
+
+//////////////////////////////
+# vim:set et sts=4 sw=4 tw=72:
+//////////////////////////////

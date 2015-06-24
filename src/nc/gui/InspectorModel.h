@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -64,10 +64,10 @@ public:
     /**
      * Constructor.
      *
-     * \param parent  Pointer to the parent object. Can be NULL.
-     * \param context Pointer to the context. Can be NULL.
+     * \param parent  Pointer to the parent object. Can be nullptr.
+     * \param context Pointer to the context. Can be nullptr.
      */
-    InspectorModel(QObject *parent = NULL, std::shared_ptr<const core::Context> context = NULL);
+    InspectorModel(QObject *parent = nullptr, std::shared_ptr<const core::Context> context = nullptr);
 
     /**
      * Destructor.
@@ -102,7 +102,7 @@ public:
     /**
      * \param[in] node Pointer to a LikeC tree node.
      *
-     * \return Pointer to this node's parent. Can be NULL.
+     * \return Pointer to this node's parent. Can be nullptr.
      */
     const core::likec::TreeNode *getParent(const core::likec::TreeNode *node);
 

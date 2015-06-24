@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -62,7 +62,7 @@ public:
      * \param declaration Valid pointer to a declaration.
      */
     void addDeclaration(std::unique_ptr<Declaration> declaration) {
-        assert(declaration != NULL);
+        assert(declaration != nullptr);
         declarations_.push_back(std::move(declaration));
     }
 
@@ -77,7 +77,7 @@ public:
      * \param statement Valid pointer to a statement.
      */
     void addStatement(std::unique_ptr<Statement> statement) {
-        assert(statement != NULL);
+        assert(statement != nullptr);
         statements_.push_back(std::move(statement));
     }
 

@@ -1,3 +1,2 @@
-The old bindings from version 2.x are not compatible with version 3.0, so
-must be updated. For Java/Ocaml/Python bindings, see respective README files
-under bindings/ directory in the source on how to reinstall them.
+This version 3.0.3 is dedicated to Prof. Yoshiyasu Takefuji, my former advisor,
+who is turning 60 years old this year 2015!

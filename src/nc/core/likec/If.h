@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -54,7 +54,7 @@ public:
     If(Tree &tree,
        std::unique_ptr<Expression> condition,
        std::unique_ptr<Statement> thenStatement,
-       std::unique_ptr<Statement> elseStatement = NULL)
+       std::unique_ptr<Statement> elseStatement = nullptr)
     :  Statement(tree, IF),
        condition_(std::move(condition)),
        thenStatement_(std::move(thenStatement)),

@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 #include "Variables.h"
 
@@ -11,10 +11,10 @@ namespace ir {
 namespace vars {
 
 void Variables::addVariable(std::unique_ptr<Variable> variable) {
-    assert(variable != NULL);
+    assert(variable != nullptr);
 
     foreach (const auto &termAndLocation, variable->termsAndLocations()) {
-        assert(nc::find(term2variable_, termAndLocation.term) == NULL);
+        assert(nc::find(term2variable_, termAndLocation.term) == nullptr);
         term2variable_[termAndLocation.term] = variable.get();
     }
 

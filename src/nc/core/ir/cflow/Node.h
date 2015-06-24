@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -69,7 +69,7 @@ public:
     /**
      * \param kind Kind of the node.
      */
-    Node(NodeKind kind): nodeKind_(kind), parent_(NULL) {}
+    Node(NodeKind kind): nodeKind_(kind), parent_(nullptr) {}
 
     /**
      * Virtual destructor.
@@ -77,7 +77,7 @@ public:
     virtual ~Node();
 
     /**
-     * \return Pointer to the parent region. Can be NULL.
+     * \return Pointer to the parent region. Can be nullptr.
      */
     Region *parent() const { return parent_; }
 
@@ -105,13 +105,13 @@ public:
 
     /**
      * \return Valid pointer to the predecessor node if there is only one
-     *         incoming edges, NULL otherwise.
+     *         incoming edges, nullptr otherwise.
      */
     Node *uniquePredecessor() const;
 
     /**
      * \return Valid pointer to the successor node if there is only one
-     *         outgoing edges, NULL otherwise.
+     *         outgoing edges, nullptr otherwise.
      */
     Node *uniqueSuccessor() const;
 
@@ -124,7 +124,7 @@ public:
      * \param[in] notThis Valid pointer to a node.
      *
      * \return Pointer to any successor different from the notThis;
-     *         NULL if there is no such successor.
+     *         nullptr if there is no such successor.
      */
     Node *getOtherSuccessor(const Node *notThis) const;
 

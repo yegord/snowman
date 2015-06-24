@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -72,7 +72,7 @@ public:
     /**
      * Sets the document shown in the text edit widget.
      *
-     * \param document Pointer to the document. Can be NULL.
+     * \param document Pointer to the document. Can be nullptr.
      *
      * Use this method instead of QPlainTextEdit::setDocument() in order to
      * keep the font configuration intact.

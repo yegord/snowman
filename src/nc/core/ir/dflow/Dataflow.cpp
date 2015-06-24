@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -36,7 +36,7 @@ Dataflow::Dataflow() {}
 Dataflow::~Dataflow() {}
 
 Value *Dataflow::getValue(const Term *term) {
-    assert(term != NULL);
+    assert(term != nullptr);
 
     if (auto source = term->source()) {
         term = source;

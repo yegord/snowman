@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -53,7 +53,7 @@ public:
     ParentTracker(boost::unordered_map<const core::likec::TreeNode *, const core::likec::TreeNode *> &map):
         map_(map)
     {
-        stack_.push_back(NULL);
+        stack_.push_back(nullptr);
     }
 
     /**

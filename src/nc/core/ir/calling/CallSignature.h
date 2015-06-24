@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 #pragma once
 
@@ -34,7 +34,7 @@ public:
     const std::vector<std::shared_ptr<const Term>> &arguments() const { return arguments_; }
 
     /**
-     * \return Pointer to the term containing the return value. Can be NULL.
+     * \return Pointer to the term containing the return value. Can be nullptr.
      */
     const std::shared_ptr<const Term> &returnValue() const { return returnValue_; }
 

@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -29,8 +29,10 @@
 #include <nc/common/make_unique.h>
 
 #include <nc/core/Context.h>
+#include <nc/core/arch/Capstone.h>
 #include <nc/core/image/Image.h>
 #include <nc/core/ir/Function.h>
+#include <nc/core/ir/Functions.h>
 #include <nc/core/ir/Program.h>
 #include <nc/core/ir/Statements.h>
 #include <nc/core/ir/Terms.h>
@@ -39,7 +41,10 @@
 #include <nc/core/ir/dflow/Dataflows.h>
 
 #include "X86Architecture.h"
+#include "X86Instruction.h"
 #include "X86Registers.h"
+
+#include "udis86.h"
 
 namespace nc {
 namespace arch {
@@ -82,27 +87,82 @@ void X86MasterAnalyzer::createProgram(core::Context &context) const {
     }
 }
 
+void X86MasterAnalyzer::detectCallingConventions(core::Context &context) const {
+    context.logToken().info(tr("Detecting calling conventions."));
+
+    auto architecture = context.image()->architecture();
+
+    if (architecture->bitness() == 32) {
+        using core::ir::calling::CalleeId;
+        using core::ir::calling::EntryAddress;
+
+        auto stdcall32 = architecture->getCallingConvention(QLatin1String("stdcall32"));
+
+        foreach (auto symbol, context.image()->symbols()) {
+            if (!symbol->value()) {
+                continue;
+            }
+            auto index = symbol->name().lastIndexOf(QChar('@'));
+            if (index == -1) {
+                continue;
+            }
+            auto argumentsSize = stringToInt<ByteSize>(symbol->name().mid(index + 1));
+            if (!argumentsSize) {
+                continue;
+            }
+            CalleeId calleeId(EntryAddress(*symbol->value()));
+            context.conventions()->setConvention(calleeId, stdcall32);
+            context.conventions()->setStackArgumentsSize(calleeId, *argumentsSize);
+        }
+
+        ud_t ud_obj_;
+        ud_init(&ud_obj_);
+        ud_set_mode(&ud_obj_, context.image()->architecture()->bitness());
+
+        foreach (auto function, context.functions()->list()) {
+            if (!function->entry()->address()) {
+                continue;
+            }
+            foreach (auto basicBlock, function->basicBlocks()) {
+                auto terminator = basicBlock->getTerminator();
+                if (!terminator) {
+                    continue;
+                }
+                auto instruction = checked_cast<const X86Instruction *>(terminator->instruction());
+                if (!instruction) {
+                    continue;
+                }
+
+                ud_set_pc(&ud_obj_, instruction->addr());
+                ud_set_input_buffer(&ud_obj_, const_cast<uint8_t *>(instruction->bytes()),
+                                    checked_cast<std::size_t>(instruction->size()));
+                ud_disassemble(&ud_obj_);
+
+                assert(ud_obj_.mnemonic != UD_Iinvalid);
+
+                if (ud_obj_.mnemonic != UD_Iret) {
+                    continue;
+                }
+
+                if (ud_obj_.operand[0].type == UD_NONE) {
+                    continue;
+                }
+                assert(ud_obj_.operand[0].type == UD_OP_IMM && ud_obj_.operand[0].size == 16);
+
+                CalleeId calleeId(EntryAddress(*function->entry()->address()));
+                context.conventions()->setConvention(calleeId, stdcall32);
+                context.conventions()->setStackArgumentsSize(calleeId, ud_obj_.operand[0].lval.uword);
+            }
+        }
+    }
+}
+
 void X86MasterAnalyzer::detectCallingConvention(core::Context &context, const core::ir::calling::CalleeId &calleeId) const {
     auto architecture = context.image()->architecture();
 
     auto setConvention = [&](const char *name) {
         context.conventions()->setConvention(calleeId, architecture->getCallingConvention(QLatin1String(name)));
     };
-
-    if (architecture->bitness() == 32) {
-        if (auto addr = calleeId.entryAddress()) {
-            if (auto symbol = context.image()->getSymbol(*addr)) {
-                int index = symbol->name().lastIndexOf(QChar('@'));
-                if (index != -1) {
-                    if (auto argumentsSize = stringToInt<ByteSize>(symbol->name().mid(index + 1))) {
-                        setConvention("stdcall32");
-                        context.conventions()->setStackArgumentsSize(calleeId, *argumentsSize);
-                        return;
-                    }
-                }
-            }
-        }
-    }
 
     switch (architecture->bitness()) {
         case 16:

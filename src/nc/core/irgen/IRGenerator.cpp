@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -94,7 +94,7 @@ void IRGenerator::generate() {
 }
 
 void IRGenerator::computeJumpTargets(ir::BasicBlock *basicBlock) {
-    assert(basicBlock != NULL);
+    assert(basicBlock != nullptr);
 
     /* Prepare context for quick and dirty dataflow analysis. */
     ir::dflow::Dataflow dataflow;
@@ -222,11 +222,11 @@ bool IRGenerator::isInstructionAddress(ByteAddr address) {
         disassembler_ = image_->architecture()->createDisassembler();
     }
 
-    return disassembler_->disassembleSingleInstruction(address, section) != NULL;
+    return disassembler_->disassembleSingleInstruction(address, section) != nullptr;
 }
 
 void IRGenerator::addJumpToDirectSuccessor(ir::BasicBlock *basicBlock) {
-    assert(basicBlock != NULL);
+    assert(basicBlock != nullptr);
 
     if (!basicBlock->getTerminator()) {
         if (basicBlock->successorAddress() && basicBlock->successorAddress() != basicBlock->address()) {

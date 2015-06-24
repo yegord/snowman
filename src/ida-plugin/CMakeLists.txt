@@ -35,7 +35,7 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     add_definitions(-Wno-ignored-attributes -Wno-format-security -Wno-logical-op-parentheses)
 endif()
 
-qt4_wrap_cpp(SOURCES ${MOC_HEADERS})
+qt4_wrap_cpp(SOURCES ${MOC_HEADERS} OPTIONS -DQ_MOC_RUN)
 
 add_library(ida-plugin SHARED ${SOURCES})
 target_link_libraries(ida-plugin nc-gui nc-core ${Boost_LIBRARIES} ${QT_LIBRARIES} ${IDA_LIBRARIES})

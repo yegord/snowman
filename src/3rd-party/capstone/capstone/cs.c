@@ -3,9 +3,14 @@
 #if defined (WIN32) || defined (WIN64) || defined (_WIN32) || defined (_WIN64)
 #pragma warning(disable:4996)
 #endif
+#if defined(CAPSTONE_HAS_OSXKERNEL)
+#include <libkern/libkern.h>
+#else
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#endif
+
 #include <string.h>
 #include <capstone.h>
 
@@ -238,9 +243,8 @@ cs_err cs_close(csh *handle)
 	if (ud->printer_info)
 		cs_mem_free(ud->printer_info);
 
-	// arch_destroy[ud->arch](ud);
-
 	cs_mem_free(ud->insn_cache);
+
 	memset(ud, 0, sizeof(*ud));
 	cs_mem_free(ud);
 
@@ -258,12 +262,12 @@ static void fill_insn(struct cs_struct *handle, cs_insn *insn, char *buffer, MCI
 #ifndef CAPSTONE_DIET
 	char *sp, *mnem;
 #endif
+	unsigned int copy_size = MIN(sizeof(insn->bytes), insn->size);
 
-	// fill the instruction bytes
-	memcpy(insn->bytes, code, insn->size);
-
-	// map internal instruction opcode to public insn ID
-	handle->insn_id(handle, insn, MCInst_getOpcode(mci));
+	// fill the instruction bytes.
+	// we might skip some redundant bytes in front in the case of X86
+	memcpy(insn->bytes, code + insn->size - copy_size, copy_size);
+	insn->size = copy_size;
 
 	// alias instruction might have ID saved in OpcodePub
 	if (MCInst_getOpcodePub(mci))
@@ -364,7 +368,7 @@ cs_err cs_option(csh ud, cs_opt_type type, size_t value)
 		default:
 			break;
 		case CS_OPT_DETAIL:
-			handle->detail = value;
+			handle->detail = (cs_opt_value)value;
 			return CS_ERR_OK;
 		case CS_OPT_SKIPDATA:
 			handle->skipdata = (value == CS_OPT_ON);
@@ -410,7 +414,7 @@ static void skipdata_opstr(char *opstr, const uint8_t *buffer, size_t size)
 CAPSTONE_EXPORT
 size_t cs_disasm(csh ud, const uint8_t *buffer, size_t size, uint64_t offset, size_t count, cs_insn **insn)
 {
-	struct cs_struct *handle = (struct cs_struct *)(uintptr_t)ud;
+	struct cs_struct *handle;
 	MCInst mci;
 	uint16_t insn_size;
 	size_t c = 0, i;
@@ -427,6 +431,7 @@ size_t cs_disasm(csh ud, const uint8_t *buffer, size_t size, uint64_t offset, si
 	unsigned int cache_size = INSN_CACHE_SIZE;
 	size_t next_offset;
 
+	handle = (struct cs_struct *)(uintptr_t)ud;
 	if (!handle) {
 		// FIXME: how to handle this case:
 		// handle->errnum = CS_ERR_HANDLE;
@@ -437,7 +442,7 @@ size_t cs_disasm(csh ud, const uint8_t *buffer, size_t size, uint64_t offset, si
 
 #ifdef CAPSTONE_USE_SYS_DYN_MEM
 	if (count > 0 && count <= INSN_CACHE_SIZE)
-		cache_size = count;
+		cache_size = (unsigned int) count;
 #endif
 
 	// save the original offset for SKIPDATA
@@ -447,6 +452,12 @@ size_t cs_disasm(csh ud, const uint8_t *buffer, size_t size, uint64_t offset, si
 
 	total_size = sizeof(cs_insn) * cache_size;
 	total = cs_mem_malloc(total_size);
+	if (total == NULL) {
+		// insufficient memory
+		handle->errnum = CS_ERR_MEM;
+		return 0;
+	}
+
 	insn_cache = total;
 
 	while (size > 0) {
@@ -478,7 +489,12 @@ size_t cs_disasm(csh ud, const uint8_t *buffer, size_t size, uint64_t offset, si
 			SStream_Init(&ss);
 
 			mci.flat_insn->size = insn_size;
+
+			// map internal instruction opcode to public insn ID
+			handle->insn_id(handle, insn_cache, mci.Opcode);
+
 			handle->printer(&mci, &ss, handle->printer_info);
+
 			fill_insn(handle, insn_cache, ss.buffer, &mci, handle->post_printer, buffer);
 
 			next_offset = insn_size;
@@ -511,7 +527,7 @@ size_t cs_disasm(csh ud, const uint8_t *buffer, size_t size, uint64_t offset, si
 			// we have to skip some amount of data, depending on arch & mode
 			insn_cache->id = 0;	// invalid ID for this "data" instruction
 			insn_cache->address = offset;
-			insn_cache->size = (uint16_t) skipdata_bytes;
+			insn_cache->size = (uint16_t)skipdata_bytes;
 			memcpy(insn_cache->bytes, buffer, skipdata_bytes);
 			strncpy(insn_cache->mnemonic, handle->skipdata_setup.mnemonic,
 					sizeof(insn_cache->mnemonic) - 1);
@@ -610,6 +626,120 @@ void cs_free(cs_insn *insn, size_t count)
 
 	// then free pointer to cs_insn array
 	cs_mem_free(insn);
+}
+
+CAPSTONE_EXPORT
+cs_insn *cs_malloc(csh ud)
+{
+	cs_insn *insn;
+	struct cs_struct *handle = (struct cs_struct *)(uintptr_t)ud;
+
+	insn = cs_mem_malloc(sizeof(cs_insn));
+	if (!insn) {
+		// insufficient memory
+		handle->errnum = CS_ERR_MEM;
+		return NULL;
+	} else {
+		if (handle->detail) {
+			// allocate memory for @detail pointer
+			insn->detail = cs_mem_malloc(sizeof(cs_detail));
+			if (insn->detail == NULL) {	// insufficient memory
+				cs_mem_free(insn);
+				handle->errnum = CS_ERR_MEM;
+				return NULL;
+			}
+		} else
+			insn->detail = NULL;
+	}
+
+	return insn;
+}
+
+// iterator for instruction "single-stepping"
+CAPSTONE_EXPORT
+bool cs_disasm_iter(csh ud, const uint8_t **code, size_t *size,
+		uint64_t *address, cs_insn *insn)
+{
+	struct cs_struct *handle;
+	uint16_t insn_size;
+	MCInst mci;
+	bool r;
+
+	handle = (struct cs_struct *)(uintptr_t)ud;
+	if (!handle) {
+		return false;
+	}
+
+	handle->errnum = CS_ERR_OK;
+
+	MCInst_Init(&mci);
+	mci.csh = handle;
+
+	// relative branches need to know the address & size of current insn
+	mci.address = *address;
+
+	// save all the information for non-detailed mode
+	mci.flat_insn = insn;
+	mci.flat_insn->address = *address;
+#ifdef CAPSTONE_DIET
+	// zero out mnemonic & op_str
+	mci.flat_insn->mnemonic[0] = '\0';
+	mci.flat_insn->op_str[0] = '\0';
+#endif
+
+	r = handle->disasm(ud, *code, *size, &mci, &insn_size, *address, handle->getinsn_info);
+	if (r) {
+		SStream ss;
+		SStream_Init(&ss);
+
+		mci.flat_insn->size = insn_size;
+
+		// map internal instruction opcode to public insn ID
+		handle->insn_id(handle, insn, mci.Opcode);
+
+		handle->printer(&mci, &ss, handle->printer_info);
+
+		fill_insn(handle, insn, ss.buffer, &mci, handle->post_printer, *code);
+
+		*code += insn_size;
+		*size -= insn_size;
+		*address += insn_size;
+	} else { 	// encounter a broken instruction
+		size_t skipdata_bytes;
+
+		// if there is no request to skip data, or remaining data is too small,
+		// then bail out
+		if (!handle->skipdata || handle->skipdata_size > *size)
+			return false;
+
+		if (handle->skipdata_setup.callback) {
+			skipdata_bytes = handle->skipdata_setup.callback(*code, *size,
+					0, handle->skipdata_setup.user_data);
+			if (skipdata_bytes > *size)
+				// remaining data is not enough
+				return false;
+
+			if (!skipdata_bytes)
+				// user requested not to skip data, so bail out
+				return false;
+		} else
+			skipdata_bytes = handle->skipdata_size;
+
+		// we have to skip some amount of data, depending on arch & mode
+		insn->id = 0;	// invalid ID for this "data" instruction
+		insn->address = *address;
+		insn->size = (uint16_t)skipdata_bytes;
+		memcpy(insn->bytes, *code, skipdata_bytes);
+		strncpy(insn->mnemonic, handle->skipdata_setup.mnemonic,
+				sizeof(insn->mnemonic) - 1);
+		skipdata_opstr(insn->op_str, *code, skipdata_bytes);
+
+		*code += skipdata_bytes;
+		*size -= skipdata_bytes;
+		*address += skipdata_bytes;
+	}
+
+	return true;
 }
 
 // return friendly name of regiser in a string

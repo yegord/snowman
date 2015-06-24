@@ -1,10 +1,9 @@
-TXT_FILES	= build.txt hacking.txt licenses.txt todo.txt
-HTML_FILES	= $(TXT_FILES:.txt=.html)
+HTML_FILES	= build.html hacking.html licenses.html todo.html tests.html
 
 .PHONY: all
 all: $(HTML_FILES)
 
-%.html: %.txt
+%.html: %.asciidoc
 	asciidoc -b html -o $@ $<
 
 .PHONY: clean

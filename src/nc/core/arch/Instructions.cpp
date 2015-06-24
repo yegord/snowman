@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -46,7 +46,7 @@ const std::shared_ptr<const Instruction> &Instructions::getCovering(ByteAddr add
 }
 
 bool Instructions::add(std::shared_ptr<const Instruction> instruction) {
-    assert(instruction != NULL);
+    assert(instruction != nullptr);
 
     auto &existing = address2instruction_[instruction->addr()];
     if (!existing) {

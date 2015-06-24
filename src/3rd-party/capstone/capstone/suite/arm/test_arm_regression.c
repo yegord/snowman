@@ -9,9 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../../inttypes.h"
+#include "../../myinttypes.h"
 
-#include <capstone/capstone.h>
+#include <capstone.h>
 
 static csh handle;
 
@@ -24,12 +24,13 @@ struct platform {
 	int syntax;
 };
 
-static char* hex_string(unsigned char *str, int len)
+static char *hex_string(unsigned char *str, size_t len)
 {
 	// returns a malloced string that has the hex version of the string in it
 	// null if failed to malloc
-	char * hex_out = NULL;
-	size_t i = 0;
+	char *hex_out;
+	size_t i;
+
 	hex_out = (char *) malloc(len*2 + 1); // two ascii characters per input character, plus trailing null
 	if (!hex_out) { goto Exit; }
 
@@ -192,10 +193,11 @@ static void test_invalids()
 		}
 
 		cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
+		cs_option(handle, CS_OPT_SYNTAX, CS_OPT_SYNTAX_NOREGNAME);
 
 		for (j = 0; j < invalid->num_invalid_codes; ++j) {
-			struct invalid_code * invalid_code = NULL;
-			char * hex_str = NULL;
+			struct invalid_code *invalid_code = NULL;
+			char *hex_str = NULL;
 
 			invalid_code = invalid->invalid_codes + j;
 
@@ -205,7 +207,7 @@ static void test_invalids()
 
 			free(hex_str);
 
-			count = cs_disasm_ex(handle,
+			count = cs_disasm(handle,
 					invalid_code->code, invalid_code->size, address, 0, &insn
 					);
 
@@ -233,7 +235,7 @@ struct valid_code {
 	unsigned char *code;
 	size_t size;
 	uint32_t start_addr;
-	char* expected_out;
+	char *expected_out;
 	char *comment;
 };
 
@@ -252,24 +254,36 @@ static void test_valids()
 		CS_ARCH_ARM,
 			CS_MODE_THUMB,
 			"Thumb",
-			2,
+			3,
 			{{ (unsigned char *)"\x00\xf0\x26\xe8", 4, 0x352,
+				"0x352:\tblx\t#0x3a0\n"
+					"\top_count: 1\n"
+					"\t\toperands[0].type: IMM = 0x3a0\n",
 
-				 "0x352:\tblx\t#0x3a0\n"
-					 "\top_count: 1\n"
-					 "\t\toperands[0].type: IMM = 0x3a0\n",
+				"thumb2 blx with misaligned immediate"
+			}, { (unsigned char *)"\x05\xdd", 2, 0x1f0,
+				"0x1f0:\tble\t#0x1fe\n"
+					"\top_count: 1\n"
+					"\t\toperands[0].type: IMM = 0x1fe\n"
+					"\tCode condition: 14\n",
 
-				 "thumb2 blx with misaligned immediate"
+				"thumb b cc with thumb-aligned target"
+			}, { (unsigned char *)"\xbd\xe8\xf0\x8f", 4, 0,
+			 "0x0:\tpop.w\t{r4, r5, r6, r7, r8, r9, r10, r11, pc}\n"
+				 "\top_count: 9\n"
+				 "\t\toperands[0].type: REG = r4\n"
+				 "\t\toperands[1].type: REG = r5\n"
+				 "\t\toperands[2].type: REG = r6\n"
+				 "\t\toperands[3].type: REG = r7\n"
+				 "\t\toperands[4].type: REG = r8\n"
+				 "\t\toperands[5].type: REG = r9\n"
+				 "\t\toperands[6].type: REG = r10\n"
+				 "\t\toperands[7].type: REG = r11\n"
+				 "\t\toperands[8].type: REG = pc\n",
 
-			 }, { (unsigned char *)"\x05\xdd", 2, 0x1f0,
-
-				 "0x1f0:\tble\t#0x1fe\n"
-					 "\top_count: 1\n"
-					 "\t\toperands[0].type: IMM = 0x1fe\n"
-					 "\tCode condition: 14\n",
-
-				 "thumb b cc with thumb-aligned target"
-			 }}
+				"thumb2 pop that should be valid"
+			},
+		}
 	}};
 
 	struct valid_instructions * valid = NULL;
@@ -293,6 +307,7 @@ static void test_valids()
 		}
 
 		cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
+		cs_option(handle, CS_OPT_SYNTAX, CS_OPT_SYNTAX_NOREGNAME);
 
 #define _this_printf(...) \
 		{ \
@@ -321,7 +336,7 @@ static void test_valids()
 					valid->platform_comment, hex_str, valid_code->start_addr, 
 					valid_code->comment, valid_code->expected_out);
 
-			count = cs_disasm_ex(handle,
+			count = cs_disasm(handle,
 					valid_code->code, valid_code->size, 
 					valid_code->start_addr, 0, &insn
 					);
@@ -349,10 +364,10 @@ static void test_valids()
 
 				if (memcmp(tmp_buf, valid_code->expected_out, max_len)) {
 					printf(
-							"    ERROR: '''\n%s''' does not match"
-							" expected '''\n%s'''\n", 
-							tmp_buf, valid_code->expected_out
-						  );
+						"    ERROR: '''\n%s''' does not match"
+						" expected '''\n%s'''\n", 
+						tmp_buf, valid_code->expected_out
+					);
 				} else {
 					printf("    SUCCESS: valid\n");
 				}

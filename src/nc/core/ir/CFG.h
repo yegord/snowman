@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -84,7 +84,7 @@ public:
      * \return List of successors of the basic block.
      */
     const std::vector<const BasicBlock *> &getSuccessors(const BasicBlock *basicBlock) const {
-        assert(basicBlock != NULL);
+        assert(basicBlock != nullptr);
         return nc::find(successors_, basicBlock);
     }
 
@@ -94,7 +94,7 @@ public:
      * \return List of predecessors of the basic block.
      */
     const std::vector<const BasicBlock *> &getPredecessors(const BasicBlock *basicBlock) const {
-        assert(basicBlock != NULL);
+        assert(basicBlock != nullptr);
         return nc::find(predecessors_, basicBlock);
     }
 

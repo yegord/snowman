@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -120,6 +120,9 @@ void TreeView::showContextMenu(const QPoint &pos) {
 }
 
 void TreeView::populateContextMenu(QMenu *menu) {
+    if (!treeView_->selectionModel()) {
+        return;
+    }
     if (!treeView_->selectionModel()->selectedIndexes().isEmpty()) {
         menu->addSeparator();
         menu->addAction(copyAction_);
@@ -188,7 +191,7 @@ void TreeView::setDocumentFont(const QFont &font) {
 }
 
 void TreeView::selectFont() {
-    setDocumentFont(QFontDialog::getFont(NULL, documentFont(), this));
+    setDocumentFont(QFontDialog::getFont(nullptr, documentFont(), this));
 }
 
 bool TreeView::eventFilter(QObject *watched, QEvent *event) {

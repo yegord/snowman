@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -58,7 +58,7 @@ public:
      * \param[in] name Name of the parser.
      *
      * \returns Valid pointer to the parser with the given name,
-     *          or NULL if no such parser found.
+     *          or nullptr if no such parser found.
      */
     const Parser *getParser(const QString &name) const;
 

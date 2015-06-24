@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 #pragma once
 
@@ -35,7 +35,7 @@ public:
     Relocation(ByteAddr address, const Symbol *symbol, ByteSize addend = 0):
         address_(address), symbol_(symbol), addend_(addend)
     {
-        assert(symbol != NULL);
+        assert(symbol != nullptr);
     }
 
     /**

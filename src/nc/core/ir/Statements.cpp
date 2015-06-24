@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -99,7 +99,7 @@ Call::Call(std::unique_ptr<Term> target):
     Statement(CALL), 
     target_(std::move(target))
 {
-    assert(target_ != NULL);
+    assert(target_ != nullptr);
 
     target_->setStatement(this);
 }

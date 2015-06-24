@@ -9,13 +9,13 @@ find_path(IDA_PATH
     NAME "idag.exe" "idaq.exe"
     HINTS $ENV{IDA_DIR} $ENV{IDADIR}
     PATHS "C:/Program Files/IDA" "C:/Program Files (x86)/IDA"
-    DOC "IDA Pro installation directory.")
+    DOC "IDA installation directory.")
 
 if(IDA_PATH)
     set(IDA_FOUND TRUE)
-    message(STATUS "Looking for IDA Pro - found")
+    message(STATUS "Looking for IDA - found at ${IDA_PATH}")
 else()
-    message(STATUS "Looking for IDA Pro - not found")
+    message(STATUS "Looking for IDA - not found")
 endif()
 
 #
@@ -39,9 +39,11 @@ set(compiler "unknown")
 if(BORLAND)
     set(compiler "bcc")
 endif()
-if(CMAKE_COMPILER_IS_GNUCXX)
+
+if(CMAKE_COMPILER_IS_GNUCXX OR ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     set(compiler "gcc")
 endif()
+
 if(MSVC)
     set(compiler "vc")
 endif()
@@ -54,20 +56,20 @@ else()
     set(suffix "32")
 endif()
 
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND NOT NC_M32)
     set(library_dir "lib/x64_${platform}_${compiler}_${suffix}")
 else()
     set(library_dir "lib/x86_${platform}_${compiler}_${suffix}")
 endif()
 
 #
-# Find IDA Pro SDK.
+# Find IDA SDK.
 #
 find_path(IDA_SDK_PATH
     NAME ${library_dir}
     HINTS $ENV{IDA_SDK_DIR}
     PATHS "${IDA_PATH}/sdk"
-    DOC "IDA Pro SDK directory.")
+    DOC "IDA SDK directory.")
 
 if(IDA_SDK_PATH)
     set(IDA_SDK_FOUND TRUE)
@@ -103,6 +105,20 @@ if(IDA_SDK_PATH)
         else()
             set(IDA_PLUGIN_EXT ".plw")
         endif()
+    elseif(APPLE)
+        if(IDA_64_BIT_EA_T)
+            set(IDA_PLUGIN_EXT ".pmc64")
+            set(IDA_SHARED_LIB_NAME ida64)
+        else()
+            set(IDA_PLUGIN_EXT ".pmc")
+            set(IDA_SHARED_LIB_NAME ida)
+        endif()
+        if (IDA_PATH)
+            file(GLOB_RECURSE IDA_SHARED_LIBRARY  "${IDA_PATH}/*/lib${IDA_SHARED_LIB_NAME}.dylib")
+        else()
+            file(GLOB_RECURSE IDA_SHARED_LIBRARY  "/Applications/IDA*/lib${IDA_SHARED_LIB_NAME}.dylib")
+        endif()
+        set(IDA_LIBRARIES ${IDA_LIBRARIES} ${IDA_SHARED_LIBRARY})
     else()
         if(IDA_64_BIT_EA_T)
             set(IDA_PLUGIN_EXT ".plx64")
@@ -111,9 +127,9 @@ if(IDA_SDK_PATH)
         endif()
     endif()
 
-    message(STATUS "Looking for IDA Pro SDK - found")
+    message(STATUS "Looking for IDA SDK - found at ${IDA_SDK_PATH}")
 else()
-    message(STATUS "Looking for IDA Pro SDK - not found")
+    message(STATUS "Looking for IDA SDK - not found")
 endif()
 
 unset(platform)

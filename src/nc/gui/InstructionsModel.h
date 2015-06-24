@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -51,10 +51,10 @@ public:
     /**
      * Constructor.
      *
-     * \param parent  Pointer to the parent object. Can be NULL.
-     * \param instructions Pointer to the set of instructions. Can be NULL.
+     * \param parent  Pointer to the parent object. Can be nullptr.
+     * \param instructions Pointer to the set of instructions. Can be nullptr.
      */
-    InstructionsModel(QObject *parent = NULL, std::shared_ptr<const core::arch::Instructions> instructions = NULL);
+    InstructionsModel(QObject *parent = nullptr, std::shared_ptr<const core::arch::Instructions> instructions = nullptr);
 
     /**
      * Sets the set of instructions that must be highlighted.
@@ -66,7 +66,7 @@ public:
     /**
      * \param index Model index.
      *
-     * \return Pointer to the instruction associated with the index. Can be NULL.
+     * \return Pointer to the instruction associated with the index. Can be nullptr.
      */
     const core::arch::Instruction *getInstruction(const QModelIndex &index) const;
 

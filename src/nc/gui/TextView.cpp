@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -278,7 +278,7 @@ void TextView::setDocumentFont(const QFont &font) {
 }
 
 void TextView::selectFont() {
-    setDocumentFont(QFontDialog::getFont(NULL, documentFont(), this));
+    setDocumentFont(QFontDialog::getFont(nullptr, documentFont(), this));
 }
 
 bool TextView::eventFilter(QObject *watched, QEvent *event) {

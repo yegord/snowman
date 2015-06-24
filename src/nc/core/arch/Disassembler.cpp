@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 #include "Disassembler.h"
 
@@ -17,7 +17,7 @@ namespace core {
 namespace arch {
 
 void Disassembler::disassemble(const image::ByteSource *source, ByteAddr begin, ByteAddr end, InstructionCallback callback, const CancellationToken &canceled) {
-    assert(source != NULL);
+    assert(source != nullptr);
     assert(begin <= end);
 
     const SmallByteSize maxInstructionSize = architecture_->maxInstructionSize();
@@ -37,7 +37,7 @@ void Disassembler::disassemble(const image::ByteSource *source, ByteAddr begin, 
 
         if (instruction) {
             assert(instruction->size() > 0);
-            pc += instruction->size();
+            pc = instruction->endAddr();
             callback(std::move(instruction));
         } else {
             ++pc;

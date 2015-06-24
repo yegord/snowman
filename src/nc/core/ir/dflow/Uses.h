@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 #pragma once
 
@@ -64,7 +64,7 @@ public:
      * \return List of term's uses.
      */
     const std::vector<Use> &getUses(const Term *term) const {
-        assert(term != NULL);
+        assert(term != nullptr);
         assert(term->isWrite());
         return nc::find(term2uses_, term);
     }

@@ -3,7 +3,6 @@ set(SOURCES
     ArmArchitecture.h
     ArmDisassembler.cpp
     ArmDisassembler.h
-    ArmInstruction.cpp
     ArmInstruction.h
     ArmInstructionAnalyzer.cpp
     ArmInstructionAnalyzer.h
@@ -11,7 +10,6 @@ set(SOURCES
     ArmRegisters.h
     CallingConventions.cpp
     CallingConventions.h
-    CapstoneDisassembler.h
 )
 
 add_library(nc-arch-arm ${SOURCES})

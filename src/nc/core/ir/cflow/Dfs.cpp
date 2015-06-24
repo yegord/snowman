@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -37,7 +37,7 @@ namespace ir {
 namespace cflow {
 
 Dfs::Dfs(const cflow::Region *region) {
-    assert(region != NULL);
+    assert(region != nullptr);
 
     preordering_.reserve(region->nodes().size());
     postordering_.reserve(region->nodes().size());
@@ -52,7 +52,7 @@ Dfs::Dfs(const cflow::Region *region) {
 }
 
 void Dfs::visit(cflow::Node *node) {
-    assert(node != NULL);
+    assert(node != nullptr);
     assert(find(node2color_, node) == WHITE);
 
     node2color_[node] = GRAY;

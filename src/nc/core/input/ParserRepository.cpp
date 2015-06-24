@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -53,7 +53,7 @@ ParserRepository *ParserRepository::instance() {
 }
 
 void ParserRepository::registerParser(std::unique_ptr<Parser> parser) {
-    assert(parser != NULL);
+    assert(parser != nullptr);
     assert(!getParser(parser->name()) && "Cannot register two parsers with the same name.");
 
     parsers_.push_back(std::move(parser));
@@ -65,7 +65,7 @@ const Parser *ParserRepository::getParser(const QString &name) const {
             return parser;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 const std::vector<const Parser *> &ParserRepository::parsers() const {

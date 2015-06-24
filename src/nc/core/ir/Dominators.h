@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 #pragma once
 
@@ -44,7 +44,7 @@ public:
      * \return The set of dominators of this basic block.
      */
     const std::vector<const BasicBlock *> &getDominators(const BasicBlock *basicBlock) const {
-        assert(basicBlock != NULL);
+        assert(basicBlock != nullptr);
         assert(nc::contains(dominators_, basicBlock));
         return nc::find(dominators_, basicBlock);
     }
@@ -56,9 +56,9 @@ public:
      * \return True of dominating dominates dominated.
      */
     bool isDominating(const BasicBlock *dominating, const BasicBlock *dominated) const {
-        assert(dominating != NULL);
+        assert(dominating != nullptr);
         assert(nc::contains(dominators_, dominating));
-        assert(dominated != NULL);
+        assert(dominated != nullptr);
         assert(nc::contains(dominators_, dominated));
 
         const auto &dominators = getDominators(dominated);

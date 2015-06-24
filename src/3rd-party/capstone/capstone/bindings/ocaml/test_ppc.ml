@@ -17,7 +17,7 @@ let print_string_hex comment str =
 let _PPC_CODE = "\x80\x20\x00\x00\x80\x3f\x00\x00\x10\x43\x23\x0e\xd0\x44\x00\x80\x4c\x43\x22\x02\x2d\x03\x00\x80\x7c\x43\x20\x14\x7c\x43\x20\x93\x4f\x20\x00\x21\x4c\xc8\x00\x21";;
 
 let all_tests = [
-	(CS_ARCH_PPC, [CS_MODE_32; CS_MODE_BIG_ENDIAN], _PPC_CODE, "PPC-64");
+	(CS_ARCH_PPC, [CS_MODE_64; CS_MODE_BIG_ENDIAN], _PPC_CODE, "PPC-64");
 ];;
 
 let print_op handle i op =
@@ -30,6 +30,14 @@ let print_op handle i op =
 			printf "\t\t\toperands[%u].mem.base: REG = %s\n" i (cs_reg_name handle mem.base);
 		if mem.disp != 0 then
 			printf "\t\t\toperands[%u].mem.disp: 0x%x\n" i mem.disp;
+		);
+	| PPC_OP_CRX crx -> ( printf "\t\top[%d]: CRX\n" i;
+		if crx.scale != 0 then
+			printf "\t\t\toperands[%u].crx.scale = %u\n" i crx.scale;
+		if crx.reg != 0 then
+			printf "\t\t\toperands[%u].crx.reg = %s\n" i (cs_reg_name handle crx.reg);
+		if crx.cond != 0 then
+			printf "\t\t\toperands[%u].crx.cond = 0x%x\n" i crx.cond;
 		);
 	);
 	();;

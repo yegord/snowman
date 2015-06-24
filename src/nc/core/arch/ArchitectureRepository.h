@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 #pragma once
 
@@ -38,7 +38,7 @@ public:
      * \param[in] name Name of the architecture.
      *
      * \returns Valid pointer to the architecture with the given name,
-     *          or NULL if no such architecture found.
+     *          or nullptr if no such architecture found.
      */
     const Architecture *getArchitecture(const QString &name) const;
 

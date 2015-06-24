@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -46,7 +46,7 @@ namespace gui {
 Project::Project(QObject *parent):
     QObject(parent),
     image_(std::make_shared<core::image::Image>()),
-    instructions_(std::make_shared<const core::arch::Instructions>()),
+    instructions_(std::make_shared<core::arch::Instructions>()),
     context_(std::make_shared<core::Context>()),
     commandQueue_(new CommandQueue(this))
 {

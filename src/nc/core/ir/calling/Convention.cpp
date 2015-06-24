@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -219,7 +219,7 @@ void Convention::addReturnValueLocation(const MemoryLocation &memoryLocation) {
 }
 
 void Convention::addEnterStatement(std::unique_ptr<Statement> statement) {
-    assert(statement != NULL);
+    assert(statement != nullptr);
     entryStatements_.push_back(std::move(statement));
 }
 

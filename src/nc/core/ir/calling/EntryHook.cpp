@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -39,7 +39,7 @@ namespace ir {
 namespace calling {
 
 EntryHook::EntryHook(const Convention *convention, const FunctionSignature *signature) {
-    assert(convention != NULL);
+    assert(convention != nullptr);
 
     auto &statements = patch_.statements();
 

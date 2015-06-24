@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -46,7 +46,7 @@ namespace core {
 
 Context::Context():
     image_(std::make_shared<image::Image>()),
-    instructions_(std::make_shared<const arch::Instructions>())
+    instructions_(std::make_shared<arch::Instructions>())
 {}
 
 Context::~Context() {}

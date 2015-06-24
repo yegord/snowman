@@ -1,3 +1,14 @@
+0. This documentation explains how to install Python binding for Capstone
+   from source. If you want to install it from PyPi package, see the below
+   docs instead:
+
+   - README.pypi-src: How to compile the Capstone core & install binding
+     at the same time from PyPi package "capstone"
+
+   - README.pypi-win: How to install binding for Windows from PyPi package
+     "capstone-windows". Note that this package already has prebuilt core
+     inside, so no compilation is needed.
+
 1. To install pure Python binding on *nix, run the command below:
 
 		$ sudo make install
@@ -41,7 +52,7 @@
 	
 	E.g, on Ubuntu, you can verify the current cython version with:
 
-		& apt-cache policy cython
+		$ apt-cache policy cython
 
 	Which should at least print version 0.19
 
@@ -89,7 +100,7 @@ Manual method:
 
 		C:\> C:\location_to_python\python.exe setup.py install
 
-	Next, copy libcapstone.dll from the 'Core engine for Windows' package available
+	Next, copy capstone.dll from the 'Core engine for Windows' package available
 	on the same Capstone download page and paste it in the path:
 
 		C:\location_to_python\Lib\site-packages\capstone\

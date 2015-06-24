@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -36,7 +36,7 @@ namespace core {
 namespace ir {
 namespace cflow {
 
-Graph::Graph(): root_(NULL) {}
+Graph::Graph(): root_(nullptr) {}
 
 Graph::~Graph() {}
 

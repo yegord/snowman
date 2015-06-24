@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -69,7 +69,7 @@ namespace nc {
         static_assert(boost::is_pointer<To>::value, "Target type must be a pointer");
 #ifndef NDEBUG
         To result = dynamic_cast<To>(source);
-        assert(source == NULL || result != NULL);
+        assert(source == nullptr || result != nullptr);
         return result;
 #else
         return static_cast<To>(source);

@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -61,9 +61,9 @@ class InspectorView: public QDockWidget {
     /**
      * Constructor.
      *
-     * \param[in] parent Pointer to the parent widget. Can be NULL.
+     * \param[in] parent Pointer to the parent widget. Can be nullptr.
      */
-    InspectorView(QWidget *parent = NULL);
+    InspectorView(QWidget *parent = nullptr);
 
     /**
      * Destructor.
@@ -71,7 +71,7 @@ class InspectorView: public QDockWidget {
     ~InspectorView();
 
     /**
-     * \return Pointer to the tree model being viewed. Can be NULL.
+     * \return Pointer to the tree model being viewed. Can be nullptr.
      */
     InspectorModel *model() const { return model_; }
 
@@ -90,7 +90,7 @@ class InspectorView: public QDockWidget {
     /**
      * Sets the model being viewed.
      *
-     * \param model Pointer to the new model. Can be NULL.
+     * \param model Pointer to the new model. Can be nullptr.
      */
     void setModel(InspectorModel *model);
 

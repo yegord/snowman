@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -78,13 +78,13 @@ InspectorItem *InspectorModel::getItem(const QModelIndex &index) const {
     if (index == QModelIndex()) {
         return root();
     } else {
-        assert(index.internalPointer() != NULL);
+        assert(index.internalPointer() != nullptr);
         return static_cast<InspectorItem *>(index.internalPointer());
     }
 }
 
 QModelIndex InspectorModel::getIndex(const InspectorItem *item) const {
-    assert(item != NULL);
+    assert(item != nullptr);
     if (item == root()) {
         return QModelIndex();
     } else {
@@ -208,7 +208,7 @@ void expand(InspectorItem *item, const core::ir::Term *term, const core::Context
             }
         }
     } else {
-        item->addChild("function = NULL");
+        item->addChild("function = nullptr");
     }
 
     switch (term->kind()) {
@@ -584,7 +584,7 @@ void expand(InspectorItem *item, const core::likec::Type *type) {
 } // namespace detail
 
 void InspectorModel::expand(InspectorItem *item) const {
-    assert(item != NULL);
+    assert(item != nullptr);
 
     if (item->expanded()) {
         return;
@@ -629,7 +629,7 @@ QModelIndex InspectorModel::parent(const QModelIndex &index) const {
     if (item == root()) {
         return QModelIndex();
     } else {
-        assert(item->parent() != NULL);
+        assert(item->parent() != nullptr);
         return getIndex(item->parent());
     }
 }
@@ -642,8 +642,8 @@ QVariant InspectorModel::data(const QModelIndex &index, int role) const {
 }
 
 const core::likec::TreeNode *InspectorModel::getParent(const core::likec::TreeNode *node) {
-    if (context_ == NULL || context_->tree() == NULL) {
-        return NULL;
+    if (context_ == nullptr || context_->tree() == nullptr) {
+        return nullptr;
     }
 
     if (node2parent_.empty()) {

@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -30,8 +30,7 @@
 
 #include <nc/core/arch/ArchitectureRepository.h>
 #include <nc/core/image/Image.h>
-#include <nc/core/mangling/Demangler.h>
-#include <nc/core/mangling/BundledDemangler.h>
+#include <nc/core/mangling/DefaultDemangler.h>
 
 #include "Relocation.h"
 #include "Section.h"
@@ -39,15 +38,15 @@
 namespace nc { namespace core { namespace image {
 
 Image::Image():
-    architecture_(NULL),
-    demangler_(new mangling::BundledDemangler())
+    architecture_(nullptr),
+    demangler_(new mangling::DefaultDemangler())
 {}
 
 Image::~Image() {}
 
 void Image::setArchitecture(const arch::Architecture *architecture) {
-    assert(architecture != NULL);
-    assert(architecture_ == NULL && "Can't set the architecture twice.");
+    assert(architecture != nullptr);
+    assert(architecture_ == nullptr && "Can't set the architecture twice.");
 
     architecture_ = architecture;
 }
@@ -57,7 +56,7 @@ void Image::setArchitecture(const QString &name) {
 }
 
 void Image::addSection(std::unique_ptr<Section> section) {
-    assert(section != NULL);
+    assert(section != nullptr);
     sections_.push_back(std::move(section));
 }
 
@@ -67,7 +66,7 @@ const Section *Image::getSectionContainingAddress(ByteAddr addr) const {
             return section;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 const Section *Image::getSectionByName(const QString &name) const {
@@ -76,7 +75,7 @@ const Section *Image::getSectionByName(const QString &name) const {
             return section;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 ByteSize Image::readBytes(ByteAddr addr, void *buf, ByteSize size) const {
@@ -117,7 +116,7 @@ const Relocation *Image::getRelocation(ByteAddr address) const {
 }
 
 void Image::setDemangler(std::unique_ptr<mangling::Demangler> demangler) {
-    assert(demangler != NULL);
+    assert(demangler != nullptr);
 
     demangler_ = std::move(demangler);
 }

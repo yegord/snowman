@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -81,7 +81,7 @@ public:
         const CancellationToken &canceled, const LogToken &log):
         dataflow_(dataflow), architecture_(architecture), canceled_(canceled), log_(log)
     {
-        assert(architecture != NULL);
+        assert(architecture != nullptr);
     }
 
     /**

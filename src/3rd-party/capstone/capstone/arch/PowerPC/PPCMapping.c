@@ -7892,7 +7892,11 @@ const char *PPC_insn_name(csh handle, unsigned int id)
 
 #ifndef CAPSTONE_DIET
 static name_map group_name_maps[] = {
+	// generic groups
 	{ PPC_GRP_INVALID, NULL },
+	{ PPC_GRP_JUMP,	"jump" },
+
+	// architecture-specific groups
 	{ PPC_GRP_ALTIVEC, "altivec" },
 	{ PPC_GRP_MODE32, "mode32" },
 	{ PPC_GRP_MODE64, "mode64" },
@@ -7903,18 +7907,21 @@ static name_map group_name_maps[] = {
 	{ PPC_GRP_E500, "e500" },
 	{ PPC_GRP_PPC4XX, "ppc4xx" },
 	{ PPC_GRP_PPC6XX, "ppc6xx" },
-
-	{ PPC_GRP_JUMP,	"jump" },
 };
 #endif
 
 const char *PPC_group_name(csh handle, unsigned int id)
 {
 #ifndef CAPSTONE_DIET
-	if (id >= PPC_GRP_ENDING)
+	// verify group id
+	if (id >= PPC_GRP_ENDING || (id > PPC_GRP_JUMP && id < PPC_GRP_ALTIVEC))
 		return NULL;
 
-	return group_name_maps[id].name;
+	// NOTE: when new generic groups are added, 2 must be changed accordingly
+	if (id >= 128)
+		return group_name_maps[id - 128 + 2].name;
+	else
+		return group_name_maps[id].name;
 #else
 	return NULL;
 #endif
@@ -8082,7 +8089,10 @@ static struct ppc_alias alias_insn_name_maps[] = {
 // given alias mnemonic, return instruction ID & CC
 bool PPC_alias_insn(const char *name, struct ppc_alias *alias)
 {
-	int i;
+	size_t i;
+#ifndef CAPSTONE_DIET
+	int x;
+#endif
 
 	for(i = 0; i < ARR_SIZE(alias_insn_name_maps); i++) {
 		if (!strcmp(name, alias_insn_name_maps[i].mnem)) {
@@ -8092,13 +8102,15 @@ bool PPC_alias_insn(const char *name, struct ppc_alias *alias)
 		}
 	}
 
+#ifndef CAPSTONE_DIET
 	// not really an alias insn
-	i = name2id(&insn_name_maps[1], ARR_SIZE(insn_name_maps) - 1, name);
-	if (i != -1) {
-		alias->id = insn_name_maps[i].id;
+	x = name2id(&insn_name_maps[1], ARR_SIZE(insn_name_maps) - 1, name);
+	if (x != -1) {
+		alias->id = insn_name_maps[x].id;
 		alias->cc = PPC_BC_INVALID;
 		return true;
 	}
+#endif
 
 	// not found
 	return false;

@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -37,7 +37,7 @@ namespace gui {
 
 InspectorView::InspectorView(QWidget *parent):
     QDockWidget(tr("Inspector"), parent),
-    model_(NULL)
+    model_(nullptr)
 {
     treeView_ = new QTreeView(this);
     treeView_->setHeaderHidden(true);
@@ -117,7 +117,7 @@ InspectorItem *findDescendant(InspectorItem *item, int maxDepth, T match) {
             }
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 } // anonymous namespace
@@ -137,7 +137,7 @@ void InspectorView::highlightNodes(const std::vector<const core::likec::TreeNode
     foreach (const core::likec::TreeNode *node, nodes) {
         std::vector<const core::likec::TreeNode *> path;
 
-        while (node != NULL) {
+        while (node != nullptr) {
             path.push_back(node);
             node = model()->getParent(node);
         }

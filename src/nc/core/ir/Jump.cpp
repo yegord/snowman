@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -38,7 +38,7 @@ Jump::Jump(std::unique_ptr<Term> condition, JumpTarget thenTarget, JumpTarget el
     Statement(JUMP), condition_(std::move(condition)),
     thenTarget_(std::move(thenTarget)), elseTarget_(std::move(elseTarget))
 {
-    assert(condition_ != NULL && "Jump condition must be not NULL.");
+    assert(condition_ != nullptr && "Jump condition must be not nullptr.");
     assert(thenTarget_ && "Then target must be valid.");
     assert(elseTarget_ && "Else target must be valid.");
 

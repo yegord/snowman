@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -80,6 +80,8 @@ public:
      * \param context Context.
      */
     virtual void createHooks(Context &context) const;
+
+    virtual void detectCallingConventions(Context &context) const;
 
     /**
      * Detects and sets the calling convention of a function.

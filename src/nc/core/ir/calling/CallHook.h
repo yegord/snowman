@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -75,7 +75,7 @@ public:
      * Class constructor.
      *
      * \param[in] convention Valid pointer to the calling convention.
-     * \param[in] signature Pointer to the call's signature. Can be NULL.
+     * \param[in] signature Pointer to the call's signature. Can be nullptr.
      * \param[in] stackArgumentsSize Size of arguments passed on the stack.
      */
     CallHook(const Convention *convention, const CallSignature *signature, const boost::optional<ByteSize> &stackArgumentsSize);
@@ -92,7 +92,7 @@ public:
 
     /**
      * \return Pointer to the statement used for snapshotting reaching definitions.
-     *         Will be NULL if signature was given to the constructor.
+     *         Will be nullptr if signature was given to the constructor.
      */
     const Statement *snapshotStatement() const { return snapshotStatement_; }
 
@@ -101,10 +101,10 @@ public:
      *             in the signature.
      *
      * \return Pointer to the term representing this argument in the hook.
-     *         Will be NULL, if signature does not include such an argument.
+     *         Will be nullptr, if signature does not include such an argument.
      */
     const Term *getArgumentTerm(const Term *term) const {
-        assert(term != NULL);
+        assert(term != nullptr);
         return nc::find(argumentTerms_, term);
     }
 
@@ -113,15 +113,15 @@ public:
      *             in the signature.
      *
      * \return Pointer to the term representing the return value in the hook.
-     *         Will be NULL, if the signature does not include such an argument.
+     *         Will be nullptr, if the signature does not include such an argument.
      */
     const Term *getReturnValueTerm(const Term *term) const {
-        assert(term != NULL);
+        assert(term != nullptr);
         return nc::find(returnValueTerms_, term);
     }
 
     /**
-     * \return Pointer to the stack pointer term. Can be NULL if the corresponding
+     * \return Pointer to the stack pointer term. Can be nullptr if the corresponding
      *         calling convention defines no stack pointer.
      */
     const Term *stackPointer() const { return stackPointer_; }

@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -34,7 +34,7 @@ namespace ir {
 namespace cflow {
 
 Edge::Edge(Node *tail, Node *head):
-    tail_(NULL), head_(NULL)
+    tail_(nullptr), head_(nullptr)
 {
     setTail(tail);
     setHead(head);

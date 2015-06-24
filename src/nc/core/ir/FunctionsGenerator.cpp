@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -139,7 +139,7 @@ std::unique_ptr<Function> FunctionsGenerator::makeFunction(const std::vector<con
     /* Set the entry basic block. */
     if (entry) {
         BasicBlock *clonedEntry = nc::find(clones, entry);
-        assert(clonedEntry != NULL && "Entry must have been cloned.");
+        assert(clonedEntry != nullptr && "Entry must have been cloned.");
 
         function->setEntry(clonedEntry);
     }

@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -100,15 +100,15 @@ public:
     X86InstructionAnalyzerImpl(const X86Architecture *architecture):
         architecture_(architecture)
     {
-        assert(architecture != NULL);
+        assert(architecture != nullptr);
 
         ud_init(&ud_obj_);
         ud_set_mode(&ud_obj_, architecture_->bitness());
     }
 
     void createStatements(const X86Instruction *instr, core::ir::Program *program) {
-        assert(instr != NULL);
-        assert(program != NULL);
+        assert(instr != nullptr);
+        assert(program != nullptr);
 
         currentInstruction_ = instr;
 
@@ -118,7 +118,7 @@ public:
 
         assert(ud_obj_.mnemonic != UD_Iinvalid);
 
-        core::ir::BasicBlock *cachedDirectSuccessor = NULL;
+        core::ir::BasicBlock *cachedDirectSuccessor = nullptr;
         auto directSuccessor = [&]() -> core::ir::BasicBlock * {
             if (!cachedDirectSuccessor) {
                 cachedDirectSuccessor = program->createBasicBlock(instr->endAddr());
@@ -522,7 +522,7 @@ public:
                             result2 = X86Registers::rdx();
                             break;
                         default:
-                            throw core::irgen::InvalidInstructionException("Strange argument size");
+                            throw core::irgen::InvalidInstructionException(tr("Strange argument size"));
                     }
 
                     if (result1->size() == arg0->size()) {
@@ -759,8 +759,11 @@ public:
 
                 if (operand0.size() == operand1.size()) {
                     _[std::move(operand0) ^= std::move(operand1)];
-                } else {
+                } else if (operand0.size() > operand1.size()) {
                     _[std::move(operand0) ^= sign_extend(std::move(operand1))];
+                } else {
+                    /* Weird, but observed in real life. */
+                    _[std::move(operand0) ^= truncate(std::move(operand1))];
                 }
                 break;
             }
@@ -1055,12 +1058,13 @@ public:
 
                 if (operandsAreTheSame(0, 1)) {
                     _[zf ^= operand(0) == constant(0)];
+                    _[sf ^= signed_(operand(0)) < constant(0)];
                 } else {
                     _[zf ^= (operand(0) & operand(1)) == constant(0)];
+                    _[sf ^= signed_(operand(0) & operand(1)) < constant(0)];
                 }
 
                 _[
-                    sf ^= intrinsic(),
                     of ^= constant(0),
                     af ^= undefined(),
                     kill(pseudo_flags)
@@ -1154,7 +1158,7 @@ private:
                 return std::make_unique<core::ir::Constant>(SizedValue(8, operand.lval.ubyte));
             case UD_OP_REG: {
                 auto result = createRegisterAccess(operand.base);
-                assert(result != NULL);
+                assert(result != nullptr);
                 return result;
             }
             default:
@@ -1186,7 +1190,7 @@ private:
 
     std::unique_ptr<core::ir::Term> createRegisterAccess(enum ud_type type) const {
         switch (type) {
-        case UD_NONE: return NULL;
+        case UD_NONE: return nullptr;
 
         #define REG(ud_name, nc_name) case UD_R_##ud_name: return X86InstructionAnalyzer::createTerm(X86Registers::nc_name());
 

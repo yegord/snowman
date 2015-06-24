@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -244,7 +244,7 @@ public:
      * \param[in] type Valid pointer to its type.
      *
      * \return Pointer to the expression representing the initial value of this location.
-     *         Can be NULL.
+     *         Can be nullptr.
      */
     std::unique_ptr<likec::Expression> makeInitialValue(const MemoryLocation &memoryLocation, const likec::Type *type);
 
@@ -254,7 +254,7 @@ public:
      * \param[in] addr Address of a function.
      *
      * \return Pointer to the declaration for a function with this address.
-     *         Will be NULL if no signature is known for the function at this address.
+     *         Will be nullptr if no signature is known for the function at this address.
      */
     likec::FunctionDeclaration *makeFunctionDeclaration(ByteAddr addr);
 

@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -56,6 +56,7 @@ GotoLineWidget::GotoLineWidget(QPlainTextEdit *textEdit, QWidget *parent):
     connect(goButton, SIGNAL(clicked()), this, SLOT(go()));
 
     QHBoxLayout *layout = new QHBoxLayout(this);
+    layout->setContentsMargins(4, 0, 4, 4);
     layout->addWidget(goLabel);
     layout->addWidget(lineEdit_);
     layout->addWidget(goButton);

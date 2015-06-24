@@ -32,7 +32,9 @@ mark_as_advanced(
     CAPSTONE_X86_SUPPORT
     CAPSTONE_X86_REDUCE
     CAPSTONE_USE_DEFAULT_ALLOC
-    CAPSTONE_X86_ATT_DISABLE)
+    CAPSTONE_X86_ATT_DISABLE
+    CAPSTONE_BUILD_STATIC_RUNTIME
+    CAPSTONE_OSXKERNEL_SUPPORT)
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
     add_definitions(-Wno-extra -Wno-unused-function -Wno-unknown-pragmas)
@@ -40,6 +42,10 @@ endif()
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     add_definitions(-Wno-extra)
+endif()
+
+if(${MSVC})
+    add_definitions(/wd4244)
 endif()
 
 add_subdirectory(capstone)

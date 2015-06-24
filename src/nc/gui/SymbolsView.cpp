@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 #include "SymbolsView.h"
 
@@ -14,7 +14,7 @@ namespace gui {
 
 SymbolsView::SymbolsView(QWidget *parent):
     TreeView(tr("Symbols"), parent),
-    model_(NULL)
+    model_(nullptr)
 {
     treeView()->setItemsExpandable(false);
     treeView()->setRootIsDecorated(false);

@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -106,7 +106,7 @@ Expression *Typecast::rewrite() {
                                 }
                             }
                         }
-                        return NULL;
+                        return nullptr;
                     };
 
                     if (auto result = rewrite(binary->left(), binary->right())) {

@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -34,6 +34,7 @@ namespace x86 {
 class X86MasterAnalyzer: public core::MasterAnalyzer {
 public:
     void createProgram(core::Context &context) const override;
+    void detectCallingConventions(core::Context &context) const override;
     void detectCallingConvention(core::Context &context, const core::ir::calling::CalleeId &calleeId) const override;
 };
 

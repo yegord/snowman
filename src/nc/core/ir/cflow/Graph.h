@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -55,17 +55,17 @@ public:
     /**
      * Sets the root region.
      *
-     * \param[in] root Pointer to the new root region. Can be NULL.
+     * \param[in] root Pointer to the new root region. Can be nullptr.
      */
     void setRoot(Region *root) { root_ = root; }
 
     /**
-     * \return Pointer to the root region. Can be NULL.
+     * \return Pointer to the root region. Can be nullptr.
      */
     Region *root() { return root_; }
 
     /**
-     * \return Pointer to the root region. Can be NULL.
+     * \return Pointer to the root region. Can be nullptr.
      */
     const Region *root() const { return root_; }
 

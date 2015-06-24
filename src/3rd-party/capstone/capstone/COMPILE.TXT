@@ -5,6 +5,8 @@ To natively compile for Windows using Microsoft Visual Studio, see COMPILE_MSVC.
 
 To compile using CMake, see COMPILE_CMAKE.TXT.
 
+To compile using XCode on MacOSX, see xcode/README.md.
+
                         *-*-*-*-*-*
 
 Capstone requires no prerequisite packages, so it is easy to compile & install.
@@ -28,11 +30,13 @@ Capstone requires no prerequisite packages, so it is easy to compile & install.
   - CAPSTONE_DIET: use this to make the output binaries more compact.
   - CAPSTONE_X86_REDUCE: another option to make X86 binary smaller.
   - CAPSTONE_X86_ATT_DISABLE: disables AT&T syntax on x86.
+  - CAPSTONE_STATIC: build static library.
+  - CAPSTONE_SHARED: build dynamic (shared) library.
 
-  By default, Capstone use system dynamic memory management, and both DIET and X86_REDUCE
-  modes are disable.
+  By default, Capstone uses system dynamic memory management, both DIET and X86_REDUCE
+  modes are disable, and builds all the static & shared libraries.
 
-  To avoid editing config.mk for these customization, can pass their values to
+  To avoid editing config.mk for these customization, we can pass their values to
   make.sh, as followings.
 
   $ CAPSTONE_ARCHS="arm aarch64 x86" CAPSTONE_USE_SYS_DYN_MEM=no CAPSTONE_DIET=yes CAPSTONE_X86_REDUCE=yes ./make.sh
@@ -84,6 +88,8 @@ Capstone requires no prerequisite packages, so it is easy to compile & install.
 	/usr/include/capstone/ppc.h
 	/usr/include/capstone/sparc.h
 	/usr/include/capstone/systemz.h
+	/usr/include/capstone/xcore.h
+	/usr/include/capstone/platform.h
 	/usr/lib/libcapstone.so (for Linux/*nix), or /usr/lib/libcapstone.dylib (OSX)
 	/usr/lib/libcapstone.a
 
@@ -180,5 +186,5 @@ Capstone requires no prerequisite packages, so it is easy to compile & install.
   Look for the bindings under directory bindings/, and refer to README file
   of corresponding languages.
 
-  Community also provide bindings for C#, Go, Ruby & Vala. Links to these can
-  be found at address http://capstone-engine.org/download.html
+  Community also provide bindings for C#, Go, Ruby, NodeJS, C++ & Vala. Links to
+  these can be found at address http://capstone-engine.org/download.html

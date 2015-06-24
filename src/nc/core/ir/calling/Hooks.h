@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -148,7 +148,7 @@ public:
     /**
      * \param calleeId Callee id.
      *
-     * \return Pointer to the calling convention used for calls to given address. Can be NULL.
+     * \return Pointer to the calling convention used for calls to given address. Can be nullptr.
      */
     const Convention *getConvention(const CalleeId &calleeId) const;
 
@@ -156,7 +156,7 @@ public:
      * \param function Valid pointer to a function.
      *
      * \return Pointer to the last EntryHook used for instrumenting this function.
-     *         Can be NULL.
+     *         Can be nullptr.
      */
     const EntryHook *getEntryHook(const Function *function) const;
 
@@ -164,7 +164,7 @@ public:
      * \param call Valid pointer to a call statement.
      *
      * \return Pointer to the last CallHook used for instrumenting this call.
-     *         Can be NULL.
+     *         Can be nullptr.
      */
     const CallHook *getCallHook(const Call *call) const;
 
@@ -172,7 +172,7 @@ public:
      * \param ret Valid pointer to a return jump.
      *
      * \return Pointer to the last ReturnHook used for instrumenting this jump.
-     *         Can be NULL.
+     *         Can be nullptr.
      */
     const ReturnHook *getReturnHook(const Jump *jump) const;
 

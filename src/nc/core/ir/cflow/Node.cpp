@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -40,7 +40,7 @@ Node *Node::uniquePredecessor() const {
     if (inEdges().size() == 1) {
         return inEdges()[0]->tail();
     } else {
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -48,7 +48,7 @@ Node *Node::uniqueSuccessor() const {
     if (outEdges().size() == 1) {
         return outEdges()[0]->head();
     } else {
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -62,7 +62,7 @@ Node *Node::getOtherSuccessor(const Node *notThis) const {
             return edge->head();
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 } // namespace cflow

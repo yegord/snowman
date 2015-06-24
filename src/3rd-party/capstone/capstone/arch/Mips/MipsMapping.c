@@ -185,7 +185,6 @@ static name_map reg_name_maps[] = {
 
 	{ MIPS_REG_HI, "hi"},
 	{ MIPS_REG_LO, "lo"},
-	{ MIPS_REG_PC, "pc"},
 
 	{ MIPS_REG_P0, "p0"},
 	{ MIPS_REG_P1, "p1"},
@@ -9894,7 +9893,11 @@ const char *Mips_insn_name(csh handle, unsigned int id)
 
 #ifndef CAPSTONE_DIET
 static name_map group_name_maps[] = {
+	// generic groups
 	{ MIPS_GRP_INVALID, NULL },
+	{ MIPS_GRP_JUMP, "jump" },
+
+	// architecture-specific groups
 	{ MIPS_GRP_BITCOUNT, "bitcount" },
 	{ MIPS_GRP_DSP, "dsp" },
 	{ MIPS_GRP_DSPR2, "dspr2" },
@@ -9933,18 +9936,21 @@ static name_map group_name_maps[] = {
 
 	{ MIPS_GRP_GP32BIT, "gp32bit" },
 	{ MIPS_GRP_GP64BIT, "gp64bit" },
-
-	{ MIPS_GRP_JUMP, "jump" }
 };
 #endif
 
 const char *Mips_group_name(csh handle, unsigned int id)
 {
 #ifndef CAPSTONE_DIET
-	if (id >= MIPS_GRP_ENDING)
+	// verify group id
+	if (id >= MIPS_GRP_ENDING || (id > MIPS_GRP_JUMP && id < MIPS_GRP_BITCOUNT))
 		return NULL;
 
-	return group_name_maps[id].name;
+	// NOTE: when new generic groups are added, 2 must be changed accordingly
+	if (id >= 128)
+		return group_name_maps[id - 128 + 2].name;
+	else
+		return group_name_maps[id].name;
 #else
 	return NULL;
 #endif
@@ -9972,7 +9978,7 @@ mips_reg Mips_map_register(unsigned int r)
 		MIPS_REG_AT, MIPS_REG_DSPCCOND, MIPS_REG_DSPCARRY, MIPS_REG_DSPEFI, MIPS_REG_DSPOUTFLAG,
 		MIPS_REG_DSPPOS, MIPS_REG_DSPSCOUNT, MIPS_REG_FP, MIPS_REG_GP, MIPS_REG_2,
 		MIPS_REG_1, MIPS_REG_0, MIPS_REG_6, MIPS_REG_4, MIPS_REG_5,
-		MIPS_REG_3, MIPS_REG_7, MIPS_REG_PC, MIPS_REG_RA, MIPS_REG_SP,
+		MIPS_REG_3, MIPS_REG_7, 0, MIPS_REG_RA, MIPS_REG_SP,
 		MIPS_REG_ZERO, MIPS_REG_A0, MIPS_REG_A1, MIPS_REG_A2, MIPS_REG_A3,
 		MIPS_REG_AC0, MIPS_REG_AC1, MIPS_REG_AC2, MIPS_REG_AC3, MIPS_REG_AT,
 		MIPS_REG_CC0, MIPS_REG_CC1, MIPS_REG_CC2, MIPS_REG_CC3, MIPS_REG_CC4,

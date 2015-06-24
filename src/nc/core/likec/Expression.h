@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -74,7 +74,7 @@ public:
      * \param[in] expressionKind Kind of expression.
      */
     Expression(Tree &tree, int expressionKind):
-        TreeNode(tree, EXPRESSION), expressionKind_(expressionKind), term_(NULL)
+        TreeNode(tree, EXPRESSION), expressionKind_(expressionKind), term_(nullptr)
     {}
 
     /**
@@ -88,8 +88,8 @@ public:
      * \param[in] term Term this expression was created from.
      */
     void setTerm(const ir::Term *term) {
-        assert(term != NULL);
-        assert(term_ == NULL); /* Must be used for initialization only. */
+        assert(term != nullptr);
+        assert(term_ == nullptr); /* Must be used for initialization only. */
         
         term_ = term;
     }

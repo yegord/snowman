@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -132,7 +132,7 @@ void DataflowAnalyzer::analyze(const CFG &cfg) {
      * Remove information about terms that disappeared.
      * Terms can disappear if e.g. a call is deinstrumented during the analysis.
      */
-    auto disappeared = [](const Term *term){ return term->statement()->basicBlock() == NULL; };
+    auto disappeared = [](const Term *term){ return term->statement()->basicBlock() == nullptr; };
 
     std::vector<const Term *> disappearedTerms;
     foreach (auto &termAndDefinitions, dataflow().term2definitions()) {
@@ -219,6 +219,7 @@ Value *DataflowAnalyzer::computeValue(const Term *term, const ExecutionContext &
             value->setAbstractValue(constant->value());
             value->makeNotStackOffset();
             value->makeNotProduct();
+            value->makeNotReturnAddress();
             return value;
         }
         case Term::INTRINSIC: {
@@ -401,7 +402,7 @@ Value *DataflowAnalyzer::computeValue(const Term *term, const MemoryLocation &me
      *
      * Heuristic: merge information only from terms that define lower bits of the term's value.
      */
-    const std::vector<const Term *> *lowerBitsDefinitions = NULL;
+    const std::vector<const Term *> *lowerBitsDefinitions = nullptr;
 
     if (byteOrder == ByteOrder::LittleEndian) {
         if (definitions.chunks().front().location().addr() == memoryLocation.addr()) {
@@ -439,7 +440,7 @@ Value *DataflowAnalyzer::computeValue(const Term *term, const MemoryLocation &me
             auto definitionValue = dataflow().getValue(definition);
             if (definitionValue->isNotReturnAddress()) {
                 value->makeNotReturnAddress();
-            } else {
+            } else if (definitionValue->isReturnAddress()) {
                 value->makeReturnAddress();
             }
         }

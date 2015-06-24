@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -56,15 +56,15 @@ public:
     /**
      * Constructor.
      *
-     * \param parent    Pointer to the parent object. Can be NULL.
-     * \param image     Pointer to the image. Can be NULL.
+     * \param parent    Pointer to the parent object. Can be nullptr.
+     * \param image     Pointer to the image. Can be nullptr.
      */
-    SectionsModel(QObject *parent = NULL, std::shared_ptr<const core::image::Image> image = NULL);
+    SectionsModel(QObject *parent = nullptr, std::shared_ptr<const core::image::Image> image = nullptr);
 
     /**
      * \param index Model index.
      *
-     * \return Pointer to the section associated with the index. Can be NULL.
+     * \return Pointer to the section associated with the index. Can be nullptr.
      */
     const core::image::Section *getSection(const QModelIndex &index) const;
 

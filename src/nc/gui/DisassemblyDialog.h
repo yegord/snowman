@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -61,22 +61,22 @@ public:
      *
      * \param parent Parent widget.
      */
-    DisassemblyDialog(QWidget *parent = NULL);
+    DisassemblyDialog(QWidget *parent = nullptr);
 
     /**
      * Sets the associated executable image.
      *
-     * \param image Pointer to the image. Can be NULL.
+     * \param image Pointer to the image. Can be nullptr.
      */
     void setImage(const std::shared_ptr<const core::image::Image> &image = std::shared_ptr<const core::image::Image>());
 
     /**
-     * \return Pointer to the executable image. Can be NULL.
+     * \return Pointer to the executable image. Can be nullptr.
      */
     const std::shared_ptr<const core::image::Image> &image() const { return image_; }
 
     /**
-     * \return Pointer to the currently selected section. Can be NULL.
+     * \return Pointer to the currently selected section. Can be nullptr.
      */
     const core::image::Section *selectedSection() const;
 

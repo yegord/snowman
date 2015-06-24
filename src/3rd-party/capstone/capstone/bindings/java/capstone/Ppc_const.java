@@ -14,8 +14,8 @@ public class Ppc_const {
 	public static final int PPC_BC_NE = (2<<5)|4;
 	public static final int PPC_BC_UN = (3<<5)|12;
 	public static final int PPC_BC_NU = (3<<5)|4;
-	public static final int PPC_BC_SO = 4<<5;
-	public static final int PPC_BC_NS = 4<<5;
+	public static final int PPC_BC_SO = (4<<5)|12;
+	public static final int PPC_BC_NS = (4<<5)|4;
 
 	// PPC branch hint for some branch instructions
 
@@ -29,6 +29,7 @@ public class Ppc_const {
 	public static final int PPC_OP_REG = 1;
 	public static final int PPC_OP_IMM = 2;
 	public static final int PPC_OP_MEM = 3;
+	public static final int PPC_OP_CRX = 64;
 
 	// PPC registers
 
@@ -1153,16 +1154,20 @@ public class Ppc_const {
 	// Group of PPC instructions
 
 	public static final int PPC_GRP_INVALID = 0;
-	public static final int PPC_GRP_ALTIVEC = 1;
-	public static final int PPC_GRP_MODE32 = 2;
-	public static final int PPC_GRP_MODE64 = 3;
-	public static final int PPC_GRP_BOOKE = 4;
-	public static final int PPC_GRP_NOTBOOKE = 5;
-	public static final int PPC_GRP_SPE = 6;
-	public static final int PPC_GRP_VSX = 7;
-	public static final int PPC_GRP_E500 = 8;
-	public static final int PPC_GRP_PPC4XX = 9;
-	public static final int PPC_GRP_PPC6XX = 10;
-	public static final int PPC_GRP_JUMP = 11;
-	public static final int PPC_GRP_ENDING = 12;
+
+	// Generic groups
+	public static final int PPC_GRP_JUMP = 1;
+
+	// Architecture-specific groups
+	public static final int PPC_GRP_ALTIVEC = 128;
+	public static final int PPC_GRP_MODE32 = 129;
+	public static final int PPC_GRP_MODE64 = 130;
+	public static final int PPC_GRP_BOOKE = 131;
+	public static final int PPC_GRP_NOTBOOKE = 132;
+	public static final int PPC_GRP_SPE = 133;
+	public static final int PPC_GRP_VSX = 134;
+	public static final int PPC_GRP_E500 = 135;
+	public static final int PPC_GRP_PPC4XX = 136;
+	public static final int PPC_GRP_PPC6XX = 137;
+	public static final int PPC_GRP_ENDING = 138;
 }

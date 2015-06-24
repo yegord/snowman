@@ -1,0 +1,18 @@
+Snowman
+=======
+
+http://derevenets.com/[Snowman] is a native code to C/C++ decompiler, supporting x86, AMD64, and ARM (experimental) architectures.
+You can use it as a standalone GUI application, command-line tool, IDA plug-in, or a library.
+Snowman is link:doc/licenses.asciidoc[free software].
+
+Use
+---
+Clone the https://github.com/yegord/snowman[repository], follow the link:doc/build.asciidoc[build instructions], run the decompiler.
+Alternatively, download the http://derevenets.com/[prebuilt packages], unpack, and run.
+
+Contribute
+----------
+We are not done yet.
+We want better generated code, even more convenient GUI, support for other architectures.
+Feel free to link:doc/todo.asciidoc[pick a problem], solve it, and send a link:https://github.com/yegord/snowman/pulls[pull request].
+Write to our link:http://lists.derevenets.com/mailman/listinfo/snowman[mailing list] if you have questions.

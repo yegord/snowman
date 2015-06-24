@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -25,11 +25,11 @@
 
 /**
  * \file
- * 
+ *
  * IDA headers define some functions that conflict with definitions from Qt.
  * So we trick compiler by &#35;defining them to functions with different names.
- * 
- * Note that this header must be include BEFORE any of the IDA headers. 
+ *
+ * Note that this header must be include BEFORE any of the IDA headers.
  */
 
 /*
@@ -42,6 +42,11 @@
 
 #if defined(__GNUC__) || defined(__clang__)
 #include <time.h>
+#endif
+
+#ifdef __MAC__
+#define USE_DANGEROUS_FUNCTIONS
+#include <fcntl.h>
 #endif
 
 #define qstrdup ida_qstrdup

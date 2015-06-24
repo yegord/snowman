@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -147,7 +147,7 @@ private:
      * \param region Valid pointer to the region.
      * \param subregion Valid pointer to the subregion.
      *
-     * \return Pointer to the subregion on success, NULL on failure.
+     * \return Pointer to the subregion on success, nullptr on failure.
      */
     Region *insertSubregion(Region *region, std::unique_ptr<Region> subregion);
 };

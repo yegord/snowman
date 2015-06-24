@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 //
 // SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
@@ -44,11 +44,12 @@ namespace nc { namespace gui {
 SearchWidget::SearchWidget(std::unique_ptr<Searcher> searcher, QWidget *parent):
     QWidget(parent), searcher_(std::move(searcher))
 {
-    assert(searcher_ != NULL);
+    assert(searcher_ != nullptr);
 
     auto supportedFlags = searcher_->supportedFlags();
 
     QHBoxLayout *layout = new QHBoxLayout(this);
+    layout->setContentsMargins(4, 0, 4, 4);
 
     QLabel *findLabel = new QLabel(tr("Find:"), this);
     layout->addWidget(findLabel);

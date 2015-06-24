@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "../../inttypes.h"
+#include "../../myinttypes.h"
 
 #include "ARMAddressingModes.h"
 #include "ARMBaseInfo.h"
@@ -374,7 +374,8 @@ uint64_t ARM_getFeatureBits(unsigned int mode)
 	// FIXME: no Armv8 support?
 	//Bits -= ARM_HasV7Ops;
 	//Bits &= ~ARM_FeatureMP;
-	//Bits &= ~ARM_HasV8Ops;
+	if ((mode & CS_MODE_V8) == 0)
+		Bits &= ~ARM_HasV8Ops;
 	//Bits &= ~ARM_HasV6Ops;
 
 	if ((mode & CS_MODE_MCLASS) == 0)
@@ -448,8 +449,6 @@ static DecodeStatus _ARM_getInstruction(cs_struct *ud, MCInst *MI, const uint8_t
 	if (code_len < 4)
 		// not enough data
 		return MCDisassembler_Fail;
-
-	ud->ITBlock.size = 0;
 
 	if (MI->flat_insn->detail) {
 		memset(&MI->flat_insn->detail->arm, 0, sizeof(cs_arm));
@@ -686,14 +685,12 @@ static DecodeStatus _Thumb_getInstruction(cs_struct *ud, MCInst *MI, const uint8
 	bool InITBlock;
 	unsigned Firstcond, Mask; 
 	uint32_t NEONLdStInsn, insn32, NEONDataInsn, NEONCryptoInsn, NEONv8Insn;
-	int i;
+	size_t i;
 
 	// We want to read exactly 2 bytes of data.
 	if (code_len < 2)
 		// not enough data
 		return MCDisassembler_Fail;
-
-	ud->ITBlock.size = 0;
 
 	if (MI->flat_insn->detail) {
 		memset(&MI->flat_insn->detail->arm, 0, sizeof(cs_arm));
@@ -1272,8 +1269,7 @@ static DecodeStatus DecodeRegListOperand(MCInst *Inst, unsigned Val,
 	}
 
 	if (opcode == ARM_t2LDMIA_UPD && WritebackReg == ARM_SP) {
-		if (Val & (1 << ARM_SP)
-				|| ((Val & (1 << ARM_PC)) && (Val & (1 << ARM_LR)))) {
+		if (Val & (1 << 13) || ((Val & (1 << 15)) && (Val & (1 << 14)))) {
 			// invalid thumb2 pop
 			// needs no sp in reglist and not both pc and lr set at the same time
 			return MCDisassembler_Fail;
@@ -1773,6 +1769,7 @@ static DecodeStatus DecodeAddrMode3Instruction(MCInst *Inst, unsigned Insn,
 	}
 
 	if (writeback) { // Writeback
+		Inst->writeback = true;
 		if (P)
 			U |= ARMII_IndexModePre << 9;
 		else

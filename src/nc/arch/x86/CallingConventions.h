@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -57,6 +57,7 @@ public:
 
 /**
  * 32-bit cdecl calling convention.
+ * Tweaked to allow passing one argument via ecx (like in thiscall).
  */
 class Cdecl32CallingConvention: public core::ir::calling::Convention {
 public:
@@ -79,6 +80,7 @@ public:
 
 /**
  * 32-bit stdcall calling convention.
+ * Tweaked to allow passing one argument via ecx (like in thiscall).
  */
 class Stdcall32CallingConvention: public core::ir::calling::Convention {
 public:

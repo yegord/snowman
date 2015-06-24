@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -62,7 +62,7 @@ public:
      * Class constructor.
      *
      * \param[in] convention Valid pointer to the calling convention.
-     * \param[in] signature Pointer to the function's signature. Can be NULL.
+     * \param[in] signature Pointer to the function's signature. Can be nullptr.
      */
     ReturnHook(const Convention *convention, const FunctionSignature *signature);
 
@@ -81,10 +81,10 @@ public:
      *             in the signature.
      *
      * \return Pointer to the term representing the return value in the hook.
-     *         Will be NULL, if the signature does not include such an argument.
+     *         Will be nullptr, if the signature does not include such an argument.
      */
     const Term *getReturnValueTerm(const Term *term) const {
-        assert(term != NULL);
+        assert(term != nullptr);
         return nc::find(returnValueTerms_, term);
     }
 

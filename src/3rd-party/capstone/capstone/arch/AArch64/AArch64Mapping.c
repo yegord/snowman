@@ -832,13 +832,13 @@ static insn_map insns[] = {
 	{
 		AArch64_BL, ARM64_INS_BL,
 #ifndef CAPSTONE_DIET
-		{ ARM64_REG_SP, 0 }, { ARM64_REG_LR, 0 }, { 0 }, 0, 0
+		{ 0 }, { ARM64_REG_LR, 0 }, { 0 }, 0, 0
 #endif
 	},
 	{
 		AArch64_BLR, ARM64_INS_BLR,
 #ifndef CAPSTONE_DIET
-		{ ARM64_REG_SP, 0 }, { ARM64_REG_LR, 0 }, { 0 }, 0, 0
+		{ 0 }, { ARM64_REG_LR, 0 }, { 0 }, 0, 0
 #endif
 	},
 	{
@@ -14802,23 +14802,31 @@ const char *AArch64_insn_name(csh handle, unsigned int id)
 
 #ifndef CAPSTONE_DIET
 static name_map group_name_maps[] = {
+	// generic groups
 	{ ARM64_GRP_INVALID, NULL },
+	{ ARM64_GRP_JUMP, "jump" },
+
+	// architecture-specific groups
 	{ ARM64_GRP_CRYPTO, "crypto" },
 	{ ARM64_GRP_FPARMV8, "fparmv8" },
 	{ ARM64_GRP_NEON, "neon" },
 	{ ARM64_GRP_CRC, "crc" },
 
-	{ ARM64_GRP_JUMP, "jump" },
 };
 #endif
 
 const char *AArch64_group_name(csh handle, unsigned int id)
 {
 #ifndef CAPSTONE_DIET
-	if (id >= ARM64_GRP_ENDING)
+	// verify group id
+	if (id >= ARM64_GRP_ENDING || (id > ARM64_GRP_JUMP && id < ARM64_GRP_CRYPTO))
 		return NULL;
 
-	return group_name_maps[id].name;
+	// NOTE: when new generic groups are added, 2 must be changed accordingly
+	if (id >= 128)
+		return group_name_maps[id - 128 + 2].name;
+	else
+		return group_name_maps[id].name;
 #else
 	return NULL;
 #endif

@@ -47,7 +47,7 @@ CAMLprim value _cs_disasm(cs_arch arch, csh handle, const uint8_t * code, size_t
 			Store_field(rec_insn, 0, Val_int(insn[j-1].id));
 			Store_field(rec_insn, 1, Val_int(insn[j-1].address));
 			Store_field(rec_insn, 2, Val_int(insn[j-1].size));
-			
+
 			// copy raw bytes of instruction
 			lcount = insn[j-1].size;
 			if (lcount) {
@@ -107,7 +107,7 @@ CAMLprim value _cs_disasm(cs_arch arch, csh handle, const uint8_t * code, size_t
 					case CS_ARCH_ARM:
 						arch_info = caml_alloc(1, 0);
 
-						op_info_val = caml_alloc(9, 0);
+						op_info_val = caml_alloc(10, 0);
 						Store_field(op_info_val, 0, Val_bool(insn[j-1].detail->arm.usermode));
 						Store_field(op_info_val, 1, Val_int(insn[j-1].detail->arm.vector_size));
 						Store_field(op_info_val, 2, Val_int(insn[j-1].detail->arm.vector_data));
@@ -116,6 +116,7 @@ CAMLprim value _cs_disasm(cs_arch arch, csh handle, const uint8_t * code, size_t
 						Store_field(op_info_val, 5, Val_int(insn[j-1].detail->arm.cc));
 						Store_field(op_info_val, 6, Val_bool(insn[j-1].detail->arm.update_flags));
 						Store_field(op_info_val, 7, Val_bool(insn[j-1].detail->arm.writeback));
+						Store_field(op_info_val, 8, Val_int(insn[j-1].detail->arm.mem_barrier));
 
 						lcount = insn[j-1].detail->arm.op_count;
 						if (lcount > 0) {
@@ -171,7 +172,7 @@ CAMLprim value _cs_disasm(cs_arch arch, csh handle, const uint8_t * code, size_t
 						} else	// empty list
 							array = Atom(0);
 
-						Store_field(op_info_val, 8, array);
+						Store_field(op_info_val, 9, array);
 
 						// finally, insert this into arch_info
 						Store_field(arch_info, 0, op_info_val);
@@ -435,6 +436,14 @@ CAMLprim value _cs_disasm(cs_arch arch, csh handle, const uint8_t * code, size_t
 										Store_field(tmp3, 1, Val_int(insn[j-1].detail->ppc.operands[i].mem.disp));
 										Store_field(tmp, 0, tmp3);
 										break;
+									case PPC_OP_CRX:
+										tmp = caml_alloc(1, 4);
+										tmp3 = caml_alloc(3, 0);
+										Store_field(tmp3, 0, Val_int(insn[j-1].detail->ppc.operands[i].crx.scale));
+										Store_field(tmp3, 1, Val_int(insn[j-1].detail->ppc.operands[i].crx.reg));
+										Store_field(tmp3, 2, Val_int(insn[j-1].detail->ppc.operands[i].crx.cond));
+										Store_field(tmp, 0, tmp3);
+										break;
 									default: break;
 								}
 								Store_field(tmp2, 0, tmp);
@@ -677,10 +686,10 @@ CAMLprim value ocaml_cs_disasm(value _arch, value _mode, value _code, value _add
 				mode |= CS_MODE_MCLASS;
 				break;
 			case 7:
-				mode |= CS_MODE_MICRO;
+				mode |= CS_MODE_V8;
 				break;
 			case 8:
-				mode |= CS_MODE_N64;
+				mode |= CS_MODE_MICRO;
 				break;
 			case 9:
 				mode |= CS_MODE_MIPS3;
@@ -696,6 +705,12 @@ CAMLprim value ocaml_cs_disasm(value _arch, value _mode, value _code, value _add
 				break;
 			case 13:
 				mode |= CS_MODE_BIG_ENDIAN;
+				break;
+			case 14:
+				mode |= CS_MODE_MIPS32;
+				break;
+			case 15:
+				mode |= CS_MODE_MIPS64;
 				break;
 			default:
 				caml_invalid_argument("Invalid mode");
@@ -726,7 +741,7 @@ CAMLprim value ocaml_cs_disasm_internal(value _arch, value _handle, value _code,
 	uint64_t addr, count, code_len;
 
 	handle = Int64_val(_handle);
-	
+
 	arch = Int_val(_arch);
 	code = (uint8_t *)String_val(_code);
 	code_len = caml_string_length(_code);
@@ -802,10 +817,10 @@ CAMLprim value ocaml_open(value _arch, value _mode)
 				mode |= CS_MODE_MCLASS;
 				break;
 			case 7:
-				mode |= CS_MODE_MICRO;
+				mode |= CS_MODE_V8;
 				break;
 			case 8:
-				mode |= CS_MODE_N64;
+				mode |= CS_MODE_MICRO;
 				break;
 			case 9:
 				mode |= CS_MODE_MIPS3;
@@ -822,6 +837,12 @@ CAMLprim value ocaml_open(value _arch, value _mode)
 			case 13:
 				mode |= CS_MODE_BIG_ENDIAN;
 				break;
+			case 14:
+				mode |= CS_MODE_MIPS32;
+				break;
+			case 15:
+				mode |= CS_MODE_MIPS64;
+				break;
 			default:
 				caml_invalid_argument("Invalid mode");
 				return Val_emptylist;
@@ -829,7 +850,7 @@ CAMLprim value ocaml_open(value _arch, value _mode)
 		_mode = Field(_mode, 1);  /* point to the tail for next loop */
 	}
 
-	if (cs_open(arch, mode, &handle) != 0) 
+	if (cs_open(arch, mode, &handle) != 0)
 		CAMLreturn(Val_int(0));
 
 	CAMLlocal1(result);

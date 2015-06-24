@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 #pragma once
 
@@ -35,7 +35,7 @@ public:
      * Assigns a calling convention to a callee id.
      *
      * \param calleeId Callee id.
-     * \param convention Pointer to a calling convention of the function. Can be NULL.
+     * \param convention Pointer to a calling convention of the function. Can be nullptr.
      */
     void setConvention(const CalleeId &calleeId, const Convention *convention) {
         id2convention_[calleeId] = convention;
@@ -44,7 +44,7 @@ public:
     /**
      * \param calleeId Callee id.
      *
-     * \return Pointer to the calling convention used for calls to given address. Can be NULL.
+     * \return Pointer to the calling convention used for calls to given address. Can be nullptr.
      */
     const Convention *getConvention(const CalleeId &calleeId) const {
         return nc::find(id2convention_, calleeId);

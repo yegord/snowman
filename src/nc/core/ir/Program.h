@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -93,14 +93,14 @@ public:
     /**
      * \param address       Address.
      *
-     * \return Pointer to the basic block starting at given address. Can be NULL.
+     * \return Pointer to the basic block starting at given address. Can be nullptr.
      */
     BasicBlock *getBasicBlockStartingAt(ByteAddr address) const;
 
     /**
      * \param address       Address.
      *
-     * \return Pointer to the basic block covering given address. Can be NULL.
+     * \return Pointer to the basic block covering given address. Can be nullptr.
      */
     BasicBlock *getBasicBlockCovering(ByteAddr address) const;
 

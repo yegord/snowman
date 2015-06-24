@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 #include "ArmArchitecture.h"
 
@@ -26,7 +26,7 @@ ArmArchitecture::ArmArchitecture(ByteOrder byteOrder):
         setName(QLatin1String("arm-be"));
     }
     setBitness(32);
-    setMaxInstructionSize(ArmInstruction::MAX_SIZE);
+    setMaxInstructionSize(ArmInstruction::maxSize());
 
     setRegisters(ArmRegisters::instance());
 

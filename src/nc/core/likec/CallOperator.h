@@ -1,5 +1,5 @@
-/* The file is part of Snowman decompiler.             */
-/* See doc/licenses.txt for the licensing information. */
+/* The file is part of Snowman decompiler. */
+/* See doc/licenses.asciidoc for the licensing information. */
 
 /* * SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
  * Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
@@ -74,7 +74,7 @@ class CallOperator: public Expression {
      * \param argument Valid pointer to an expression.
      */
     void addArgument(std::unique_ptr<Expression> argument) {
-        assert(argument != NULL);
+        assert(argument != nullptr);
         arguments_.push_back(std::move(argument));
     }
 

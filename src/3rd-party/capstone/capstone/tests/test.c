@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "../inttypes.h"
+#include "../myinttypes.h"
 
 #include <capstone.h>
 
@@ -37,10 +37,14 @@ static void test()
 //#define ARM_CODE "\x04\xe0\x2d\xe5"
 #define ARM_CODE "\xED\xFF\xFF\xEB\x04\xe0\x2d\xe5\x00\x00\x00\x00\xe0\x83\x22\xe5\xf1\x02\x03\x0e\x00\x00\xa0\xe3\x02\x30\xc1\xe7\x00\x00\x53\xe3"
 #define ARM_CODE2 "\x10\xf1\x10\xe7\x11\xf2\x31\xe7\xdc\xa1\x2e\xf3\xe8\x4e\x62\xf3"
+#define ARMV8 "\xe0\x3b\xb2\xee\x42\x00\x01\xe1\x51\xf0\x7f\xf5"
+#define THUMB_MCLASS "\xef\xf3\x02\x80"
 #define THUMB_CODE "\x70\x47\xeb\x46\x83\xb0\xc9\x68"
 #define THUMB_CODE2 "\x4f\xf0\x00\x01\xbd\xe8\x00\x88\xd1\xe8\x00\xf0"
 #define MIPS_CODE "\x0C\x10\x00\x97\x00\x00\x00\x00\x24\x02\x00\x0c\x8f\xa2\x00\x00\x34\x21\x34\x56"
 #define MIPS_CODE2 "\x56\x34\x21\x34\xc2\x17\x01\x00"
+#define MIPS_32R6M "\x00\x07\x00\x07\x00\x11\x93\x7c\x01\x8c\x8b\x7c\x00\xc7\x48\xd0"
+#define MIPS_32R6 "\xec\x80\x00\x19\x7c\x43\x22\xa0"
 //#define ARM64_CODE "\x00\x40\x21\x4b"	// 	sub		w0, w0, w1, uxtw
 //#define ARM64_CODE "\x21\x7c\x02\x9b"	// mul	x1, x1, x2
 //#define ARM64_CODE "\x20\x74\x0b\xd5"	// dc	zva, x0
@@ -120,18 +124,46 @@ static void test()
 			"THUMB"
 		},
 		{
+			CS_ARCH_ARM,
+			(cs_mode)(CS_MODE_THUMB + CS_MODE_MCLASS),
+			(unsigned char*)THUMB_MCLASS,
+			sizeof(THUMB_MCLASS) - 1,
+			"Thumb-MClass"
+		},
+		{
+			CS_ARCH_ARM,
+			(cs_mode)(CS_MODE_ARM + CS_MODE_V8),
+			(unsigned char*)ARMV8,
+			sizeof(ARMV8) - 1,
+			"Arm-V8"
+		},
+		{
 			CS_ARCH_MIPS,
-			(cs_mode)(CS_MODE_32 + CS_MODE_BIG_ENDIAN),
+			(cs_mode)(CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN),
 			(unsigned char*)MIPS_CODE,
 			sizeof(MIPS_CODE) - 1,
 			"MIPS-32 (Big-endian)"
 		},
 		{
 			CS_ARCH_MIPS,
-			(cs_mode)(CS_MODE_64 + CS_MODE_LITTLE_ENDIAN),
+			(cs_mode)(CS_MODE_MIPS64 + CS_MODE_LITTLE_ENDIAN),
 			(unsigned char*)MIPS_CODE2,
 			sizeof(MIPS_CODE2) - 1,
 			"MIPS-64-EL (Little-endian)"
+		},
+		{
+			CS_ARCH_MIPS,
+			(cs_mode)(CS_MODE_MIPS32R6 + CS_MODE_MICRO + CS_MODE_BIG_ENDIAN),
+			(unsigned char*)MIPS_32R6M,
+			sizeof(MIPS_32R6M) - 1,
+			"MIPS-32R6 | Micro (Big-endian)"
+		},
+		{
+			CS_ARCH_MIPS,
+			(cs_mode)(CS_MODE_MIPS32R6 + CS_MODE_BIG_ENDIAN),
+			(unsigned char*)MIPS_32R6,
+			sizeof(MIPS_32R6) - 1,
+			"MIPS-32R6 (Big-endian)"
 		},
 		{
 			CS_ARCH_ARM64,
