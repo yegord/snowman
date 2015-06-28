@@ -407,6 +407,22 @@ private:
             ];
             break;
         }
+        case ARM_INS_UXTAB: {
+            _[operand(0) ^= zero_extend(operand(1, 8)) + operand(2)];
+            break;
+        }
+        case ARM_INS_UXTB: {
+            _[operand(0) ^= zero_extend(operand(1, 8))];
+            break;
+        }
+        case ARM_INS_UXTAH: {
+            _[operand(0) ^= zero_extend(operand(1, 16)) + operand(2)];
+            break;
+        }
+        case ARM_INS_UXTH: {
+            _[operand(0) ^= zero_extend(operand(1, 16))];
+            break;
+        }
         default: {
             _(std::make_unique<core::ir::InlineAssembly>());
             break;
