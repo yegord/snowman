@@ -9,6 +9,9 @@ enable_testing()
 # Generate compilation database for YouCompleteMe.
 set(CMAKE_EXPORT_COMPILE_COMMANDS YES)
 
+# Link against qtmain.lib automatically.
+cmake_policy(SET CMP0020 NEW)
+
 #
 # Include additional scripts.
 #
@@ -76,7 +79,7 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
 endif()
 
 #
-# Options for CLang.
+# Options for Clang.
 #
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -103,9 +106,38 @@ include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/3rd-party)
 find_package(Boost 1.46.0 REQUIRED)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
-# Find Qt4.
-find_package(Qt4 REQUIRED QtCore QtGui)
-include(${QT_USE_FILE})
+# Choose which Qt version to look for.
+if(NOT DEFINED NC_QT5)
+    find_package(Qt5Core)
+
+    set(helpstring "Build using Qt5 rather than Qt4.")
+    if(Qt5Core_DIR)
+        set(NC_QT5 TRUE CACHE BOOL ${helpstring})
+    else()
+        set(NC_QT5 FALSE CACHE BOOL ${helpstring})
+    endif()
+    unset(helpstring)
+endif()
+
+if(${NC_QT5})
+    # Find Qt5.
+    find_package(Qt5Core REQUIRED)
+    find_package(Qt5Widgets REQUIRED)
+
+    set(CMAKE_AUTOMOC ON)
+
+    macro(qt4_wrap_cpp)
+    endmacro()
+
+    set(QT_LIBRARIES Qt5::Core Qt5::Widgets)
+else()
+    # Find Qt4.
+    find_package(Qt4 REQUIRED QtCore QtGui)
+    include(${QT_USE_FILE})
+
+    # This is used to produce standalone bundles on Windows.
+    include(DeployQt4)
+endif()
 
 if(QT_NAMESPACE)
     add_definitions(-DQT_NAMESPACE=${QT_NAMESPACE})
@@ -135,9 +167,6 @@ set(NC_USE_THREADS ${IDA_PLUGIN_DISABLED} CACHE BOOL "Enable threads.")
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/nc/config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/nc/config.h")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-# This is used to produce standalone bundles on Windows.
-include(DeployQt4)
 
 add_subdirectory(nc)
 add_subdirectory(nocode)

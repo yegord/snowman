@@ -35,7 +35,7 @@ QString escapeDotString(const QString &string) {
     result.reserve(string.size());
 
     foreach (QChar c, string) {
-        switch (c.toAscii()) {
+        switch (c.toLatin1()) {
             case '\\':
                 result += "\\\\";
                 break;
@@ -59,7 +59,7 @@ QString escapeCString(const QString &string) {
     result.reserve(string.size());
 
     foreach (QChar c, string) {
-        switch (c.toAscii()) {
+        switch (c.toLatin1()) {
             case '\\':
                 result += "\\\\";
                 break;

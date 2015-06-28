@@ -126,7 +126,11 @@ You can choose whether to build the IDA plug-in and which one to build:
 
 You can choose to build 32-bit code on 64-bit Linux machine:
 
-    * `-D NC_M32=ON`.
+    * `-D NC_M32=YES`.
+
+You can choose between Qt5 and Qt4:
+
+    * `-D NC_QT5=YES` (`YES` for Qt5, `NO` for Qt4).
 
 You can set the installation prefix:
 
@@ -157,10 +161,10 @@ cmake --build . --target install
 --------------------------------
 
 [NOTE]
-On Windows it will install to the same directory all non-system `.dll`
-files on which the decompiler executables depend, so that the
-installation can be painlessly moved to any other machine and remain
-workable.
+On Windows, when the decompiler is built with Qt4, this command will
+install to the same directory all non-system `.dll` files on which the
+decompiler executables depend, so that the installation can be
+painlessly moved to any other machine and remain workable.
 
 [NOTE]
 When IDA plug-in is enabled, it is the only target which is installed.

@@ -32,9 +32,15 @@ namespace nc { namespace gui {
 
 namespace {
 
-void myMessageHandler(QtMsgType type, const char *msg) {
+#if QT_VERSION >= 0x050000
+void myMessageHandler(QtMsgType type, const QMessageLogContext &, const QString &msg) {
     LogManager::instance()->log(type, msg);
 }
+#else
+void myMessageHandler(QtMsgType type, const char *msg) {
+    LogManager::instance()->log(type, QLatin1String(msg));
+}
+#endif
 
 } // anonymous namespace
 
@@ -43,13 +49,17 @@ LogManager *LogManager::instance() {
 
     if (!manager) {
         manager.reset(new LogManager);
+#if QT_VERSION >= 0x050000
+        qInstallMessageHandler(myMessageHandler);
+#else
         qInstallMsgHandler(myMessageHandler);
+#endif
     }
 
     return manager.get();
 }
 
-void LogManager::log(QtMsgType type, const char *msg) {
+void LogManager::log(QtMsgType type, const QString &msg) {
     switch (type) {
     case QtDebugMsg:
         log(tr("[Debug] %1").arg(msg));
