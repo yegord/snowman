@@ -113,7 +113,9 @@ public:
         	}
       		case MIPS_INS_LW: {
                 auto operand0 = operand(0);
-                auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+			    auto operand1 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
+
+	            _[operand1 ^= operand(1)];
 
                 if (operand0.size() == operand1.size()) {
                     _[std::move(operand0) ^= std::move(operand1)];
@@ -124,6 +126,10 @@ public:
                 }
     	    	break;
         	}
+        	/*case MIPS_INS_B: {
+            	_[jump(operand(0))];
+            	break;
+        	}*/
        	 	default: {
         	    _(std::make_unique<core::ir::InlineAssembly>());
             	break;
