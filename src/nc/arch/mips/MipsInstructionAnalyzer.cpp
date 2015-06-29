@@ -59,8 +59,11 @@ class MipsInstructionAnalyzerImpl {
 
 public:
     MipsInstructionAnalyzerImpl(const MipsArchitecture *architecture):
-        capstone_(CS_ARCH_MIPS, CS_MODE_MIPS32), factory_(architecture)
-    {}
+        architecture_(architecture), capstone_(CS_ARCH_MIPS, CS_MODE_MIPS32), factory_(architecture)
+    {
+        assert(architecture_ != nullptr);
+    }
+
 
     void createStatements(const MipsInstruction *instruction, core::ir::Program *program) {
         assert(instruction != nullptr);
@@ -126,10 +129,10 @@ public:
                 }
     	    	break;
         	}
-        	/*case MIPS_INS_B: {
+        	case MIPS_INS_B: {
             	_[jump(operand(0))];
             	break;
-        	}*/
+        	}
        	 	default: {
         	    _(std::make_unique<core::ir::InlineAssembly>());
             	break;
