@@ -94,4 +94,9 @@ REG(f31,	F31,	1,	31 * 32,	32, "Float point register")
 REG(hi,     HI, 	2,  0 * 32,	32, "High half result")
 REG(lo,     LO, 	2,  1 * 32,	32, "Low half result")
 
+REG(pseudo_flags,	PSEUDO_FLAGS,     3,  0, 128, "")
+REG(less,			LESS,             3,  0,  1, "")
+REG(less_or_equal,	LESS_OR_EQUAL,    3,  1,  1, "")
+REG(below_or_equal,	BELOW_OR_EQUAL,   4,  2,  1, "")
+
 /* vim:set et sts=4 sw=4: */

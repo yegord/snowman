@@ -39,6 +39,11 @@ typedef core::irgen::expressions::ExpressionFactoryCallback<MipsExpressionFactor
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, zero)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, sp)
 
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, pseudo_flags)
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, less)
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, less_or_equal)
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, below_or_equal)
+
 } // anonymous namespace
 
 class MipsInstructionAnalyzerImpl {
@@ -87,7 +92,9 @@ public:
 
         /* Describing semantics */
         switch (instr_->id) {
-  	      case MIPS_INS_NOP: {
+            case MIPS_INS_CACHE: /* Fall-through */
+        	case MIPS_INS_BREAK:
+  	      	case MIPS_INS_NOP: {
     	    	break;
         	}
        	 	case MIPS_INS_ADDU: {
@@ -104,6 +111,19 @@ public:
 				];
     	    	break;
         	}
+      		case MIPS_INS_LW: {
+                auto operand0 = operand(0);
+                auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+
+                if (operand0.size() == operand1.size()) {
+                    _[std::move(operand0) ^= std::move(operand1)];
+                } else if (operand0.size() < operand1.size()) {
+                    _[std::move(operand0) ^= truncate(std::move(operand1))];
+                } else if (operand0.size() > operand1.size()) {
+                    _[std::move(operand0) ^= zero_extend(std::move(operand1))];
+                }
+    	    	break;
+        	}
        	 	default: {
         	    _(std::make_unique<core::ir::InlineAssembly>());
             	break;
@@ -117,44 +137,88 @@ private:
         return capstone_.disassemble(instruction->addr(), instruction->bytes(), instruction->size());
     }
 
-   core::irgen::expressions::TermExpression operand(std::size_t index) const {
-        return core::irgen::expressions::TermExpression(createTermForOperand(index));
-    }
+    unsigned int getOperandRegister(std::size_t index) const {
+        if (index >= detail_->op_count) {
+            throw core::irgen::InvalidInstructionException(tr("There is no operand %1.").arg(index));
+        }
 
-    bool operandsAreTheSame(std::size_t index1, std::size_t index2) const {
-        const auto &op1 = detail_->operands[index1];
-        const auto &op2 = detail_->operands[index2];
-
-        return op1.type == MIPS_OP_REG && op2.type == MIPS_OP_REG && op1.reg == op2.reg;
-    }
-
-    std::unique_ptr<core::ir::Term> createTermForOperand(std::size_t index) const {
         const auto &operand = detail_->operands[index];
 
+        if (operand.type == MIPS_OP_REG) {
+            return operand.reg;
+        } else {
+            return MIPS_REG_INVALID;
+        }
+    }
+
+    core::irgen::expressions::TermExpression operand(std::size_t index, SmallBitSize sizeHint = 32) const {
+        return core::irgen::expressions::TermExpression(createTermForOperand(index, sizeHint));
+    }
+
+    std::unique_ptr<core::ir::Term> createTermForOperand(std::size_t index, SmallBitSize sizeHint) const {
+    	assert(index < boost::size(detail_->operands));
+
+        const auto &operand = detail_->operands[index];
+        
         switch (operand.type) {
             case MIPS_OP_INVALID:
                 throw core::irgen::InvalidInstructionException(tr("The instruction does not have an argument with index %1").arg(index));
             case MIPS_OP_REG: {
-                auto result = createRegisterAccess(operand.reg);
-                assert(result != nullptr);
-                return result;
+            	return std::make_unique<core::ir::MemoryLocationAccess>(getRegister(operand.reg)->memoryLocation().resized(sizeHint));
             }
             case MIPS_OP_IMM: {
                 /* Signed number, sign-extended to match the size of the other operand. */
-                return std::make_unique<core::ir::Constant>(SizedValue(4 * CHAR_BIT, operand.imm));
+                return std::make_unique<core::ir::Constant>(SizedValue(sizeHint, operand.imm));
             }
             case MIPS_OP_MEM:
-                return createDereference(operand);
+                return std::make_unique<core::ir::Dereference>(createDereferenceAddress(operand), core::ir::MemoryDomain::MEMORY, sizeHint);
             default:
                 unreachable();
         }
     }
 
-    std::unique_ptr<core::ir::Term> createRegisterAccess(unsigned reg) const {
-        switch (reg) {
-        case MIPS_REG_INVALID: return nullptr;
-        #define REG(cs_name, nc_name) case MIPS_REG_##cs_name: return MipsInstructionAnalyzer::createTerm(MipsRegisters::nc_name());
 
+  std::unique_ptr<core::ir::Dereference> createDereference(const cs_mips_op &operand) const {
+        return std::make_unique<core::ir::Dereference>(
+            createDereferenceAddress(operand), core::ir::MemoryDomain::MEMORY, 32);
+    }
+
+    std::unique_ptr<core::ir::Term> createDereferenceAddress(const cs_mips_op &operand) const {
+        if (operand.type != MIPS_OP_MEM) {
+            throw core::irgen::InvalidInstructionException(tr("Expected the operand to be a memory operand"));
+        }
+
+    	const auto &mem = operand.mem;
+
+        auto result = createRegisterAccess(mem.base);
+
+	  	result = std::make_unique<core::ir::BinaryOperator>(
+                core::ir::BinaryOperator::ADD,
+                std::move(result),
+                createRegisterAccess(operand.reg),
+                result->size());
+
+        if (mem.disp != 0) {
+            result = std::make_unique<core::ir::BinaryOperator>(
+                core::ir::BinaryOperator::ADD,
+                std::move(result),
+                std::make_unique<core::ir::Constant>(SizedValue(result->size(), mem.disp)),
+                result->size()
+            );
+        }
+
+        return result;
+    }
+
+
+    static std::unique_ptr<core::ir::Term> createRegisterAccess(int reg) {
+        return MipsInstructionAnalyzer::createTerm(getRegister(reg));
+    }
+
+    static const core::arch::Register *getRegister(int reg) {
+        switch (reg) {
+        #define REG(uppercase, lowercase) \
+            case MIPS_REG_##uppercase: return MipsRegisters::lowercase();
 			REG(ZERO,	zero)
 			REG(AT,     at)
 			REG(V0,     v0)
@@ -228,64 +292,9 @@ private:
 			REG(LO,     lo)
         #undef REG
 
-        default:
-            unreachable();
+       default:
+            throw core::irgen::InvalidInstructionException(tr("Invalid register number: %1").arg(reg));
         }
-    }
-
-  std::unique_ptr<core::ir::Dereference> createDereference(const cs_mips_op &operand) const {
-        return std::make_unique<core::ir::Dereference>(
-            createDereferenceAddress(operand), core::ir::MemoryDomain::MEMORY, 4 * CHAR_BIT);
-    }
-
-    std::unique_ptr<core::ir::Term> createDereferenceAddress(const cs_mips_op &operand) const {
-        if (operand.type != MIPS_OP_MEM) {
-            throw core::irgen::InvalidInstructionException(tr("Expected the operand to be a memory operand"));
-        }
-
-        std::unique_ptr<core::ir::Term> result = createRegisterAccess(operand.mem.base);
-
-        auto offsetValue = SizedValue(addressSize(), operand.mem.disp);
-
-        if (offsetValue.value() || !result) {
-            auto offset = std::make_unique<core::ir::Constant>(offsetValue);
-
-            if (result) {
-                result = std::make_unique<core::ir::BinaryOperator>(
-                    core::ir::BinaryOperator::ADD, std::move(result), std::move(offset), addressSize());
-            } else {
-                result = std::move(offset);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * \return Default operand size, inferred from the execution mode and instruction prefixes.
-     */
-    SmallBitSize operandSize() const {
-       /* if (architecture_->bitness() == 16) {
-            return detail_->prefix[2] == MIPS_PREFIX_OPSIZE ? 32 : 16;
-        } else if (architecture_->bitness() == 32) {
-            return detail_->prefix[2] == MIPS_PREFIX_OPSIZE ? 16 : 32;
-        } else if (architecture_->bitness() == 64) {
-            if (detail_->rex) {
-                return 64;
-            } else {
-                return detail_->prefix[2] == MIPS_PREFIX_OPSIZE ? 16 : 32;
-            }
-        } else {
-            unreachable();
-        }*/
-        return 32;
-    }
-
-    /**
-     * \return Default operand size, inferred from the execution mode and instruction prefixes.
-     */
-    SmallBitSize addressSize() const {
-        return 4 * CHAR_BIT;
     }
 };
 
