@@ -36,13 +36,14 @@ public:
 
 typedef core::irgen::expressions::ExpressionFactoryCallback<MipsExpressionFactory> MipsExpressionFactoryCallback;
 
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, zero)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, sp)
 
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, pseudo_flags)
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, sp)
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, zero)
+
+/*NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, pseudo_flags)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, less)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, less_or_equal)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, below_or_equal)
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, below_or_equal)*/
 
 } // anonymous namespace
 
