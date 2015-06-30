@@ -38,12 +38,11 @@ typedef core::irgen::expressions::ExpressionFactoryCallback<MipsExpressionFactor
 
 
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, sp)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, zero)
 
-/*NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, pseudo_flags)
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, pseudo_flags)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, less)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, less_or_equal)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, below_or_equal)*/
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, below_or_equal)
 
 } // anonymous namespace
 
@@ -135,6 +134,29 @@ public:
 				];
     	    	break;
        	 	}
+         	case MIPS_INS_OR: /* Fall-through */       	 	
+        	case MIPS_INS_ORI: {
+			  	auto operand0 = operand(0);
+                auto operand1 = operand(1);
+			    auto operand2 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
+				_[
+					operand2 ^= operand(2),
+					std::move(operand0) ^= (std::move(operand1) | std::move(operand2))
+				];
+    	    	break;
+       	 	}
+         	case MIPS_INS_XOR: /* Fall-through */       	 	
+        	case MIPS_INS_XORI: {
+			  	auto operand0 = operand(0);
+                auto operand1 = operand(1);
+			    auto operand2 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
+				_[
+					operand2 ^= operand(2),
+					std::move(operand0) ^= (std::move(operand1) ^ std::move(operand2))
+				];
+
+    	    	break;
+       	 	}
  			case MIPS_INS_MOVE: {
                 _[
                     operand(0) ^= operand(1)
@@ -168,11 +190,12 @@ public:
         	}
         	case MIPS_INS_JALR: /* Fall-through */
 			case MIPS_INS_JAL: {
-					 auto operand0 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
-	            	
+					auto operand0 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
 	            	_[
+	            		regizter(MipsRegisters::ra()) ^= constant(instruction->endAddr()),
 					 	operand0 ^= operand(0),
-            			call(std::move(operand0))];
+            			call(operand0)
+            		];
             	break;
         	}
         	case MIPS_INS_J: /* Fall-through */
