@@ -93,44 +93,90 @@ public:
 
         using namespace core::irgen::expressions;
 
+  		/*
+		 * The $zero-register always holds the value of zero (0).
+         */
+        _[
+                    regizter(MipsRegisters::zero()) ^= constant(0)
+        ];
+
         /* Describing semantics */
         switch (instr_->id) {
             case MIPS_INS_CACHE: /* Fall-through */
         	case MIPS_INS_BREAK:
+        	case MIPS_INS_SYNC:
   	      	case MIPS_INS_NOP: {
     	    	break;
         	}
-       	 	case MIPS_INS_ADDU: {
+        	case MIPS_INS_ADDI: /* Fall-through */
+      		case MIPS_INS_ADDIU: {
+                auto operand0 = operand(0);
+                auto operand1 = operand(1);
+			    auto operand2 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
+
 				_[
-					zero ^= constant(0),
-					operand(0) ^= operand(1) + operand(2)
+					operand2 ^= operand(2),
+					std::move(operand0) ^= unsigned_(std::move(operand1)) + signed_(std::move(operand2))
+				];
+    	    	break;
+        	}
+        	case MIPS_INS_ADD: /* Fall-through */       	 	
+        	case MIPS_INS_ADDU: {
+				_[
+					operand(0) ^= unsigned_(operand(1)) + (operand(2))
 				];
     	    	break;
        	 	}
-      		case MIPS_INS_MOVE: {
+         	case MIPS_INS_SUB: /* Fall-through */       	 	
+        	case MIPS_INS_SUBU: {
 				_[
-					zero ^= constant(0),
-					operand(0) ^= operand(1)
+					operand(0) ^= (operand(1) - operand(2))
 				];
+    	    	break;
+       	 	}
+ 			case MIPS_INS_MOVE: {
+                _[
+                    operand(0) ^= operand(1)
+                ];
     	    	break;
         	}
       		case MIPS_INS_LW: {
                 auto operand0 = operand(0);
 			    auto operand1 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
 
-	            _[operand1 ^= operand(1)];
-
-                if (operand0.size() == operand1.size()) {
-                    _[std::move(operand0) ^= std::move(operand1)];
-                } else if (operand0.size() < operand1.size()) {
-                    _[std::move(operand0) ^= truncate(std::move(operand1))];
-                } else if (operand0.size() > operand1.size()) {
-                    _[std::move(operand0) ^= zero_extend(std::move(operand1))];
-                }
+	            _[
+	            	operand1 ^= operand(1),
+					std::move(operand0) ^= std::move(operand1)
+				];
     	    	break;
         	}
+      		case MIPS_INS_SW: {
+                auto operand0 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
+			    auto operand1 = operand(1);
+
+	            _[
+	            	operand0 ^= operand(0),
+					std::move(operand1) ^= std::move(operand0)
+				];
+
+    	    	break;
+        	}
+			case MIPS_INS_JR: {
+            		_[jump(operand(0))];
+            	break;
+        	}
+        	case MIPS_INS_JALR: /* Fall-through */
+			case MIPS_INS_JAL: {
+					 auto operand0 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
+	            	
+	            	_[
+					 	operand0 ^= operand(0),
+            			call(std::move(operand0))];
+            	break;
+        	}
+        	case MIPS_INS_J: /* Fall-through */
         	case MIPS_INS_B: {
-            	_[jump(operand(0))];
+            		_[jump(operand(0))];
             	break;
         	}
        	 	default: {
