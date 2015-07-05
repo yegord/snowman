@@ -38,16 +38,27 @@ if(NOT CMAKE_BUILD_TYPE)
     unset(helpstring)
 endif()
 
-#
-# Options for GCC.
-#
-if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-    execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
-    string(REGEX MATCHALL "[0-9]+" GCC_VERSION_COMPONENTS ${GCC_VERSION})
-    list(GET GCC_VERSION_COMPONENTS 0 GCC_MAJOR)
-    list(GET GCC_VERSION_COMPONENTS 1 GCC_MINOR)
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 
-    if(${GCC_MAJOR} EQUAL 4 AND ${GCC_MINOR} LESS 7)
+    #
+    # Options for Clang.
+    #
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+        add_definitions(-Wall -Wextra)
+
+    if(${NC_M32})
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
+    endif()
+
+elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+
+    #
+    # Options for GCC.
+    #
+
+    if("${CMAKE_CXX_COMPILER_VERSION}" VERSION_LESS "4.7")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
     else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -76,25 +87,13 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
     endif()
-endif()
 
-#
-# Options for Clang.
-#
-if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    add_definitions(-Wall -Wextra)
+elseif(${MSVC})
 
-    if(${NC_M32})
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
-    endif()
-endif()
+    #
+    # Options for MSVC.
+    #
 
-#
-# Options for MSVC.
-#
-if(${MSVC})
     # Target Windows XP.
     add_definitions(-DWINVER=0x0501)
 endif()
