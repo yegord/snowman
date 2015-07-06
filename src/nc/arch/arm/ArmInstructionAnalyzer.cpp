@@ -209,6 +209,19 @@ private:
             _[call(operand(0))];
             break;
         }
+        case ARM_INS_CMN: {
+            _[
+                n ^= intrinsic(),
+                c ^= unsigned_(operand(0)) < -operand(1),
+                z ^= operand(0) == -operand(1),
+                v ^= intrinsic(),
+
+                less             ^= signed_(operand(0)) < -operand(1),
+                less_or_equal    ^= signed_(operand(0)) <= -operand(1),
+                below_or_equal   ^= unsigned_(operand(0)) <= -operand(1)
+            ];
+            break;
+        }
         case ARM_INS_CMP: {
             _[
                 n ^= intrinsic(),
@@ -220,6 +233,19 @@ private:
                 less_or_equal    ^= signed_(operand(0)) <= operand(1),
                 below_or_equal   ^= unsigned_(operand(0)) <= operand(1)
             ];
+            break;
+        }
+        case ARM_INS_EOR: {
+            _[operand(0) ^= operand(1) ^ operand(2)];
+            if (!handleWriteToPC(bodyBasicBlock)) {
+                if (detail_->update_flags) {
+                    _[
+                        n ^= signed_(operand(0)) < constant(0),
+                        z ^= operand(0) == constant(0),
+                        c ^= intrinsic()
+                    ];
+                }
+            }
             break;
         }
         case ARM_INS_LDM: {
@@ -297,6 +323,30 @@ private:
             auto location = reg->memoryLocation().resized(16);
             _[MemoryLocationExpression(location) ^= operand(1, 16)];
             handleWriteToPC(bodyBasicBlock);
+            break;
+        }
+        case ARM_INS_MUL: {
+            _[operand(0) ^= operand(1) * operand(2)];
+            if (detail_->update_flags) {
+                _[
+                    n ^= signed_(operand(0)) < constant(0),
+                    z ^= operand(0) == constant(0),
+                    c ^= intrinsic()
+                ];
+            }
+            break;
+        }
+        case ARM_INS_MVN: {
+            _[operand(0) ^= ~operand(1)];
+            if (!handleWriteToPC(bodyBasicBlock)) {
+                if (detail_->update_flags) {
+                    _[
+                        n ^= signed_(operand(0)) < constant(0),
+                        z ^= operand(0) == constant(0),
+                        c ^= intrinsic()
+                    ];
+                }
+            }
             break;
         }
         case ARM_INS_ORR: {

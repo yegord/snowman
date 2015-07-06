@@ -169,7 +169,7 @@ public:
     const CallHook *getCallHook(const Call *call) const;
 
     /**
-     * \param ret Valid pointer to a return jump.
+     * \param jump Valid pointer to a return jump.
      *
      * \return Pointer to the last ReturnHook used for instrumenting this jump.
      *         Can be nullptr.
