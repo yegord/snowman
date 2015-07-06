@@ -238,7 +238,7 @@ public:
         	}
  			case MIPS_INS_LUI: {
                 _[
-                    operand(0) ^= zero_extend(operand(1), 16)
+                    operand(0) ^= zero_extend(operand(1) & constant(0xffff), 16)
                 ];
     	    	break;
         	}
@@ -318,7 +318,7 @@ public:
 			case MIPS_INS_SLTI: {
                 auto operand0 = signed_(operand(0));
 	            _[
-	        		operand0 ^= (signed_(operand(1)) < signed_(operand(2)))
+	        		operand0 ^= (signed_(operand(1)) < signed_(zero_extend(operand(2))))
 	        	];
     	    	break;
         	}
@@ -326,7 +326,7 @@ public:
 			case MIPS_INS_SLTIU: {
                 auto operand0 = unsigned_(operand(0));
 	            _[
-	        		operand0 ^= (unsigned_(operand(1)) < unsigned_(operand(2)))
+	        		operand0 ^= (unsigned_(operand(1)) < unsigned_(zero_extend(operand(2))))
 	        	];
     	    	break;
         	}
