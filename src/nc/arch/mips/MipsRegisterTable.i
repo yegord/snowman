@@ -90,7 +90,7 @@ REG(f29,	F29,	1,	29 * 32,	32, "Float point register")
 REG(f30,	F30,	1,	30 * 32,	32, "Float point register")
 REG(f31,	F31,	1,	31 * 32,	32, "Float point register")
 
-
+REG(hilo,   HILO, 	2,  0 * 64,	64, "Pair of 32-bits == 64 bits")
 REG(hi,     HI, 	2,  0 * 32,	32, "High half result")
 REG(lo,     LO, 	2,  1 * 32,	32, "Low half result")
 

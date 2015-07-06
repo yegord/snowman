@@ -38,11 +38,7 @@ typedef core::irgen::expressions::ExpressionFactoryCallback<MipsExpressionFactor
 
 
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, sp)
-
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, pseudo_flags)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, less)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, less_or_equal)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, below_or_equal)
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, hilo)
 
 } // anonymous namespace
 
@@ -76,6 +72,7 @@ public:
         /*assert(instr_ != nullptr);*/
         if(instr_ == nullptr)
         	return;
+       
         detail_ = &instr_->detail->mips;
 
                 
@@ -124,6 +121,51 @@ public:
         	case MIPS_INS_ADDU: {
 				_[
 					operand(0) ^= unsigned_(operand(1)) + (operand(2))
+				];
+    	    	break;
+       	 	}
+        	case MIPS_INS_DIVU: {
+                auto operand2 = operand(2);
+				_[
+					regizter(MipsRegisters::hi()) ^= unsigned_(operand(1)) % unsigned_(std::move(operand2)),
+					regizter(MipsRegisters::lo()) ^= unsigned_(operand(1)) / unsigned_(operand(2)),
+					operand(0) ^= regizter(MipsRegisters::lo())
+				];
+    	    	break;
+       	 	}
+			case MIPS_INS_MFHI: {
+                auto operand0 = operand(0);
+				_[
+					std::move(operand0) ^= regizter(MipsRegisters::hi())
+				];
+    	    	break;
+       	 	}
+			case MIPS_INS_MTHI: {
+                auto operand0 = operand(0);
+				_[
+					regizter(MipsRegisters::hi()) ^= std::move(operand0)
+				];
+    	    	break;
+       	 	}
+			case MIPS_INS_MFLO: {
+                auto operand0 = operand(0);
+				_[
+					std::move(operand0) ^= regizter(MipsRegisters::lo())
+				];
+    	    	break;
+       	 	}
+			case MIPS_INS_MTLO: {
+                auto operand0 = operand(0);
+				_[
+					regizter(MipsRegisters::lo()) ^= std::move(operand0)
+				];
+    	    	break;
+       	 	}
+         	case MIPS_INS_MULTU: {
+         		auto operand0 = operand(0);
+                auto operand1 = operand(1);
+				_[
+					regizter(MipsRegisters::hilo()) ^= unsigned_(std::move(operand0)) * unsigned_(std::move(operand1))
 				];
     	    	break;
        	 	}
