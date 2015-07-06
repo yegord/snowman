@@ -141,7 +141,7 @@ public:
         		];
         	   	break;
        	 	}
-#if 0
+#if 0 /* Fix me */
         	case MIPS_INS_BGEZAL: /* Fall-through */
          	case MIPS_INS_BGEZALL: {
         		/* This is a conditional call */
@@ -168,7 +168,7 @@ public:
         		];
     	    	break;
        	 	}
-#if 0
+#if 0 /* Fix me */
             case MIPS_INS_BLTZALL: /* Fall-through */  
             case MIPS_INS_BLTZAL: {
 	        	/* This is a conditional call */
@@ -242,9 +242,11 @@ public:
                 ];
     	    	break;
         	}
+        	case MIPS_INS_LWL: /* Fall-through */
+        	case MIPS_INS_LWR:
       		case MIPS_INS_LW: {
                 auto operand0 = operand(0);
-			    auto operand1 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::LAST_REGISTER, 0, 32));
+			    auto operand1 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
 	            _[
 	            	operand1 ^= operand(1),
 					std::move(operand0) ^= std::move(operand1)
@@ -328,6 +330,8 @@ public:
 	        	];
     	    	break;
         	}
+        	case MIPS_INS_SWL: /* Fall-through */
+         	case MIPS_INS_SWR:
       		case MIPS_INS_SW: {
                 auto operand0 = operand(0);
 			    auto operand1 = operand(1);
