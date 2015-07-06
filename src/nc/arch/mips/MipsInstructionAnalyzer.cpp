@@ -75,7 +75,6 @@ public:
         	return;
        
         detail_ = &instr_->detail->mips;
-
                 
         core::ir::BasicBlock *cachedDirectSuccessor = nullptr;
         auto directSuccessor = [&]() -> core::ir::BasicBlock * {
@@ -84,8 +83,7 @@ public:
             }
             return cachedDirectSuccessor;
         };
-
-  
+        
         MipsExpressionFactory factory(architecture_);
         MipsExpressionFactoryCallback _(factory, program->getBasicBlockForInstruction(instruction), instruction);
 
@@ -130,57 +128,91 @@ public:
        	 	}
         	case MIPS_INS_BEQL: /* Fall-through */    
          	case MIPS_INS_BEQ: {
-        		_[jump((operand(0) == operand(1)), operand(2), directSuccessor())];
+        		_[
+        			directSuccessor(),
+        			jump((operand(0) == operand(1)), operand(2), directSuccessor())
+        		];
     	    	break;
        	 	}
          	case MIPS_INS_BGEZ: {
-        		_[jump((unsigned_(operand(0)) >= constant(0)), operand(1), directSuccessor())];
-        	   	break;
-       	 	}
-        	case MIPS_INS_BGEZAL: /* Fall-through */
-         	case MIPS_INS_BGEZALL: {
         		_[
-        			regizter(MipsRegisters::ra()) ^= constant(instruction->endAddr()),
+        			 directSuccessor(),
         			jump((unsigned_(operand(0)) >= constant(0)), operand(1), directSuccessor())
         		];
         	   	break;
        	 	}
+#if 0
+        	case MIPS_INS_BGEZAL: /* Fall-through */
+         	case MIPS_INS_BGEZALL: {
+        		/* This is a conditional call */
+        		auto operand0 = unsigned_(operand(0));
+        		_[regizter(MipsRegisters::ra()) ^= constant(instruction->endAddr())];
+               if (operand0 >= constant(0))
+                    _[call(operand(1))];
+        	   	break;
+       	 	}
+#endif
          	case MIPS_INS_BGTZL: /* Fall-through */    
          	case MIPS_INS_BGTZ: {
-        		_[jump((unsigned_(operand(0)) > constant(0)), operand(1), directSuccessor())];
+        		_[
+        			directSuccessor(),
+        			jump((unsigned_(operand(0)) > constant(0)), operand(1), directSuccessor())
+        		];
     	    	break;
        	 	}
         	case MIPS_INS_BLTZL: /* Fall-through */    
          	case MIPS_INS_BLTZ: {
-        		_[jump((signed_(operand(0)) < constant(0)), operand(1), directSuccessor())];
-    	    	break;
-       	 	}
-            case MIPS_INS_BLTZALL: /* Fall-through */  
-            case MIPS_INS_BLTZAL: {
         		_[
-	        		regizter(MipsRegisters::ra()) ^= constant(instruction->endAddr()),
+        			directSuccessor(),
         			jump((signed_(operand(0)) < constant(0)), operand(1), directSuccessor())
         		];
     	    	break;
        	 	}
-
+#if 0
+            case MIPS_INS_BLTZALL: /* Fall-through */  
+            case MIPS_INS_BLTZAL: {
+	        	/* This is a conditional call */
+	      		auto operand0 = signed_(operand(0));
+	      		auto zeroconst = constant(0);
+        		_[regizter(MipsRegisters::ra()) ^= constant(instruction->endAddr())];
+                auto result = std::make_unique<core::ir::BinaryOperator>(
+                    core::ir::BinaryOperator::SIGNED_LESS,
+                    std::move(operand0),
+                    std::move(zeroconst),
+                    operand0.size());
+                
+                if (result)
+					 _[call(operand(1))];
+    	    	break;
+       	 	}
+#endif
       	 	case MIPS_INS_BLEZL: /* Fall-through */    
          	case MIPS_INS_BLEZ: {
         		_[
+        			directSuccessor(),
         			jump((signed_(operand(0)) <= constant(0)), operand(1), directSuccessor())
         		];
     	    	break;
        	 	}
          	case MIPS_INS_BNE: {
-        		_[jump(~(operand(0) == operand(1)), operand(2), directSuccessor())];
+        		_[
+        			 directSuccessor(),
+        			jump(~(operand(0) == operand(1)), operand(2), directSuccessor())
+        		];
     	    	break;
        	 	}
          	case MIPS_INS_BEQZ: {
-        		_[jump((operand(0) == constant(0)), operand(1), directSuccessor())];
+        		_[
+        			directSuccessor(),
+        			jump((operand(0) == constant(0)), operand(1), directSuccessor())
+        		];
     	    	break;
        	 	}
         	case MIPS_INS_BNEZ: {
-        		_[jump(~(operand(0) == constant(0)), operand(1), directSuccessor())];
+        		_[
+        			directSuccessor(),
+        			jump(~(operand(0) == constant(0)), operand(1), directSuccessor())
+        		];
     	    	break;
        	 	}
         	case MIPS_INS_DIVU: {
@@ -212,9 +244,9 @@ public:
         	}
       		case MIPS_INS_LW: {
                 auto operand0 = operand(0);
-			    auto operand1 = operand(1);
-
+			    auto operand1 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::LAST_REGISTER, 0, 32));
 	            _[
+	            	operand1 ^= operand(1),
 					std::move(operand0) ^= std::move(operand1)
 				];
     	    	break;
@@ -286,20 +318,15 @@ public:
 	            _[
 	        		operand0 ^= (signed_(operand(1)) < signed_(operand(2)))
 	        	];
-
     	    	break;
-
         	}
          	case MIPS_INS_SLTU: /* Fall-through */     
 			case MIPS_INS_SLTIU: {
                 auto operand0 = unsigned_(operand(0));
-
 	            _[
 	        		operand0 ^= (unsigned_(operand(1)) < unsigned_(operand(2)))
 	        	];
-
     	    	break;
-
         	}
       		case MIPS_INS_SW: {
                 auto operand0 = operand(0);
@@ -320,23 +347,28 @@ public:
     	    	break;
        	 	}
 			case MIPS_INS_JR: {
-            		_[jump(operand(0))];
+            	_[
+            		directSuccessor(),
+            		jump(operand(0))
+            	];
             	break;
         	}
         	case MIPS_INS_JALR: /* Fall-through */
 			case MIPS_INS_BAL:
 			case MIPS_INS_JAL: {
-					auto operand0 = operand(0);
 	            	_[
 	            		regizter(MipsRegisters::ra()) ^= constant(instruction->endAddr()),
-					 	operand0 ^= operand(0),
-            			call(operand0)
+                   	 	directSuccessor(),
+                   	 	call(operand(0))
             		];
             	break;
         	}
         	case MIPS_INS_J: /* Fall-through */
         	case MIPS_INS_B: {
-            		_[jump(operand(0))];
+            		_[
+            			directSuccessor(),
+            			jump(operand(0))
+            		];
             	break;
         	}
        	 	default: {
@@ -398,6 +430,7 @@ private:
             createDereferenceAddress(operand), core::ir::MemoryDomain::MEMORY, 32);
     }
 
+	/* FIXME */
     std::unique_ptr<core::ir::Term> createDereferenceAddress(const cs_mips_op &operand) const {
         if (operand.type != MIPS_OP_MEM) {
             throw core::irgen::InvalidInstructionException(tr("Expected the operand to be a memory operand"));
