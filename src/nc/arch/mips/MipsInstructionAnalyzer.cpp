@@ -41,6 +41,10 @@ NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, sp)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, hilo)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, zero)
 
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, pseudo_flags)
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, less)
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, less_or_equal)
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, below_or_equal)
 
 } // anonymous namespace
 
@@ -104,6 +108,7 @@ public:
             case MIPS_INS_CACHE: /* Fall-through */
         	case MIPS_INS_BREAK:
         	case MIPS_INS_SYNC:
+        	case MIPS_INS_SSNOP:
   	      	case MIPS_INS_NOP: {
     	    	break;
         	}
@@ -129,6 +134,37 @@ public:
         	case MIPS_INS_BEQL: /* Fall-through */    
          	case MIPS_INS_BEQ: {
         		_[jump((operand(0) == operand(1)), operand(2), directSuccessor())];
+    	    	break;
+       	 	}
+        	case MIPS_INS_BGEZAL: /* Fall-through */
+         	case MIPS_INS_BGEZALL:
+         	case MIPS_INS_BGEZ: {
+        		_[
+        			jump((unsigned_(operand(0)) >= constant(0)), operand(1), directSuccessor())
+        		];
+        	   	break;
+       	 	}
+         	case MIPS_INS_BGTZL: /* Fall-through */    
+         	case MIPS_INS_BGTZ: {
+        		_[
+        			jump((unsigned_(operand(0)) > constant(0)), operand(1), directSuccessor())
+        		];
+    	    	break;
+       	 	}
+        	case MIPS_INS_BLTZL: /* Fall-through */    
+            case MIPS_INS_BLTZAL:
+            case MIPS_INS_BLTZALL:
+         	case MIPS_INS_BLTZ: {
+        		_[
+        			jump((signed_(operand(0)) < constant(0)), operand(1), directSuccessor())
+        		];
+    	    	break;
+       	 	}
+      	 	case MIPS_INS_BLEZL: /* Fall-through */    
+         	case MIPS_INS_BLEZ: {
+        		_[
+        			jump((signed_(operand(0)) <= constant(0)), operand(1), directSuccessor())
+        		];
     	    	break;
        	 	}
          	case MIPS_INS_BNE: {
