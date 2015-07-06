@@ -131,15 +131,32 @@ public:
 				];
     	    	break;
        	 	}
+         	case MIPS_INS_AND: /* Fall-through */       	 	
+        	case MIPS_INS_ANDI: {
+			  	auto operand0 = operand(0);
+                auto operand1 = operand(1);
+			    auto operand2 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
+				_[
+					operand2 ^= operand(2),
+					std::move(operand0) ^= (std::move(operand1) & std::move(operand2))
+				];
+    	    	break;
+       	 	}
         	case MIPS_INS_BEQL: /* Fall-through */    
          	case MIPS_INS_BEQ: {
         		_[jump((operand(0) == operand(1)), operand(2), directSuccessor())];
     	    	break;
        	 	}
-        	case MIPS_INS_BGEZAL: /* Fall-through */
-         	case MIPS_INS_BGEZALL:
          	case MIPS_INS_BGEZ: {
         		_[
+        			jump((unsigned_(operand(0)) >= constant(0)), operand(1), directSuccessor())
+        		];
+        	   	break;
+       	 	}
+        	case MIPS_INS_BGEZAL: /* Fall-through */
+         	case MIPS_INS_BGEZALL: {
+        		_[
+        			regizter(MipsRegisters::ra()) ^= constant(instruction->endAddr()),
         			jump((unsigned_(operand(0)) >= constant(0)), operand(1), directSuccessor())
         		];
         	   	break;
@@ -152,14 +169,21 @@ public:
     	    	break;
        	 	}
         	case MIPS_INS_BLTZL: /* Fall-through */    
-            case MIPS_INS_BLTZAL:
-            case MIPS_INS_BLTZALL:
          	case MIPS_INS_BLTZ: {
         		_[
         			jump((signed_(operand(0)) < constant(0)), operand(1), directSuccessor())
         		];
     	    	break;
        	 	}
+            case MIPS_INS_BLTZALL: /* Fall-through */  
+            case MIPS_INS_BLTZAL: {
+        		_[
+	        		regizter(MipsRegisters::ra()) ^= constant(instruction->endAddr()),
+        			jump((signed_(operand(0)) < constant(0)), operand(1), directSuccessor())
+        		];
+    	    	break;
+       	 	}
+
       	 	case MIPS_INS_BLEZL: /* Fall-through */    
          	case MIPS_INS_BLEZ: {
         		_[
@@ -312,6 +336,7 @@ public:
             	break;
         	}
         	case MIPS_INS_JALR: /* Fall-through */
+			case MIPS_INS_BAL:
 			case MIPS_INS_JAL: {
 					auto operand0 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
 	            	_[
