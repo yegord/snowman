@@ -39,6 +39,8 @@ typedef core::irgen::expressions::ExpressionFactoryCallback<MipsExpressionFactor
 
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, sp)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, hilo)
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, zero)
+
 
 } // anonymous namespace
 
@@ -122,6 +124,23 @@ public:
 				_[
 					operand(0) ^= unsigned_(operand(1)) + (operand(2))
 				];
+    	    	break;
+       	 	}
+         	case MIPS_INS_BEQ: {
+        		_[jump((operand(0) == operand(1)), operand(2), directSuccessor())];
+    	    	break;
+       	 	}
+         	case MIPS_INS_BNE: {
+        		_[jump(~(operand(0) == operand(1)), operand(2), directSuccessor())];
+    	    	break;
+       	 	}
+        	case MIPS_INS_BEQZL: /* Fall-through */    
+         	case MIPS_INS_BEQZ: {
+        		_[jump((operand(0) == constant(0)), operand(1), directSuccessor())];
+    	    	break;
+       	 	}
+        	case MIPS_INS_BNEZ: {
+        		_[jump(~(operand(0) == constant(0)), operand(1), directSuccessor())];
     	    	break;
        	 	}
         	case MIPS_INS_DIVU: {
