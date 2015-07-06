@@ -15,7 +15,7 @@ namespace mips {
 MipsDisassembler::MipsDisassembler(const MipsArchitecture *architecture):
     core::arch::Disassembler(architecture)
 {
-    mode_ = CS_MODE_MIPS32R6;
+    mode_ = CS_MODE_MIPS32;
     if (architecture->byteOrder() == ByteOrder::LittleEndian) {
         mode_ |= CS_MODE_LITTLE_ENDIAN;
     } else if (architecture->byteOrder() == ByteOrder::BigEndian) {

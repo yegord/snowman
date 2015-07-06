@@ -41,11 +41,6 @@ NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, sp)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, hilo)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, zero)
 
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, pseudo_flags)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, less)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, less_or_equal)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, below_or_equal)
-
 } // anonymous namespace
 
 class MipsInstructionAnalyzerImpl {
@@ -112,33 +107,24 @@ public:
   	      	case MIPS_INS_NOP: {
     	    	break;
         	}
-        	case MIPS_INS_ADDI: /* Fall-through */
-      		case MIPS_INS_ADDIU: {
-                auto operand0 = operand(0);
-                auto operand1 = operand(1);
-			    auto operand2 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
-
-				_[
-					operand2 ^= operand(2),
-					std::move(operand0) ^= unsigned_(std::move(operand1)) + signed_(std::move(operand2))
-				];
-    	    	break;
-        	}
-        	case MIPS_INS_ADD: /* Fall-through */       	 	
+        	case MIPS_INS_ADD: /* Fall-through */       
+			case MIPS_INS_ADDI:
+        	case MIPS_INS_ADDIU:
         	case MIPS_INS_ADDU: {
 				_[
-					operand(0) ^= unsigned_(operand(1)) + (operand(2))
+					operand(0) ^= (operand(1)) + (operand(2))
 				];
     	    	break;
        	 	}
-         	case MIPS_INS_AND: /* Fall-through */       	 	
-        	case MIPS_INS_ANDI: {
-			  	auto operand0 = operand(0);
-                auto operand1 = operand(1);
-			    auto operand2 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
+        	case MIPS_INS_AND: {
 				_[
-					operand2 ^= operand(2),
-					std::move(operand0) ^= (std::move(operand1) & std::move(operand2))
+					operand(0) ^= (operand(1) & operand(2))
+				];
+    	    	break;
+       	 	}
+        	case MIPS_INS_ANDI: {
+				_[
+					operand(0) ^= (operand(1) & unsigned_(operand(2)))
 				];
     	    	break;
        	 	}
@@ -148,9 +134,7 @@ public:
     	    	break;
        	 	}
          	case MIPS_INS_BGEZ: {
-        		_[
-        			jump((unsigned_(operand(0)) >= constant(0)), operand(1), directSuccessor())
-        		];
+        		_[jump((unsigned_(operand(0)) >= constant(0)), operand(1), directSuccessor())];
         	   	break;
        	 	}
         	case MIPS_INS_BGEZAL: /* Fall-through */
@@ -163,16 +147,12 @@ public:
        	 	}
          	case MIPS_INS_BGTZL: /* Fall-through */    
          	case MIPS_INS_BGTZ: {
-        		_[
-        			jump((unsigned_(operand(0)) > constant(0)), operand(1), directSuccessor())
-        		];
+        		_[jump((unsigned_(operand(0)) > constant(0)), operand(1), directSuccessor())];
     	    	break;
        	 	}
         	case MIPS_INS_BLTZL: /* Fall-through */    
          	case MIPS_INS_BLTZ: {
-        		_[
-        			jump((signed_(operand(0)) < constant(0)), operand(1), directSuccessor())
-        		];
+        		_[jump((signed_(operand(0)) < constant(0)), operand(1), directSuccessor())];
     	    	break;
        	 	}
             case MIPS_INS_BLTZALL: /* Fall-through */  
@@ -212,6 +192,33 @@ public:
 				];
     	    	break;
        	 	}
+ 			case MIPS_INS_LB: {
+                _[
+                    operand(0) ^= sign_extend(operand(1) & constant(0xff), 24)
+                ];
+    	    	break;
+        	}
+ 			case MIPS_INS_LBU: {
+                _[
+                    operand(0) ^= zero_extend(operand(1) & constant(0xff), 24)
+                ];
+    	    	break;
+        	}
+ 			case MIPS_INS_LUI: {
+                _[
+                    operand(0) ^= zero_extend(operand(1), 16)
+                ];
+    	    	break;
+        	}
+      		case MIPS_INS_LW: {
+                auto operand0 = operand(0);
+			    auto operand1 = operand(1);
+
+	            _[
+					std::move(operand0) ^= std::move(operand1)
+				];
+    	    	break;
+        	}
 			case MIPS_INS_MFHI: {
                 auto operand0 = operand(0);
 				_[
@@ -248,6 +255,24 @@ public:
 				];
     	    	break;
        	 	}
+ 			case MIPS_INS_MOVE: {
+                _[
+                    operand(0) ^= operand(1)
+                ];
+    	    	break;
+        	}
+        	case MIPS_INS_OR: {
+				_[
+					operand(0) ^= (operand(1) | operand(2))
+				];
+    	    	break;
+       	 	}
+        	case MIPS_INS_ORI: {
+				_[
+					operand(0) ^= (operand(1) | unsigned_(operand(2)))
+				];
+    	    	break;
+       	 	}
          	case MIPS_INS_SUB: /* Fall-through */       	 	
         	case MIPS_INS_SUBU: {
 				_[
@@ -255,53 +280,11 @@ public:
 				];
     	    	break;
        	 	}
-         	case MIPS_INS_OR: /* Fall-through */       	 	
-        	case MIPS_INS_ORI: {
-			  	auto operand0 = operand(0);
-                auto operand1 = operand(1);
-			    auto operand2 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
-				_[
-					operand2 ^= operand(2),
-					std::move(operand0) ^= (std::move(operand1) | std::move(operand2))
-				];
-    	    	break;
-       	 	}
-         	case MIPS_INS_XOR: /* Fall-through */       	 	
-        	case MIPS_INS_XORI: {
-			  	auto operand0 = operand(0);
-                auto operand1 = operand(1);
-			    auto operand2 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
-				_[
-					operand2 ^= operand(2),
-					std::move(operand0) ^= (std::move(operand1) ^ std::move(operand2))
-				];
-
-    	    	break;
-       	 	}
- 			case MIPS_INS_MOVE: {
-                _[
-                    operand(0) ^= operand(1)
-                ];
-    	    	break;
-        	}
-      		case MIPS_INS_LW: {
-                auto operand0 = operand(0);
-			    auto operand1 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
-
-	            _[
-	            	operand1 ^= operand(1),
-					std::move(operand0) ^= std::move(operand1)
-				];
-    	    	break;
-        	}
          	case MIPS_INS_SLT: /* Fall-through */     
 			case MIPS_INS_SLTI: {
                 auto operand0 = signed_(operand(0));
-			    auto operand2 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
-
 	            _[
-	            	operand2 ^= signed_(operand(2)),
-	        		operand0 ^= (signed_(operand(1)) < operand2)
+	        		operand0 ^= (signed_(operand(1)) < signed_(operand(2)))
 	        	];
 
     	    	break;
@@ -310,27 +293,32 @@ public:
          	case MIPS_INS_SLTU: /* Fall-through */     
 			case MIPS_INS_SLTIU: {
                 auto operand0 = unsigned_(operand(0));
-			    auto operand2 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
 
 	            _[
-	            	operand2 ^= unsigned_(operand(2)),
-	        		operand0 ^= (unsigned_(operand(1)) < operand2)
+	        		operand0 ^= (unsigned_(operand(1)) < unsigned_(operand(2)))
 	        	];
 
     	    	break;
 
         	}
       		case MIPS_INS_SW: {
-                auto operand0 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
+                auto operand0 = operand(0);
 			    auto operand1 = operand(1);
 
 	            _[
-	            	operand0 ^= operand(0),
 					std::move(operand1) ^= std::move(operand0)
 				];
 
     	    	break;
         	}
+         	case MIPS_INS_XOR: /* Fall-through */       	 	
+        	case MIPS_INS_XORI: {
+				_[
+					operand(0) ^= (operand(1) ^ operand(2))
+				];
+
+    	    	break;
+       	 	}
 			case MIPS_INS_JR: {
             		_[jump(operand(0))];
             	break;
@@ -338,7 +326,7 @@ public:
         	case MIPS_INS_JALR: /* Fall-through */
 			case MIPS_INS_BAL:
 			case MIPS_INS_JAL: {
-					auto operand0 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
+					auto operand0 = operand(0);
 	            	_[
 	            		regizter(MipsRegisters::ra()) ^= constant(instruction->endAddr()),
 					 	operand0 ^= operand(0),
