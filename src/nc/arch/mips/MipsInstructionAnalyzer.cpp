@@ -126,6 +126,7 @@ public:
 				];
     	    	break;
        	 	}
+        	case MIPS_INS_BEQL: /* Fall-through */    
          	case MIPS_INS_BEQ: {
         		_[jump((operand(0) == operand(1)), operand(2), directSuccessor())];
     	    	break;
@@ -134,7 +135,6 @@ public:
         		_[jump(~(operand(0) == operand(1)), operand(2), directSuccessor())];
     	    	break;
        	 	}
-        	case MIPS_INS_BEQZL: /* Fall-through */    
          	case MIPS_INS_BEQZ: {
         		_[jump((operand(0) == constant(0)), operand(1), directSuccessor())];
     	    	break;
@@ -233,6 +233,32 @@ public:
 					std::move(operand0) ^= std::move(operand1)
 				];
     	    	break;
+        	}
+         	case MIPS_INS_SLT: /* Fall-through */     
+			case MIPS_INS_SLTI: {
+                auto operand0 = signed_(operand(0));
+			    auto operand2 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
+
+	            _[
+	            	operand2 ^= signed_(operand(2)),
+	        		operand0 ^= (signed_(operand(1)) < operand2)
+	        	];
+
+    	    	break;
+
+        	}
+         	case MIPS_INS_SLTU: /* Fall-through */     
+			case MIPS_INS_SLTIU: {
+                auto operand0 = unsigned_(operand(0));
+			    auto operand2 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
+
+	            _[
+	            	operand2 ^= unsigned_(operand(2)),
+	        		operand0 ^= (unsigned_(operand(1)) < operand2)
+	        	];
+
+    	    	break;
+
         	}
       		case MIPS_INS_SW: {
                 auto operand0 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
