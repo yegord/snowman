@@ -110,7 +110,7 @@ public:
         	case MIPS_INS_ADDIU:
         	case MIPS_INS_ADDU: {
 				_[
-					operand(0) ^= (operand(1)) + (operand(2))
+					operand(0) ^= (operand(1) + signed_(operand(2)))
 				];
     	    	break;
        	 	}
@@ -314,6 +314,18 @@ public:
 				];
     	    	break;
        	 	}
+			case MIPS_INS_SLL: {
+	            _[
+	        		operand(0) ^= (operand(1) << operand(2))
+	        	];
+    	    	break;
+        	}
+			case MIPS_INS_SLLV: {
+	            _[
+	        		operand(0) ^= (operand(1) << (unsigned_(operand(2)) %  unsigned_(constant(32))))
+	        	];
+    	    	break;
+        	}
          	case MIPS_INS_SLT: /* Fall-through */     
 			case MIPS_INS_SLTI: {
                 auto operand0 = signed_(operand(0));
