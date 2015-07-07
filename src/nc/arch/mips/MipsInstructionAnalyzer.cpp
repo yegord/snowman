@@ -302,6 +302,18 @@ public:
                 ];
     	    	break;
         	}
+ 			case MIPS_INS_NOR: {
+                _[
+					operand(0) ^= ~operand(1)
+                ];
+    	    	break;
+        	}
+ 			case MIPS_INS_NOT: {
+                _[
+					operand(0) ^= ~(operand(1) | operand(2))
+                ];
+    	    	break;
+        	}
         	case MIPS_INS_OR: {
 				_[
 					operand(0) ^= (operand(1) | operand(2))
