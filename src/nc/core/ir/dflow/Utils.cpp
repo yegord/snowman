@@ -85,13 +85,17 @@ const Term *getFirstCopy(const Term *term, const Dataflow &dataflow) {
 bool isReturn(const Jump *jump, const Dataflow &dataflow) {
     assert(jump != nullptr);
 
-    if (jump->isConditional()) {
-        return false;
-    }
-    if (!jump->thenTarget().address()) {
-        return false;
-    }
-    return dataflow.getValue(jump->thenTarget().address())->isReturnAddress();
+    return isReturnAddress(jump->thenTarget(), dataflow) || isReturnAddress(jump->elseTarget(), dataflow);
+}
+
+bool isReturnAddress(const JumpTarget &target, const Dataflow &dataflow) {
+    return target.address() && isReturnAddress(target.address(), dataflow);
+}
+
+bool isReturnAddress(const Term *term, const Dataflow &dataflow) {
+    assert(term != nullptr);
+
+    return dataflow.getValue(term)->isReturnAddress();
 }
 
 } // namespace dflow

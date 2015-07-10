@@ -654,18 +654,9 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
         case Statement::JUMP: {
             const Jump *jump = statement->asJump();
 
-            if (dflow::isReturn(jump, dataflow_)) {
-                if (signature()->returnValue()) {
-                    if (auto returnHook = parent().hooks().getReturnHook(jump)) {
-                        return std::make_unique<likec::Return>(
-                            tree(),
-                            makeExpression(returnHook->getReturnValueTerm(signature()->returnValue().get())));
-                    }
-                }
-                return std::make_unique<likec::Return>(tree());
-            } else if (jump->isConditional()) {
-                auto thenJump = makeJump(jump->thenTarget(), nextBB, breakBB, continueBB);
-                auto elseJump = makeJump(jump->elseTarget(), nextBB, breakBB, continueBB);
+            if (jump->isConditional()) {
+                auto thenJump = makeJump(jump, jump->thenTarget(), nextBB, breakBB, continueBB);
+                auto elseJump = makeJump(jump, jump->elseTarget(), nextBB, breakBB, continueBB);
                 auto condition = makeExpression(jump->condition());
 
                 if (thenJump == nullptr) {
@@ -678,7 +669,7 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
                 }
                 return std::make_unique<likec::If>(tree(), std::move(condition), std::move(thenJump), std::move(elseJump));
             } else {
-                return makeJump(jump->thenTarget(), nextBB, breakBB, continueBB);
+                return makeJump(jump, jump->thenTarget(), nextBB, breakBB, continueBB);
             }
         }
         case Statement::CALL: {
@@ -737,7 +728,9 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
     return nullptr;
 }
 
-std::unique_ptr<likec::Statement> DefinitionGenerator::makeJump(const BasicBlock *target, const BasicBlock *nextBB, const BasicBlock *breakBB, const BasicBlock *continueBB) {
+std::unique_ptr<likec::Statement> DefinitionGenerator::makeJump(const BasicBlock *target, const BasicBlock *nextBB,
+                                                                const BasicBlock *breakBB,
+                                                                const BasicBlock *continueBB) {
     if (target == nextBB) {
         return nullptr;
     } else if (target == breakBB) {
@@ -750,10 +743,24 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::makeJump(const BasicBlock
     }
 }
 
-std::unique_ptr<likec::Statement> DefinitionGenerator::makeJump(const JumpTarget &target, const BasicBlock *nextBB, const BasicBlock *breakBB, const BasicBlock *continueBB) {
+std::unique_ptr<likec::Statement> DefinitionGenerator::makeJump(const Jump *jump, const JumpTarget &target,
+                                                                const BasicBlock *nextBB, const BasicBlock *breakBB,
+                                                                const BasicBlock *continueBB) {
+    assert(jump != nullptr);
+
     if (target.basicBlock()) {
         return makeJump(target.basicBlock(), nextBB, breakBB, continueBB);
     } else if (target.address()) {
+        if (dflow::isReturnAddress(target.address(), dataflow_)) {
+            if (signature()->returnValue()) {
+                if (auto returnHook = parent().hooks().getReturnHook(jump)) {
+                    return std::make_unique<likec::Return>(
+                        tree(),
+                        makeExpression(returnHook->getReturnValueTerm(signature()->returnValue().get())));
+                }
+            }
+            return std::make_unique<likec::Return>(tree());
+        }
         return std::make_unique<likec::Goto>(tree(), makeExpression(target.address()));
     } else {
         return std::make_unique<likec::Goto>(tree(), std::make_unique<likec::String>(tree(), QLatin1String("???")));

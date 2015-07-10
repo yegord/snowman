@@ -235,15 +235,15 @@ private:
      *
      * \param jump Valid pointer to a return jump.
      */
-    void instrumentJump(Jump *jump);
+    void instrumentReturn(Jump *jump);
 
     /**
-     * Undoes the instrumentation of a return statement, if performed before.
+     * Undoes the instrumentation of a return jump, if performed before.
      * Otherwise, does nothing.
      *
      * \param jump Valid pointer to a return jump.
      */
-    void deinstrumentJump(Jump *jump);
+    void deinstrumentReturn(Jump *jump);
 };
 
 /**

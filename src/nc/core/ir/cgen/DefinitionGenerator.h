@@ -48,6 +48,7 @@ namespace ir {
 class BinaryOperator;
 class BasicBlock;
 class Dominators;
+class Jump;
 class JumpTarget;
 class Statement;
 class UnaryOperator;
@@ -238,17 +239,18 @@ private:
     std::unique_ptr<likec::Statement> makeJump(const BasicBlock *target, const BasicBlock *nextBB, const BasicBlock *breakBB, const BasicBlock *continueBB);
 
     /**
-     * Creates a goto statement to given target.
+     * Creates an appropriate LikeC statement for a jump to the given target.
      *
-     * \param[in] target   Valid pointer to the target basic block.
+     * \param[in] jump          Valid pointer to a jump statement.
+     * \param[in] target        Target of that jump to generate LikeC statement for.
      * \param[in] nextBB        Pointer to the basic block, whose code will textually
      *                          follow the basic block of the created statement. Can be nullptr.
      * \param[in] breakBB       Pointer to the basic block getting control by break statement. Can be nullptr.
      * \param[in] continueBB    Pointer to the basic block getting control by continue statement. Can be nullptr.
      *
-     * \return Pointer to the created goto, break, or continue statement, or nullptr if the target is equal to nextBB.
+     * \return Pointer to the created return, goto, break, or continue statement, or nullptr if the target is equal to nextBB.
      */
-    std::unique_ptr<likec::Statement> makeJump(const JumpTarget &target, const BasicBlock *nextBB, const BasicBlock *breakBB, const BasicBlock *continueBB);
+    std::unique_ptr<likec::Statement> makeJump(const Jump *jump, const JumpTarget &target, const BasicBlock *nextBB, const BasicBlock *breakBB, const BasicBlock *continueBB);
 
     /**
      * Creates a LikeC expression for given term and sets the pointer to source IR term
