@@ -349,16 +349,13 @@ public:
 				];
     	    	break;
        	 	}
-			case MIPS_INS_SLL: {
-	            _[
-	        		operand(0) ^= (operand(1) << operand(2))
-	        	];
-    	    	break;
-        	}
+	        case MIPS_INS_SLL: /* Fall-through */
+         	case MIPS_INS_SLLI: 
 			case MIPS_INS_SLLV: {
-	            _[
-	        		operand(0) ^= (operand(1) << (unsigned_(operand(2)) %  unsigned_(constant(32))))
-	        	];
+				if(getOperandType(2) == MIPS_OP_REG)
+	            	_[operand(0) ^= (operand(1) << (unsigned_(operand(2)) %  unsigned_(constant(32))))];
+	            else
+	            	_[operand(0) ^= (operand(1) << operand(2))];
     	    	break;
         	}
          	case MIPS_INS_SLT: /* Fall-through */     
@@ -444,6 +441,15 @@ private:
             return MIPS_REG_INVALID;
         }
     }
+    
+    mips_op_type getOperandType(std::size_t index) const {
+        if (index >= detail_->op_count) {
+            throw core::irgen::InvalidInstructionException(tr("There is no operand %1.").arg(index));
+        }
+
+        const auto &operand = detail_->operands[index];
+        return operand.type;
+    }
 
     core::irgen::expressions::TermExpression operand(std::size_t index, SmallBitSize sizeHint = 32) const {
         return core::irgen::expressions::TermExpression(createTermForOperand(index, sizeHint));
@@ -461,7 +467,7 @@ private:
             	return std::make_unique<core::ir::MemoryLocationAccess>(getRegister(operand.reg)->memoryLocation().resized(sizeHint));
             }
             case MIPS_OP_IMM: {
-                /* Signed number, sign-extended to match the size of the other operand. */
+                /* Immediate value. */
                 return std::make_unique<core::ir::Constant>(SizedValue(sizeHint, operand.imm));
             }
             case MIPS_OP_MEM:
