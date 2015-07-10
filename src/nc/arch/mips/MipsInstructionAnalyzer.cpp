@@ -92,9 +92,9 @@ public:
   		/*
 		 * The $zero-register always holds the value of zero (0).
          */
-        _[
+        /*_[
                     regizter(MipsRegisters::zero()) ^= constant(0)
-        ];
+        ];*/
 
         /* Describing semantics */
         switch (instr_->id) {
@@ -316,6 +316,15 @@ public:
 				];
     	    	break;
        	 	}
+        	case MIPS_INS_ROTR:  /* Fall-through */
+        	case MIPS_INS_ROTRV: {
+        		auto operand1 = operand(1);
+        		auto operand2 = operand(2);
+				_[
+					operand(0) ^= ((unsigned_(operand1) >> operand2) | (operand1 << (constant(32) - operand1)))
+				];
+    	    	break;
+       	 	}
          	case MIPS_INS_SUB: /* Fall-through */       	 	
         	case MIPS_INS_SUBU: {
 				_[
@@ -356,11 +365,9 @@ public:
       		case MIPS_INS_SW: {
                 auto operand0 = operand(0);
 			    auto operand1 = operand(1);
-
 	            _[
 					std::move(operand1) ^= std::move(operand0)
 				];
-
     	    	break;
         	}
          	case MIPS_INS_XOR: /* Fall-through */       	 	
@@ -368,12 +375,10 @@ public:
 				_[
 					operand(0) ^= (operand(1) ^ operand(2))
 				];
-
     	    	break;
        	 	}
 			case MIPS_INS_JR: {
             	_[
-            		directSuccessor(),
             		jump(operand(0))
             	];
             	break;
@@ -383,16 +388,15 @@ public:
 			case MIPS_INS_JAL: {
 	            	_[
 	            		regizter(MipsRegisters::ra()) ^= constant(instruction->endAddr()),
-                   	 	directSuccessor(),
                    	 	call(operand(0))
             		];
             	break;
         	}
         	case MIPS_INS_J: /* Fall-through */
         	case MIPS_INS_B: {
+            		auto operand0 = unsigned_(operand(0));
             		_[
-            			directSuccessor(),
-            			jump(operand(0))
+            			jump(operand0)
             		];
             	break;
         	}
