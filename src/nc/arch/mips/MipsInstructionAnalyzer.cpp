@@ -129,33 +129,33 @@ public:
         	case MIPS_INS_BEQL: /* Fall-through */    
          	case MIPS_INS_BEQ: {
         		_[
-        			directSuccessor(),
         			jump((operand(0) == operand(1)), operand(2), directSuccessor())
         		];
     	    	break;
        	 	}
          	case MIPS_INS_BGEZ: {
         		_[
-        			 directSuccessor(),
         			jump((unsigned_(operand(0)) >= constant(0)), operand(1), directSuccessor())
         		];
         	   	break;
        	 	}
-#if 0 /* Fix me */
         	case MIPS_INS_BGEZAL: /* Fall-through */
          	case MIPS_INS_BGEZALL: {
         		/* This is a conditional call */
+        		MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
         		auto operand0 = unsigned_(operand(0));
-        		_[regizter(MipsRegisters::ra()) ^= constant(instruction->endAddr())];
-               if (operand0 >= constant(0))
-                    _[call(operand(1))];
+        		_[	
+        			regizter(MipsRegisters::ra()) ^= constant(instruction->endAddr()),
+        			jump((operand0 >= constant(0)), then.basicBlock(), directSuccessor())
+        		];
+                then[
+                    call(operand(1))
+                ];
         	   	break;
        	 	}
-#endif
          	case MIPS_INS_BGTZL: /* Fall-through */    
          	case MIPS_INS_BGTZ: {
         		_[
-        			directSuccessor(),
         			jump((unsigned_(operand(0)) > constant(0)), operand(1), directSuccessor())
         		];
     	    	break;
@@ -163,54 +163,45 @@ public:
         	case MIPS_INS_BLTZL: /* Fall-through */    
          	case MIPS_INS_BLTZ: {
         		_[
-        			directSuccessor(),
         			jump((signed_(operand(0)) < constant(0)), operand(1), directSuccessor())
         		];
     	    	break;
        	 	}
-#if 0 /* Fix me */
             case MIPS_INS_BLTZALL: /* Fall-through */  
             case MIPS_INS_BLTZAL: {
 	        	/* This is a conditional call */
+	        	MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
 	      		auto operand0 = signed_(operand(0));
-	      		auto zeroconst = constant(0);
-        		_[regizter(MipsRegisters::ra()) ^= constant(instruction->endAddr())];
-                auto result = std::make_unique<core::ir::BinaryOperator>(
-                    core::ir::BinaryOperator::SIGNED_LESS,
-                    std::move(operand0),
-                    std::move(zeroconst),
-                    operand0.size());
-                
-                if (result)
-					 _[call(operand(1))];
+        		_[	
+        			regizter(MipsRegisters::ra()) ^= constant(instruction->endAddr()),
+        			jump((operand0 < constant(0)), then.basicBlock(), directSuccessor())
+        		];
+                then[
+                    call(operand(1))
+                ];
     	    	break;
        	 	}
-#endif
       	 	case MIPS_INS_BLEZL: /* Fall-through */    
          	case MIPS_INS_BLEZ: {
         		_[
-        			directSuccessor(),
         			jump((signed_(operand(0)) <= constant(0)), operand(1), directSuccessor())
         		];
     	    	break;
        	 	}
          	case MIPS_INS_BNE: {
         		_[
-        			 directSuccessor(),
         			jump(~(operand(0) == operand(1)), operand(2), directSuccessor())
         		];
     	    	break;
        	 	}
          	case MIPS_INS_BEQZ: {
         		_[
-        			directSuccessor(),
         			jump((operand(0) == constant(0)), operand(1), directSuccessor())
         		];
     	    	break;
        	 	}
         	case MIPS_INS_BNEZ: {
         		_[
-        			directSuccessor(),
         			jump(~(operand(0) == constant(0)), operand(1), directSuccessor())
         		];
     	    	break;
@@ -246,9 +237,8 @@ public:
         	case MIPS_INS_LWR:
       		case MIPS_INS_LW: {
                 auto operand0 = operand(0);
-			    auto operand1 = MemoryLocationExpression(core::ir::MemoryLocation(core::ir::MemoryDomain::MEMORY, 0, 32));
+			    auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
 	            _[
-	            	operand1 ^= operand(1),
 					std::move(operand0) ^= std::move(operand1)
 				];
     	    	break;
