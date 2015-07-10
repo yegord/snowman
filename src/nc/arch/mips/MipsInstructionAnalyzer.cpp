@@ -360,7 +360,8 @@ public:
 	        	];
     	    	break;
         	}
-        	case MIPS_INS_SWL: /* Fall-through */
+         	case MIPS_INS_SB: /* Fall-through */
+        	case MIPS_INS_SWL:
          	case MIPS_INS_SWR:
       		case MIPS_INS_SW: {
                 auto operand0 = operand(0);
