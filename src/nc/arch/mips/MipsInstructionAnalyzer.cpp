@@ -216,21 +216,38 @@ public:
     	    	break;
        	 	}
  			case MIPS_INS_LB: {
+ 				 auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
                 _[
-                    operand(0) ^= sign_extend(operand(1) & constant(0xff), 24)
+                    operand(0) ^= sign_extend(operand1 & constant(0xff), 24)
                 ];
     	    	break;
         	}
  			case MIPS_INS_LBU: {
+ 				auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
                 _[
-                    operand(0) ^= zero_extend(operand(1) & constant(0xff), 24)
+                    operand(0) ^= zero_extend(operand1 & constant(0xff), 24)
                 ];
     	    	break;
         	}
  			case MIPS_INS_LUI: {
+ 				 auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
                 _[
-                    operand(0) ^=  (operand(1) << constant(16))
+                    operand(0) ^=  (operand1 << constant(16))
                 ];
+    	    	break;
+        	}
+      		case MIPS_INS_LH: {
+			    auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+	            _[
+					operand(0) ^= sign_extend((operand1), 16)
+				];
+    	    	break;
+        	}
+      		case MIPS_INS_LHU: {
+			    auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+	            _[
+					operand(0) ^= zero_extend(unsigned_(operand1), 16)
+				];
     	    	break;
         	}
         	case MIPS_INS_LWL: /* Fall-through */
@@ -361,7 +378,8 @@ public:
     	    	break;
         	}
          	case MIPS_INS_SB: /* Fall-through */
-        	case MIPS_INS_SWL:
+         	case MIPS_INS_SH:
+          	case MIPS_INS_SWL:
          	case MIPS_INS_SWR:
       		case MIPS_INS_SW: {
                 auto operand0 = operand(0);
@@ -395,9 +413,8 @@ public:
         	}
         	case MIPS_INS_J: /* Fall-through */
         	case MIPS_INS_B: {
-            		auto operand0 = unsigned_(operand(0));
             		_[
-            			jump(operand0)
+            			jump(operand(0))
             		];
             	break;
         	}
