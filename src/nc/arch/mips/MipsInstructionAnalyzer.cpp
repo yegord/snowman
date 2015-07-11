@@ -418,6 +418,24 @@ public:
 	        	];
     	    	break;
         	}
+	        case MIPS_INS_SRA: /* Fall-through */
+         	case MIPS_INS_SRAI: 
+			case MIPS_INS_SRAV: {
+				if(getOperandType(2) == MIPS_OP_REG)
+	            	_[operand(0) ^= (signed_(operand(1)) >> (unsigned_(operand(2)) %  unsigned_(constant(32))))];
+	            else
+	            	_[operand(0) ^= (signed_(operand(1)) >> operand(2))];
+    	    	break;
+        	}
+	        case MIPS_INS_SRL: /* Fall-through */
+         	case MIPS_INS_SRLI: 
+			case MIPS_INS_SRLV: {
+				if(getOperandType(2) == MIPS_OP_REG)
+	            	_[operand(0) ^= (unsigned_(operand(1)) >> (unsigned_(operand(2)) %  unsigned_(constant(32))))];
+	            else
+	            	_[operand(0) ^= (unsigned_(operand(1)) >> operand(2))];
+    	    	break;
+        	}
          	case MIPS_INS_SB: /* Fall-through */
          	case MIPS_INS_SH:
           	case MIPS_INS_SWL:
