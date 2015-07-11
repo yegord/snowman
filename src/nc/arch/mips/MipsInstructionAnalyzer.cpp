@@ -467,6 +467,20 @@ public:
 				];
     	    	break;
        	 	}
+        	case MIPS_INS_SEB: {
+				/* d = (long long)(signed char)(s & 0xff) */
+				_[
+					operand(0) ^= sign_extend(operand(1) & constant(0xff))
+				];
+    	    	break;
+       	 	} 
+        	case MIPS_INS_SEH: {
+				/* d = (long long)(signed short)(s & 0xffff) */
+				_[
+					operand(0) ^= sign_extend(operand(1) & constant(0xffff))
+				];
+    	    	break;
+       	 	} 
          	case MIPS_INS_SEQ: /* Fall-through */       	 	
         	case MIPS_INS_SEQI: {
 				/* d = (s == t) ? 1 : 0 */
