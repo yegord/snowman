@@ -227,9 +227,8 @@ public:
        	 	}
 	       	case MIPS_INS_DIV: /* Fall-through */  
         	case MIPS_INS_DIVU: {
-                auto operand2 = operand(2);
 				_[
-					regizter(MipsRegisters::hi()) ^= unsigned_(operand(1)) % unsigned_(std::move(operand2)),
+					regizter(MipsRegisters::hi()) ^= unsigned_(operand(1)) % unsigned_(operand(2)),
 					regizter(MipsRegisters::lo()) ^= unsigned_(operand(1)) / unsigned_(operand(2)),
 					operand(0) ^= regizter(MipsRegisters::lo())
 				];
@@ -359,25 +358,19 @@ public:
 				];
     	    	break;
            	}
-       	 	/* FIXME: hi/lo */
          	case MIPS_INS_MSUB: {
          		auto operand0 = operand(0);
                 auto operand1 = operand(1);
-                auto operand2 = operand(2);
 				_[
-					regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) - sign_extend((std::move(operand1) * std::move(operand2)), 64),
-					operand0 ^= regizter(MipsRegisters::lo()) 
+					regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) - sign_extend((std::move(operand0) * std::move(operand1)), 64)
 				];
     	    	break;
        	 	}
-       	 	/* FIXME: hi/lo */
          	case MIPS_INS_MSUBU: {
          		auto operand0 = operand(0);
                 auto operand1 = operand(1);
-                auto operand2 = operand(2);
 				_[
-					regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) - zero_extend((std::move(operand1) * std::move(operand2)), 64),
-					operand0 ^= regizter(MipsRegisters::lo())
+					regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) - zero_extend((std::move(operand0) * std::move(operand1)), 64)
 				];
     	    	break;
            	}
@@ -481,14 +474,14 @@ public:
         	case MIPS_INS_SEB: {
 				/* d = (long long)(signed char)(s & 0xff) */
 				_[
-					operand(0) ^= sign_extend(operand(1) & constant(0xff))
+					operand(0) ^= sign_extend((operand(1) & constant(0xff)), 8)
 				];
     	    	break;
        	 	} 
         	case MIPS_INS_SEH: {
 				/* d = (long long)(signed short)(s & 0xffff) */
 				_[
-					operand(0) ^= sign_extend(operand(1) & constant(0xffff))
+					operand(0) ^= sign_extend((operand(1) & constant(0xffff)), 16)
 				];
     	    	break;
        	 	} 
