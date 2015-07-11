@@ -232,8 +232,10 @@ public:
         	}
 #endif
  			case MIPS_INS_LUI: {
+ 				auto operand0 = operand(0);
+ 				auto operand1 = operand(1);
                 _[
-                    operand(0) ^=  (operand(1) << constant(16))
+                    std::move(operand0) ^=  (std::move(operand1) << constant(16))
                 ];
     	    	break;
         	}
