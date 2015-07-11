@@ -341,6 +341,28 @@ public:
     	    	break;
            	}
        	 	/* FIXME: hi/lo */
+         	case MIPS_INS_SUB: {
+         		auto operand0 = operand(0);
+                auto operand1 = operand(1);
+                auto operand2 = operand(2);
+				_[
+					regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) - sign_extend((std::move(operand1) * std::move(operand2)), 64),
+					operand0 ^= regizter(MipsRegisters::lo()) 
+				];
+    	    	break;
+       	 	}
+       	 	/* FIXME: hi/lo */
+         	case MIPS_INS_SUBUU: {
+         		auto operand0 = operand(0);
+                auto operand1 = operand(1);
+                auto operand2 = operand(2);
+				_[
+					regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) - zero_extend((std::move(operand1) * std::move(operand2)), 64),
+					operand0 ^= regizter(MipsRegisters::lo())
+				];
+    	    	break;
+           	}
+       		/* FIXME: hi/lo */
          	case MIPS_INS_MULT: {
          		auto operand0 = operand(0);
                 auto operand1 = operand(1);
