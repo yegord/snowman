@@ -92,9 +92,9 @@ public:
   		/*
 		 * The $zero-register always holds the value of zero (0).
          */
-        /*_[
+        _[
                     regizter(MipsRegisters::zero()) ^= constant(0)
-        ];*/
+        ];
 
         /* Describing semantics */
         switch (instr_->id) {
@@ -230,9 +230,8 @@ public:
     	    	break;
         	}
  			case MIPS_INS_LUI: {
- 				 auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
                 _[
-                    operand(0) ^=  (operand1 << constant(16))
+                    operand(0) ^=  (operand(1) << constant(16))
                 ];
     	    	break;
         	}
