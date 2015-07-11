@@ -207,6 +207,7 @@ public:
         		];
     	    	break;
        	 	}
+      	 	case MIPS_INS_BNEL: /* Fall-through */    
          	case MIPS_INS_BNE: {
         		_[
         			jump(~(operand(0) == operand(1)), operand(2), directSuccessor())
@@ -474,14 +475,14 @@ public:
         	case MIPS_INS_SEB: {
 				/* d = (long long)(signed char)(s & 0xff) */
 				_[
-					operand(0) ^= sign_extend((operand(1) & constant(0xff)), 8)
+					operand(0) ^= sign_extend(zero_extend(operand(1) & constant(0xff)))
 				];
     	    	break;
        	 	} 
         	case MIPS_INS_SEH: {
 				/* d = (long long)(signed short)(s & 0xffff) */
 				_[
-					operand(0) ^= sign_extend((operand(1) & constant(0xffff)), 16)
+					operand(0) ^= sign_extend(zero_extend(operand(1) & constant(0xffff)))
 				];
     	    	break;
        	 	} 
