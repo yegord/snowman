@@ -341,7 +341,7 @@ public:
     	    	break;
            	}
        	 	/* FIXME: hi/lo */
-         	case MIPS_INS_SUB: {
+         	case MIPS_INS_MSUB: {
          		auto operand0 = operand(0);
                 auto operand1 = operand(1);
                 auto operand2 = operand(2);
@@ -352,7 +352,7 @@ public:
     	    	break;
        	 	}
        	 	/* FIXME: hi/lo */
-         	case MIPS_INS_SUBUU: {
+         	case MIPS_INS_MSUBU: {
          		auto operand0 = operand(0);
                 auto operand1 = operand(1);
                 auto operand2 = operand(2);
