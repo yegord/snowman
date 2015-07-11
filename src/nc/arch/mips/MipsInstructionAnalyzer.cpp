@@ -150,7 +150,8 @@ public:
         			jump((operand0 >= constant(0)), then.basicBlock(), directSuccessor())
         		];
                 then[
-                    call(operand(1))
+                    call(operand(1)),
+                    jump(directSuccessor())
                 ];
         	   	break;
        	 	}
@@ -178,7 +179,8 @@ public:
         			jump((operand0 < constant(0)), then.basicBlock(), directSuccessor())
         		];
                 then[
-                    call(operand(1))
+                    call(operand(1)),
+                   	jump(directSuccessor())
                 ];
     	    	break;
        	 	}
@@ -252,7 +254,7 @@ public:
       		case MIPS_INS_LHU: {
 			    auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
 	            _[
-					operand(0) ^= zeri_extend((operand1), 16)
+					operand(0) ^= zero_extend((operand1), 16)
 				];
     	    	break;
         	}
