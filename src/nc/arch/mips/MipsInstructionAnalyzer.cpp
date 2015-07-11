@@ -491,16 +491,36 @@ public:
 #endif
          	case MIPS_INS_SLT: /* Fall-through */     
 			case MIPS_INS_SLTI: {
-	            _[
-	        		operand(0) ^= (signed_(operand(1)) < signed_(zero_extend(operand(2))))
-	        	];
+	        	MipsExpressionFactoryCallback one(factory, program->createBasicBlock(), instruction);
+	        	MipsExpressionFactoryCallback none(factory, program->createBasicBlock(), instruction);
+        		_[	
+        			jump((signed_(operand(1)) < signed_(operand(2))), one.basicBlock(), none.basicBlock())
+        		];
+                one[
+					operand(0) ^= constant(1),
+				    jump(directSuccessor())
+		         ];
+                none[
+					operand(0) ^= constant(0),
+				    jump(directSuccessor())
+		         ];
     	    	break;
         	}
          	case MIPS_INS_SLTU: /* Fall-through */     
 			case MIPS_INS_SLTIU: {
-	            _[
-	        		operand(0) ^= (unsigned_(operand(1)) < unsigned_(zero_extend(operand(2))))
-	        	];
+	        	MipsExpressionFactoryCallback one(factory, program->createBasicBlock(), instruction);
+	        	MipsExpressionFactoryCallback none(factory, program->createBasicBlock(), instruction);
+        		_[	
+        			jump((unsigned_(operand(1)) < unsigned_(operand(2))), one.basicBlock(), none.basicBlock())
+        		];
+                one[
+					operand(0) ^= constant(1), 
+				    jump(directSuccessor())		  
+		         ];
+                none[
+					operand(0) ^= constant(0),
+				    jump(directSuccessor())
+		         ];
     	    	break;
         	}
 	        case MIPS_INS_SRA: /* Fall-through */
