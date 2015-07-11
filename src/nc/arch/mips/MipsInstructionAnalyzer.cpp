@@ -381,6 +381,16 @@ public:
 				];
     	    	break;
            	}
+      		/* FIXME: hi/lo */
+         	case MIPS_INS_MUL: {
+         		auto operand0 = operand(0);
+                auto operand1 = operand(1);
+				_[
+					regizter(MipsRegisters::hilo()) ^= sign_extend((std::move(operand0) * std::move(operand1)), 64),
+					operand0 ^= regizter(MipsRegisters::lo())
+				];
+    	    	break;
+       	 	}
        		/* FIXME: hi/lo */
          	case MIPS_INS_MULT: {
          		auto operand0 = operand(0);
