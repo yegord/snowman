@@ -106,6 +106,22 @@ public:
   	      	case MIPS_INS_NOP: {
     	    	break;
         	}
+			case MIPS_INS_ABS: {
+	        	MipsExpressionFactoryCallback negative(factory, program->createBasicBlock(), instruction);
+	        	MipsExpressionFactoryCallback positive(factory, program->createBasicBlock(), instruction);
+        		_[	
+        			jump((signed_(operand(1)) < signed_(constant(0))), negative.basicBlock(), positive.basicBlock())
+        		];
+                negative[
+					operand(0) ^= -operand(1),
+				    jump(directSuccessor())
+		         ];
+                positive[
+					operand(0) ^= operand(1),
+				    jump(directSuccessor())
+		         ];
+    	    	break;
+        	}
         	case MIPS_INS_ADD: /* Fall-through */       
 			case MIPS_INS_ADDI:
         	case MIPS_INS_ADDIU:
