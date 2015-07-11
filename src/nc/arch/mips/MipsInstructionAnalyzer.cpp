@@ -207,6 +207,7 @@ public:
         		];
     	    	break;
        	 	}
+	       	case MIPS_INS_DIV: /* Fall-through */  
         	case MIPS_INS_DIVU: {
                 auto operand2 = operand(2);
 				_[
