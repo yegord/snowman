@@ -287,11 +287,19 @@ public:
 				];
     	    	break;
        	 	}
+         	case MIPS_INS_MULT: {
+         		auto operand0 = operand(0);
+                auto operand1 = operand(1);
+				_[
+					regizter(MipsRegisters::hilo()) ^= sign_extend((std::move(operand0) * std::move(operand1)), 64)
+				];
+    	    	break;
+       	 	}
          	case MIPS_INS_MULTU: {
          		auto operand0 = operand(0);
                 auto operand1 = operand(1);
 				_[
-					regizter(MipsRegisters::hilo()) ^= unsigned_(std::move(operand0)) * unsigned_(std::move(operand1))
+					regizter(MipsRegisters::hilo()) ^= zero_extend((std::move(operand0) * std::move(operand1)), 64)
 				];
     	    	break;
        	 	}
