@@ -389,6 +389,28 @@ public:
                 ];
     	    	break;
         	}
+			case MIPS_INS_MOVN: {
+	        	MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+        		_[	
+        			jump(operand(2), then.basicBlock(), directSuccessor())
+        		];
+                then[
+					operand(0) ^= operand(1),
+				    jump(directSuccessor())
+		         ];
+    	    	break;
+        	}
+			case MIPS_INS_MOVZ: {
+	        	MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+        		_[	
+        			jump(~operand(2), then.basicBlock(), directSuccessor())
+        		];
+                then[
+					operand(0) ^= operand(1),
+				    jump(directSuccessor())
+		         ];
+    	    	break;
+        	}
           	case MIPS_INS_NEG: /* Fall-through */ 	
  			case MIPS_INS_NEGU: {
                 _[
