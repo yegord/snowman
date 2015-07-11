@@ -215,6 +215,7 @@ public:
 				];
     	    	break;
        	 	}
+#if 0
  			case MIPS_INS_LB: {
  				 auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
                 _[
@@ -229,12 +230,14 @@ public:
                 ];
     	    	break;
         	}
+#endif
  			case MIPS_INS_LUI: {
                 _[
                     operand(0) ^=  (operand(1) << constant(16))
                 ];
     	    	break;
         	}
+#if 0
       		case MIPS_INS_LH: {
 			    auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
 	            _[
@@ -245,12 +248,17 @@ public:
       		case MIPS_INS_LHU: {
 			    auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
 	            _[
-					operand(0) ^= zero_extend(unsigned_(operand1), 16)
+					operand(0) ^= zeri_extend((operand1), 16)
 				];
     	    	break;
         	}
+#endif
         	case MIPS_INS_LWL: /* Fall-through */
         	case MIPS_INS_LWR:
+			case MIPS_INS_LHU:
+			case MIPS_INS_LH:
+ 			case MIPS_INS_LBU:
+			case MIPS_INS_LB:
       		case MIPS_INS_LW: {
                 auto operand0 = operand(0);
 			    auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
