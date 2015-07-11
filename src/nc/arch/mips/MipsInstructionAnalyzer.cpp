@@ -311,23 +311,23 @@ public:
         	}
  			case MIPS_INS_NOR: {
                 _[
-					operand(0) ^= ~operand(1)
+					operand(0) ^= ~(operand(1) | operand(2))
                 ];
     	    	break;
         	}
  			case MIPS_INS_NOT: {
                 _[
-					operand(0) ^= ~(operand(1) | operand(2))
+					operand(0) ^= ~operand(1)
                 ];
     	    	break;
         	}
+        	case MIPS_INS_ORI: /* Fall-through */
         	case MIPS_INS_OR: {
+				if(getOperandType(2) == MIPS_OP_REG)
 				_[
 					operand(0) ^= (operand(1) | operand(2))
 				];
-    	    	break;
-       	 	}
-        	case MIPS_INS_ORI: {
+				else
 				_[
 					operand(0) ^= (operand(1) | unsigned_(operand(2)))
 				];
@@ -339,6 +339,37 @@ public:
         		auto operand2 = operand(2);
 				_[
 					operand(0) ^= ((unsigned_(operand1) >> operand2) | (operand1 << (constant(32) - operand1)))
+				];
+    	    	break;
+       	 	}
+         	case MIPS_INS_SEQ: /* Fall-through */       	 	
+        	case MIPS_INS_SEQI: {
+				/* d = (s == t) ? 1 : 0 */
+				_[
+					operand(0) ^= (operand(1) == operand(2))
+				];
+    	    	break;
+       	 	}
+#if 0 /* Syntetic sugar */
+			case MIPS_INS_SGE: {
+	            _[
+	        		operand(0) ^= (signed_(operand(1)) >= signed_(zero_extend(operand(2))))
+	        	];
+    	    	break;
+        	}
+			case MIPS_INS_SGTU: {
+	            _[
+	        		operand(0) ^= (unsigned_(operand(1)) >= unsigned_(zero_extend(operand(2))))
+	        	];
+    	    	break;
+        	}
+#endif
+         	case MIPS_INS_SNE: /* Fall-through */       	 	
+        	case MIPS_INS_SNEI: {
+				/* d = (s != t) ? 1 : 0 */
+				_[
+					operand(0) ^= (operand(1) == operand(2)),
+					operand(0) ^= ~operand(0)
 				];
     	    	break;
        	 	}
@@ -358,19 +389,33 @@ public:
 	            	_[operand(0) ^= (operand(1) << operand(2))];
     	    	break;
         	}
-         	case MIPS_INS_SLT: /* Fall-through */     
-			case MIPS_INS_SLTI: {
+#if 0 /* Syntetic sugar */
+			case MIPS_INS_SLE: {
                 auto operand0 = signed_(operand(0));
 	            _[
-	        		operand0 ^= (signed_(operand(1)) < signed_(zero_extend(operand(2))))
+	        		operand0 ^= (signed_(operand(1)) <= signed_(zero_extend(operand(2))))
+	        	];
+    	    	break;
+        	}
+			case MIPS_INS_SLEU: {
+                auto operand0 = signed_(operand(0));
+	            _[
+	        		operand0 ^= (unsigned_(operand(1)) <= unsigned_(zero_extend(operand(2))))
+	        	];
+    	    	break;
+        	}
+#endif
+         	case MIPS_INS_SLT: /* Fall-through */     
+			case MIPS_INS_SLTI: {
+	            _[
+	        		operand(0) ^= (signed_(operand(1)) < signed_(zero_extend(operand(2))))
 	        	];
     	    	break;
         	}
          	case MIPS_INS_SLTU: /* Fall-through */     
 			case MIPS_INS_SLTIU: {
-                auto operand0 = unsigned_(operand(0));
 	            _[
-	        		operand0 ^= (unsigned_(operand(1)) < unsigned_(zero_extend(operand(2))))
+	        		operand(0) ^= (unsigned_(operand(1)) < unsigned_(zero_extend(operand(2))))
 	        	];
     	    	break;
         	}
