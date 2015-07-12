@@ -209,8 +209,13 @@ public:
        	 	}
       	 	case MIPS_INS_BNEL: /* Fall-through */    
          	case MIPS_INS_BNE: {
+         		if(detail_->op_count == 3)
         		_[
         			jump(~(operand(0) == operand(1)), operand(2), directSuccessor())
+        		];
+        		else /* BNEZL */
+        		_[
+        			jump(~(operand(0) == constant(0)), operand(1), directSuccessor())
         		];
     	    	break;
        	 	}
@@ -220,7 +225,6 @@ public:
         		];
     	    	break;
        	 	}
-        	case MIPS_INS_BNEZL: /* Fall-through */
         	case MIPS_INS_BNEZ: {
         		_[
         			jump(~(operand(0) == constant(0)), operand(1), directSuccessor())
@@ -482,14 +486,14 @@ public:
         	case MIPS_INS_SEB: {
 				/* d = (long long)(signed char)(s & 0xff) */
 				_[
-					operand(0) ^= (operand(1) & constant(0xff))
+					operand(0) ^= signed_(operand(1) & constant(0xff))
 				];
     	    	break;
        	 	} 
         	case MIPS_INS_SEH: {
 				/* d = (long long)(signed short)(s & 0xffff) */
 				_[
-					operand(0) ^= (operand(1) & constant(0xffff))
+					operand(0) ^= signed_(operand(1) & constant(0xffff))
 				];
     	    	break;
        	 	} 
