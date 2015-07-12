@@ -220,6 +220,7 @@ public:
         		];
     	    	break;
        	 	}
+        	case MIPS_INS_BNEZL: /* Fall-through */
         	case MIPS_INS_BNEZ: {
         		_[
         			jump(~(operand(0) == constant(0)), operand(1), directSuccessor())
