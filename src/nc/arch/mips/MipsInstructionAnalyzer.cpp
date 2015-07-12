@@ -40,6 +40,7 @@ typedef core::irgen::expressions::ExpressionFactoryCallback<MipsExpressionFactor
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, sp)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, gp)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, hilo)
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, lo)
 
 } // anonymous namespace
 
