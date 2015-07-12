@@ -150,6 +150,7 @@ public:
         		];
     	    	break;
        	 	}
+       	 	case MIPS_INS_BGEZL: /* Fall-through */
          	case MIPS_INS_BGEZ: {
         		_[
         			jump((unsigned_(operand(0)) >= constant(0)), operand(1), directSuccessor())
