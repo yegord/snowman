@@ -502,10 +502,21 @@ public:
          	case MIPS_INS_SEQ: /* Fall-through */       	 	
         	case MIPS_INS_SEQI: {
 				/* d = (s == t) ? 1 : 0 */
-				_[
-					operand(0) ^= (operand(1) == operand(2))
-				];
-    	    	break;
+				/* d = (s != t) ? 1 : 0 */
+	        	MipsExpressionFactoryCallback one(factory, program->createBasicBlock(), instruction);
+	        	MipsExpressionFactoryCallback none(factory, program->createBasicBlock(), instruction);
+        		_[	
+        			jump((signed_(operand(1)) == signed_(operand(2))), one.basicBlock(), none.basicBlock())
+        		];
+                one[
+					operand(0) ^= constant(1),
+				    jump(directSuccessor())
+		         ];
+                none[
+					operand(0) ^= constant(0),
+				    jump(directSuccessor())
+		         ];
+     	    	break;
        	 	}
 #if 0 /* Syntetic sugar */
 			case MIPS_INS_SGE: {
@@ -524,10 +535,19 @@ public:
          	case MIPS_INS_SNE: /* Fall-through */       	 	
         	case MIPS_INS_SNEI: {
 				/* d = (s != t) ? 1 : 0 */
-				_[
-					operand(0) ^= (operand(1) == operand(2)),
-					operand(0) ^= ~operand(0)
-				];
+	        	MipsExpressionFactoryCallback one(factory, program->createBasicBlock(), instruction);
+	        	MipsExpressionFactoryCallback none(factory, program->createBasicBlock(), instruction);
+        		_[	
+        			jump(~(signed_(operand(1)) == signed_(operand(2))), one.basicBlock(), none.basicBlock())
+        		];
+                one[
+					operand(0) ^= constant(1),
+				    jump(directSuccessor())
+		         ];
+                none[
+					operand(0) ^= constant(0),
+				    jump(directSuccessor())
+		         ];
     	    	break;
        	 	}
          	case MIPS_INS_SUB: /* Fall-through */       	 	
