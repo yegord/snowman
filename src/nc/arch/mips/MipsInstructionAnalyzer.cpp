@@ -228,11 +228,17 @@ public:
        	 	}
 	       	case MIPS_INS_DIV: /* Fall-through */  
         	case MIPS_INS_DIVU: {
+				if(detail_->op_count == 2)
+				_[
+					regizter(MipsRegisters::hi()) ^= unsigned_(operand(0)) % unsigned_(operand(1)),
+					regizter(MipsRegisters::lo()) ^= unsigned_(operand(0)) / unsigned_(operand(1))
+				];
+				else
 				_[
 					regizter(MipsRegisters::hi()) ^= unsigned_(operand(1)) % unsigned_(operand(2)),
 					regizter(MipsRegisters::lo()) ^= unsigned_(operand(1)) / unsigned_(operand(2)),
 					operand(0) ^= regizter(MipsRegisters::lo())
-				];
+				];				
     	    	break;
        	 	}
 #if 0
@@ -475,14 +481,14 @@ public:
         	case MIPS_INS_SEB: {
 				/* d = (long long)(signed char)(s & 0xff) */
 				_[
-					operand(0) ^= sign_extend(zero_extend(operand(1) & constant(0xff)))
+					operand(0) ^= (operand(1) & constant(0xff))
 				];
     	    	break;
        	 	} 
         	case MIPS_INS_SEH: {
 				/* d = (long long)(signed short)(s & 0xffff) */
 				_[
-					operand(0) ^= sign_extend(zero_extend(operand(1) & constant(0xffff)))
+					operand(0) ^= (operand(1) & constant(0xffff))
 				];
     	    	break;
        	 	} 
