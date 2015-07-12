@@ -43,7 +43,6 @@
 #include <nc/core/ir/Statements.h>
 #include <nc/core/ir/dflow/Dataflow.h>
 #include <nc/core/ir/dflow/DataflowAnalyzer.h>
-#include <nc/core/ir/dflow/ExecutionContext.h>
 #include <nc/core/ir/dflow/Value.h>
 #include <nc/core/ir/misc/ArrayAccess.h>
 #include <nc/core/ir/misc/PatternRecognition.h>
@@ -99,10 +98,10 @@ void IRGenerator::computeJumpTargets(ir::BasicBlock *basicBlock) {
     /* Prepare context for quick and dirty dataflow analysis. */
     ir::dflow::Dataflow dataflow;
     ir::dflow::DataflowAnalyzer analyzer(dataflow, image_->architecture(), canceled_, log_);
-    ir::dflow::ExecutionContext context(analyzer);
+    ir::dflow::ReachingDefinitions definitions;
 
     foreach (auto statement, basicBlock->statements()) {
-        analyzer.execute(statement, context);
+        analyzer.execute(statement, definitions);
 
         switch (statement->kind()) {
             case ir::Statement::INLINE_ASSEMBLY: {
@@ -110,7 +109,7 @@ void IRGenerator::computeJumpTargets(ir::BasicBlock *basicBlock) {
                  * Inline assembly can do unpredictable things.
                  * Therefore, clear the reaching definitions.
                  */
-                context.definitions().clear();
+                definitions.clear();
                 break;
             }
             case ir::Statement::CALL: {
@@ -134,7 +133,7 @@ void IRGenerator::computeJumpTargets(ir::BasicBlock *basicBlock) {
                  * A call can do unpredictable things.
                  * Therefore, clear the reaching definitions.
                  */
-                context.definitions().clear();
+                definitions.clear();
                 break;
             }
             case ir::Statement::JUMP: {

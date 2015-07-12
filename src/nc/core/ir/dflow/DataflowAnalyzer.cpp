@@ -39,7 +39,6 @@
 #include <nc/core/ir/Terms.h>
 
 #include "Dataflow.h"
-#include "ExecutionContext.h"
 #include "Value.h"
 
 namespace nc {
@@ -87,25 +86,25 @@ void DataflowAnalyzer::analyze(const CFG &cfg) {
          * Run abstract interpretation on all basic blocks.
          */
         foreach (auto basicBlock, cfg.basicBlocks()) {
-            ExecutionContext context(*this);
+            ReachingDefinitions definitions;
 
             /* Merge reaching definitions from predecessors. */
             foreach (const BasicBlock *predecessor, cfg.getPredecessors(basicBlock)) {
-                context.definitions().merge(outDefinitions[predecessor]);
+                definitions.merge(outDefinitions[predecessor]);
             }
 
             /* Remove definitions that do not cover the memory location that they define. */
-            context.definitions().filterOut(notCovered);
+            definitions.filterOut(notCovered);
 
             /* Execute all the statements in the basic block. */
             foreach (auto statement, basicBlock->statements()) {
-                execute(statement, context);
+                execute(statement, definitions);
             }
 
             /* Something has changed? */
-            ReachingDefinitions &definitions(outDefinitions[basicBlock]);
-            if (definitions != context.definitions()) {
-                definitions = std::move(context.definitions());
+            ReachingDefinitions &oldDefinitions(outDefinitions[basicBlock]);
+            if (oldDefinitions != definitions) {
+                oldDefinitions = std::move(definitions);
                 nfixpoints = 0;
             }
         }
@@ -144,7 +143,7 @@ void DataflowAnalyzer::analyze(const CFG &cfg) {
     remove_if(dataflow().term2definitions(), disappeared);
 }
 
-void DataflowAnalyzer::execute(const Statement *statement, ExecutionContext &context) {
+void DataflowAnalyzer::execute(const Statement *statement, ReachingDefinitions &definitions) {
     switch (statement->kind()) {
         case Statement::INLINE_ASSEMBLY:
             /*
@@ -154,27 +153,27 @@ void DataflowAnalyzer::execute(const Statement *statement, ExecutionContext &con
             break;
         case Statement::ASSIGNMENT: {
             auto assignment = statement->asAssignment();
-            computeValue(assignment->right(), context);
-            handleWrite(assignment->left(), computeMemoryLocation(assignment->left(), context), context);
+            computeValue(assignment->right(), definitions);
+            handleWrite(assignment->left(), computeMemoryLocation(assignment->left(), definitions), definitions);
             break;
         }
         case Statement::JUMP: {
             auto jump = statement->asJump();
 
             if (jump->condition()) {
-                computeValue(jump->condition(), context);
+                computeValue(jump->condition(), definitions);
             }
             if (jump->thenTarget().address()) {
-                computeValue(jump->thenTarget().address(), context);
+                computeValue(jump->thenTarget().address(), definitions);
             }
             if (jump->elseTarget().address()) {
-                computeValue(jump->elseTarget().address(), context);
+                computeValue(jump->elseTarget().address(), definitions);
             }
             break;
         }
         case Statement::CALL: {
             auto call = statement->asCall();
-            computeValue(call->target(), context);
+            computeValue(call->target(), definitions);
             break;
         }
         case Statement::HALT: {
@@ -184,13 +183,13 @@ void DataflowAnalyzer::execute(const Statement *statement, ExecutionContext &con
             auto touch = statement->asTouch();
             switch (touch->accessType()) {
                 case Term::READ:
-                    computeValue(touch->term(), context);
+                    computeValue(touch->term(), definitions);
                     break;
                 case Term::WRITE:
-                    handleWrite(touch->term(), computeMemoryLocation(touch->term(), context), context);
+                    handleWrite(touch->term(), computeMemoryLocation(touch->term(), definitions), definitions);
                     break;
                 case Term::KILL:
-                    handleKill(computeMemoryLocation(touch->term(), context), context);
+                    handleKill(computeMemoryLocation(touch->term(), definitions), definitions);
                     break;
                 default:
                     unreachable();
@@ -202,7 +201,7 @@ void DataflowAnalyzer::execute(const Statement *statement, ExecutionContext &con
             break;
         }
         case Statement::REMEMBER_REACHING_DEFINITIONS: {
-            dataflow_.getDefinitions(statement) = context.definitions();
+            dataflow_.getDefinitions(statement) = definitions;
             break;
         }
         default:
@@ -211,7 +210,7 @@ void DataflowAnalyzer::execute(const Statement *statement, ExecutionContext &con
     }
 }
 
-Value *DataflowAnalyzer::computeValue(const Term *term, const ExecutionContext &context) {
+Value *DataflowAnalyzer::computeValue(const Term *term, const ReachingDefinitions &definitions) {
     switch (term->kind()) {
         case Term::INT_CONST: {
             auto constant = term->asConstant();
@@ -258,19 +257,19 @@ Value *DataflowAnalyzer::computeValue(const Term *term, const ExecutionContext &
         }
         case Term::MEMORY_LOCATION_ACCESS: /* FALLTHROUGH */
         case Term::DEREFERENCE: {
-            const auto &memoryLocation = computeMemoryLocation(term, context);
-            const auto &reachingDefinitions = computeReachingDefinitions(term, memoryLocation, context);
+            const auto &memoryLocation = computeMemoryLocation(term, definitions);
+            const auto &reachingDefinitions = computeReachingDefinitions(term, memoryLocation, definitions);
             return computeValue(term, memoryLocation, reachingDefinitions);
         }
         case Term::UNARY_OPERATOR:
-            return computeValue(term->asUnaryOperator(), context);
+            return computeValue(term->asUnaryOperator(), definitions);
         case Term::BINARY_OPERATOR:
-            return computeValue(term->asBinaryOperator(), context);
+            return computeValue(term->asBinaryOperator(), definitions);
         case Term::CHOICE: {
             auto choice = term->asChoice();
             auto value = dataflow().getValue(choice);
-            auto preferredValue = computeValue(choice->preferredTerm(), context);
-            auto defaultValue = computeValue(choice->defaultTerm(), context);
+            auto preferredValue = computeValue(choice->preferredTerm(), definitions);
+            auto defaultValue = computeValue(choice->defaultTerm(), definitions);
 
             if (!dataflow().getDefinitions(choice->preferredTerm()).empty()) {
                 *value = *preferredValue;
@@ -287,7 +286,7 @@ Value *DataflowAnalyzer::computeValue(const Term *term, const ExecutionContext &
     }
 }
 
-const MemoryLocation &DataflowAnalyzer::computeMemoryLocation(const Term *term, const ExecutionContext &context) {
+const MemoryLocation &DataflowAnalyzer::computeMemoryLocation(const Term *term, const ReachingDefinitions &definitions) {
     return dataflow().setMemoryLocation(term, [&]() -> MemoryLocation {
         switch (term->kind()) {
             case Term::MEMORY_LOCATION_ACCESS: {
@@ -295,7 +294,7 @@ const MemoryLocation &DataflowAnalyzer::computeMemoryLocation(const Term *term, 
             }
             case Term::DEREFERENCE: {
                 auto dereference = term->asDereference();
-                auto addressValue = computeValue(dereference->address(), context);
+                auto addressValue = computeValue(dereference->address(), definitions);
 
                 if (addressValue->abstractValue().isConcrete()) {
                     if (dereference->domain() == MemoryDomain::MEMORY) {
@@ -324,23 +323,26 @@ const MemoryLocation &DataflowAnalyzer::computeMemoryLocation(const Term *term, 
     }());
 }
 
-const ReachingDefinitions &DataflowAnalyzer::computeReachingDefinitions(const Term *term, const MemoryLocation &memoryLocation, const ExecutionContext &context) {
-    auto &definitions = dataflow().getDefinitions(term);
+const ReachingDefinitions &DataflowAnalyzer::computeReachingDefinitions(const Term *term,
+                                                                        const MemoryLocation &memoryLocation,
+                                                                        const ReachingDefinitions &definitions) {
+    auto &termDefinitions = dataflow().getDefinitions(term);
 
     if (isTracked(memoryLocation)) {
-        context.definitions().project(memoryLocation, definitions);
+        definitions.project(memoryLocation, termDefinitions);
     } else {
-        definitions.clear();
+        termDefinitions.clear();
     }
 
-    return definitions;
+    return termDefinitions;
 }
 
 bool DataflowAnalyzer::isTracked(const MemoryLocation &memoryLocation) const {
     return memoryLocation && !architecture()->isGlobalMemory(memoryLocation);
 }
 
-Value *DataflowAnalyzer::computeValue(const Term *term, const MemoryLocation &memoryLocation, const ReachingDefinitions &definitions) {
+Value *DataflowAnalyzer::computeValue(const Term *term, const MemoryLocation &memoryLocation,
+                                      const ReachingDefinitions &definitions) {
     assert(term);
     assert(term->isRead());
     assert(memoryLocation || definitions.empty());
@@ -449,9 +451,9 @@ Value *DataflowAnalyzer::computeValue(const Term *term, const MemoryLocation &me
     return value;
 }
 
-Value *DataflowAnalyzer::computeValue(const UnaryOperator *unary, const ExecutionContext &context) {
+Value *DataflowAnalyzer::computeValue(const UnaryOperator *unary, const ReachingDefinitions &definitions) {
     auto value = dataflow().getValue(unary);
-    auto operandValue = computeValue(unary->operand(), context);
+    auto operandValue = computeValue(unary->operand(), definitions);
 
     value->setAbstractValue(apply(unary, operandValue->abstractValue()).merge(value->abstractValue()));
 
@@ -481,10 +483,10 @@ Value *DataflowAnalyzer::computeValue(const UnaryOperator *unary, const Executio
     return value;
 }
 
-Value *DataflowAnalyzer::computeValue(const BinaryOperator *binary, const ExecutionContext &context) {
+Value *DataflowAnalyzer::computeValue(const BinaryOperator *binary, const ReachingDefinitions &definitions) {
     auto value = dataflow().getValue(binary);
-    auto leftValue = computeValue(binary->left(), context);
-    auto rightValue = computeValue(binary->right(), context);
+    auto leftValue = computeValue(binary->left(), definitions);
+    auto rightValue = computeValue(binary->right(), definitions);
 
     value->setAbstractValue(apply(binary, leftValue->abstractValue(), rightValue->abstractValue()).merge(value->abstractValue()));
 
@@ -614,21 +616,21 @@ AbstractValue DataflowAnalyzer::apply(const BinaryOperator *binary, const Abstra
     }
 }
 
-void DataflowAnalyzer::handleWrite(const Term *term, const MemoryLocation &memoryLocation, ExecutionContext &context) {
-    context.definitions().filterOut(
+void DataflowAnalyzer::handleWrite(const Term *term, const MemoryLocation &memoryLocation, ReachingDefinitions &definitions) {
+    definitions.filterOut(
         [term](const MemoryLocation &, const Term *definition) -> bool {
             return definition == term;
         }
     );
 
     if (isTracked(memoryLocation)) {
-        context.definitions().addDefinition(memoryLocation, term);
+        definitions.addDefinition(memoryLocation, term);
     }
 }
 
-void DataflowAnalyzer::handleKill(const MemoryLocation &memoryLocation, ExecutionContext &context) {
+void DataflowAnalyzer::handleKill(const MemoryLocation &memoryLocation, ReachingDefinitions &definitions) {
     if (isTracked(memoryLocation)) {
-        context.definitions().killDefinitions(memoryLocation);
+        definitions.killDefinitions(memoryLocation);
     }
 }
 
