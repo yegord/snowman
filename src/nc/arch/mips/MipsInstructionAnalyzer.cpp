@@ -502,7 +502,6 @@ public:
          	case MIPS_INS_SEQ: /* Fall-through */       	 	
         	case MIPS_INS_SEQI: {
 				/* d = (s == t) ? 1 : 0 */
-				/* d = (s != t) ? 1 : 0 */
 	        	MipsExpressionFactoryCallback one(factory, program->createBasicBlock(), instruction);
 	        	MipsExpressionFactoryCallback none(factory, program->createBasicBlock(), instruction);
         		_[	
