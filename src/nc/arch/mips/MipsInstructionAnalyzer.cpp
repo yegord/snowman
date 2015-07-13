@@ -118,111 +118,287 @@ public:
                 break;
             }
             case MIPS_INS_ABS: {
-                MipsExpressionFactoryCallback emit_then(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
                 _[	
-                    jump((signed_(operand(1)) < signed_(constant(0))), emit_then.basicBlock(), directSuccessor())
-                ];
-                emit_then[
-                    operand(0) ^= -operand(1),
-                    jump(directSuccessor())
+                    jump((signed_(operand(1)) < signed_(constant(0))),
+                         (then[operand(0) ^= -operand(1), jump(directSuccessor())]).basicBlock(),
+                         directSuccessor())
                 ];
                 break;
             }
-            case MIPS_INS_ADD:		
+            case MIPS_INS_ADD: /* Fall-through */
             case MIPS_INS_ADDU: {
-                _[
-                    operand(0) ^= (operand(1) + operand(2))
-                ];
+                _[operand(0) ^= (operand(1) + operand(2))];
+                break;
+            }
+            case MIPS_INS_SUB: /* Fall-through */
+            case MIPS_INS_SUBU: {
+                _[operand(0) ^= (operand(1) - operand(2))];
+                break;
+            }
+            case MIPS_INS_NEG: /* Fall-through */
+            case MIPS_INS_NEGU: {
+                _[operand(0) ^= (constant(0) - operand(1))];
+                break;
+            }
+            case MIPS_INS_AND: {
+                _[operand(0) ^= (operand(1) & operand(2))];
+                break;
+            }
+            case MIPS_INS_OR: {
+                _[operand(0) ^= (operand(1) | operand(2))];
+                break;
+            }
+            case MIPS_INS_XOR: {
+                _[operand(0) ^= (operand(1) ^ operand(2))];
+                break;
+            }
+            case MIPS_INS_NOR: {
+                _[operand(0) ^= ~(operand(1) | operand(2))];
+                break;
+            }
+            case MIPS_INS_NOT: {
+                _[operand(0) ^= ~operand(1)];
                 break;
             }
             case MIPS_INS_ADDI: /* Fall-through */
             case MIPS_INS_ADDIU: {
-                _[
-                    operand(0) ^= (operand(1) + signed_(operand(2)))
-                ];
-                break;
-            }
-            case MIPS_INS_AND: {
-                _[
-                    operand(0) ^= (operand(1) & operand(2))
-                ];
+                _[operand(0) ^= (operand(1) + signed_(operand(2)))];
                 break;
             }
             case MIPS_INS_ANDI: {
+                _[operand(0) ^= (operand(1) & unsigned_(operand(2)))];
+                break;
+            }
+            case MIPS_INS_ORI: {
+                _[operand(0) ^= (operand(1) | unsigned_(operand(2)))];
+                break;
+            }
+            case MIPS_INS_XORI: {
+                _[operand(0) ^= (operand(1) ^ unsigned_(operand(2)))];
+                break;
+            }
+            case MIPS_INS_LUI: {
+                _[operand(0) ^= (operand(1) << constant(16))];
+                break;
+            }
+            case MIPS_INS_MOVE: {
+                _[operand(0) ^= operand(1)];
+                break;
+            }
+            case MIPS_INS_MOVN: {
+                MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
                 _[
-                    operand(0) ^= (operand(1) & unsigned_(operand(2)))
+                    jump(operand(2),
+                         (then[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock(),
+                         directSuccessor())
                 ];
                 break;
             }
-            case MIPS_INS_DIV: /* Fall-through */  
-            case MIPS_INS_DIVU: {
-                if(detail_->op_count == 2)
+            case MIPS_INS_MOVZ: {
+                MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
                 _[
-                    regizter(MipsRegisters::hi()) ^= unsigned_(operand(0)) % unsigned_(operand(1)),
-                    regizter(MipsRegisters::lo()) ^= unsigned_(operand(0)) / unsigned_(operand(1))
+                    jump(~operand(2),
+                         (then[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock(),
+                         directSuccessor())
                 ];
+                break;
+            }
+            case MIPS_INS_SEB: {
+                _[operand(0) ^= sign_extend(operand(1, 8))];
+                break;
+            }
+            case MIPS_INS_SEH: {
+                _[operand(0) ^= sign_extend(operand(1, 16))];
+                break;
+            }
+            case MIPS_INS_SEQ: {
+                /* d = (s == t) ? 1 : 0 */
+                MipsExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump(operand(1) == operand(2),
+                         _1[operand(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
+                         _0[operand(0) ^= constant(0), jump(directSuccessor())].basicBlock())
+                ];
+                break;
+            }
+            case MIPS_INS_SNE: {
+                /* d = (s != t) ? 1 : 0 */
+                MipsExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump(~(operand(1) == operand(2)),
+                         _1[operand(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
+                         _0[operand(0) ^= constant(0), jump(directSuccessor())].basicBlock())
+                ];
+                break;
+            }
+            case MIPS_INS_SLT: {
+                MipsExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump((signed_(operand(1)) < signed_(operand(2))),
+                         _1[operand(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
+                         _0[operand(0) ^= constant(0), jump(directSuccessor())].basicBlock())
+                ];
+                break;
+            }
+            case MIPS_INS_SLTU: {
+                MipsExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump((unsigned_(operand(1)) < unsigned_(operand(2))),
+                         _1[operand(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
+                         _0[operand(0) ^= constant(0), jump(directSuccessor())].basicBlock())
+                ];
+                break;
+            }
+            case MIPS_INS_SEQI: {
+                MipsExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump(operand(1) == signed_(operand(2)),
+                         _1[operand(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
+                         _0[operand(0) ^= constant(0), jump(directSuccessor())].basicBlock())
+                ];
+                break;
+            }
+            case MIPS_INS_SNEI: {
+                /* d = (s != t) ? 1 : 0 */
+                MipsExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump(~(operand(1) == signed_(operand(2))),
+                         _1[operand(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
+                         _0[operand(0) ^= constant(0), jump(directSuccessor())].basicBlock())
+                ];
+                break;
+            }
+            case MIPS_INS_SLTI: {
+                MipsExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump((signed_(operand(1)) < signed_(operand(2))),
+                         _1[operand(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
+                         _0[operand(0) ^= constant(0), jump(directSuccessor())].basicBlock())
+                ];
+                break;
+            }
+            case MIPS_INS_SLTIU: {
+                MipsExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump((unsigned_(operand(1)) < unsigned_(operand(2))),
+                         _1[operand(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
+                         _0[operand(0) ^= constant(0), jump(directSuccessor())].basicBlock())
+                ];
+                break;
+            }
+            case MIPS_INS_ROTR:	 /* Fall-through */
+            case MIPS_INS_ROTRV: {
+                auto operand1 = operand(1);
+                auto operand2 = operand(2);
+                _[operand(0) ^= ((unsigned_(operand1) >> operand2) | (operand1 << (constant(32) - operand2)))];
+                break;
+            }
+            case MIPS_INS_SLL: /* Fall-through */
+            case MIPS_INS_SLLI:
+            case MIPS_INS_SLLV: {
+                if (getOperandType(2) == MIPS_OP_REG)
+                    _[operand(0) ^= (operand(1) << zero_extend(operand(2, 4)))];
                 else
-                _[
-                    regizter(MipsRegisters::hi()) ^= unsigned_(operand(1)) % unsigned_(operand(2)),
-                    regizter(MipsRegisters::lo()) ^= unsigned_(operand(1)) / unsigned_(operand(2)),
-                    operand(0) ^= regizter(MipsRegisters::lo())
-                ];				
+                    _[operand(0) ^= (operand(1) << operand(2))];
                 break;
             }
-#if 0
+            case MIPS_INS_SRA: /* Fall-through */
+            case MIPS_INS_SRAI:
+            case MIPS_INS_SRAV: {
+                if (getOperandType(2) == MIPS_OP_REG)
+                    _[operand(0) ^= (signed_(operand(1)) >> zero_extend(operand(2, 4)))];
+                else
+                    _[operand(0) ^= (signed_(operand(1)) >> operand(2))];
+                break;
+            }
+            case MIPS_INS_SRL: /* Fall-through */
+            case MIPS_INS_SRLI:
+            case MIPS_INS_SRLV: {
+                if (getOperandType(2) == MIPS_OP_REG)
+                    _[operand(0) ^= (unsigned_(operand(1)) >> zero_extend(operand(2, 4)))];
+                else
+                    _[operand(0) ^= (unsigned_(operand(1)) >> operand(2))];
+                break;
+            }
+
             case MIPS_INS_LB: {
-                 auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-                _[
-                    operand(0) ^= sign_extend(operand1 & constant(0xff), 24)
-                ];
+                _[operand(0) ^= sign_extend(operand(1, 8))];
                 break;
             }
             case MIPS_INS_LBU: {
-                auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-                _[
-                    operand(0) ^= zero_extend(operand1 & constant(0xff), 24)
-                ];
+                _[operand(0) ^= zero_extend(operand(1, 8))];
                 break;
             }
-#endif
-            case MIPS_INS_LUI: {
-                auto operand0 = operand(0);
-                auto operand1 = operand(1);
-                _[
-                    std::move(operand0) ^=	(std::move(operand1) << constant(16))
-                ];
-                break;
-            }
-#if 0
             case MIPS_INS_LH: {
-                auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-                _[
-                    operand(0) ^= sign_extend((operand1), 16)
-                ];
+                _[operand(0) ^= sign_extend(operand(1, 16))];
                 break;
             }
             case MIPS_INS_LHU: {
-                auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-                _[
-                    operand(0) ^= zero_extend((operand1), 16)
-                ];
+                _[operand(0) ^= zero_extend(operand(1, 16))];
                 break;
             }
-#endif
-            case MIPS_INS_LWL: /* Fall-through */
-            case MIPS_INS_LWR:
-            case MIPS_INS_LHU:
-            case MIPS_INS_LH:
-            case MIPS_INS_LBU:
-            case MIPS_INS_LB:
             case MIPS_INS_LW: {
-                auto operand0 = operand(0);
-                auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-                _[
-                    std::move(operand0) ^= std::move(operand1)
-                ];
+                _[operand(0) ^= operand(1)];
                 break;
             }
+            case MIPS_INS_LWL: {
+                auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+                _(std::make_unique<core::ir::InlineAssembly>());
+                break;
+            }
+            case MIPS_INS_LWR: {
+                auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+                _(std::make_unique<core::ir::InlineAssembly>());
+                break;
+            }
+            case MIPS_INS_SB: {
+                _[operand(0, 8) ^= truncate(operand(1))];
+                break;
+            }
+            case MIPS_INS_SH: {
+                _[operand(0, 16) ^= truncate(operand(1))];
+                break;
+            }
+            case MIPS_INS_SW: {
+                _[operand(0) ^= operand(1)];
+                break;
+            }
+            case MIPS_INS_SWL: {
+                auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+                _(std::make_unique<core::ir::InlineAssembly>());
+                break;
+            }
+            case MIPS_INS_SWR: {
+                auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+                _(std::make_unique<core::ir::InlineAssembly>());
+                break;
+            }
+
+            case MIPS_INS_DIV: /* Fall-through */
+            case MIPS_INS_DIVU: {
+                if (detail_->op_count == 2)
+                    _[
+                        regizter(MipsRegisters::hi()) ^= unsigned_(operand(0)) % unsigned_(operand(1)),
+                            regizter(MipsRegisters::lo()) ^= unsigned_(operand(0)) / unsigned_(operand(1))
+                    ];
+                else
+                    _[
+                        regizter(MipsRegisters::hi()) ^= unsigned_(operand(1)) % unsigned_(operand(2)),
+                            regizter(MipsRegisters::lo()) ^= unsigned_(operand(1)) / unsigned_(operand(2)),
+                            operand(0) ^= regizter(MipsRegisters::lo())
+                    ];
+                break;
+            }
+
             case MIPS_INS_MFHI: {
                 auto operand0 = operand(0);
                 _[
@@ -338,241 +514,6 @@ public:
                 ];
                 break;
             }
-            case MIPS_INS_MOVE: {
-                _[
-                    operand(0) ^= operand(1)
-                ];
-                break;
-            }
-            case MIPS_INS_MOVN: {
-                MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
-                _[	
-                    jump(operand(2), then.basicBlock(), directSuccessor())
-                ];
-                then[
-                    operand(0) ^= operand(1),
-                    jump(directSuccessor())
-                 ];
-                break;
-            }
-            case MIPS_INS_MOVZ: {
-                MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
-                _[	
-                    jump(~operand(2), then.basicBlock(), directSuccessor())
-                ];
-                then[
-                    operand(0) ^= operand(1),
-                    jump(directSuccessor())
-                 ];
-                break;
-            }
-            case MIPS_INS_NEG: /* Fall-through */	
-            case MIPS_INS_NEGU: {
-                _[
-                    operand(0) ^= (constant(0) - operand(1))
-                ];
-                break;
-            }
-            case MIPS_INS_NOR: {
-                _[
-                    operand(0) ^= ~(operand(1) | operand(2))
-                ];
-                break;
-            }
-            case MIPS_INS_NOT: {
-                _[
-                    operand(0) ^= ~operand(1)
-                ];
-                break;
-            }
-            case MIPS_INS_ORI: /* Fall-through */
-            case MIPS_INS_OR: {
-                if(getOperandType(2) == MIPS_OP_REG)
-                _[
-                    operand(0) ^= (operand(1) | operand(2))
-                ];
-                else
-                _[
-                    operand(0) ^= (operand(1) | unsigned_(operand(2)))
-                ];
-                break;
-            }
-            case MIPS_INS_ROTR:	 /* Fall-through */
-            case MIPS_INS_ROTRV: {
-                auto operand1 = operand(1);
-                auto operand2 = operand(2);
-                _[
-                    operand(0) ^= ((unsigned_(operand1) >> operand2) | (operand1 << (constant(32) - operand1)))
-                ];
-                break;
-            }
-            case MIPS_INS_SEB: {
-                /* d = (long long)(signed char)(s & 0xff) */
-                _[
-                    operand(0) ^= signed_(operand(1) & constant(0xff))
-                ];
-                break;
-            } 
-            case MIPS_INS_SEH: {
-                /* d = (long long)(signed short)(s & 0xffff) */
-                _[
-                    operand(0) ^= signed_(operand(1) & constant(0xffff))
-                ];
-                break;
-            } 
-            case MIPS_INS_SEQ: /* Fall-through */				
-            case MIPS_INS_SEQI: {
-                /* d = (s == t) ? 1 : 0 */
-                MipsExpressionFactoryCallback one(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback none(factory, program->createBasicBlock(), instruction);
-                _[	
-                    jump((signed_(operand(1)) == signed_(operand(2))), one.basicBlock(), none.basicBlock())
-                ];
-                one[
-                    operand(0) ^= constant(1),
-                    jump(directSuccessor())
-                 ];
-                none[
-                    operand(0) ^= constant(0),
-                    jump(directSuccessor())
-                 ];
-                break;
-            }
-#if 0 /* Synthetic sugar */
-            case MIPS_INS_SGE: {
-                _[
-                    operand(0) ^= (signed_(operand(1)) >= signed_(zero_extend(operand(2))))
-                ];
-                break;
-            }
-            case MIPS_INS_SGTU: {
-                _[
-                    operand(0) ^= (unsigned_(operand(1)) >= unsigned_(zero_extend(operand(2))))
-                ];
-                break;
-            }
-#endif
-            case MIPS_INS_SNE: /* Fall-through */				
-            case MIPS_INS_SNEI: {
-                /* d = (s != t) ? 1 : 0 */
-                MipsExpressionFactoryCallback one(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback none(factory, program->createBasicBlock(), instruction);
-                _[	
-                    jump(~(signed_(operand(1)) == signed_(operand(2))), one.basicBlock(), none.basicBlock())
-                ];
-                one[
-                    operand(0) ^= constant(1),
-                    jump(directSuccessor())
-                 ];
-                none[
-                    operand(0) ^= constant(0),
-                    jump(directSuccessor())
-                 ];
-                break;
-            }
-            case MIPS_INS_SUB: /* Fall-through */				
-            case MIPS_INS_SUBU: {
-                _[
-                    operand(0) ^= (operand(1) - operand(2))
-                ];
-                break;
-            }
-            case MIPS_INS_SLL: /* Fall-through */
-            case MIPS_INS_SLLI: 
-            case MIPS_INS_SLLV: {
-                if(getOperandType(2) == MIPS_OP_REG)
-                    _[operand(0) ^= (operand(1) << (unsigned_(operand(2)) %	 unsigned_(constant(32))))];
-                else
-                    _[operand(0) ^= (operand(1) << operand(2))];
-                break;
-            }
-#if 0 /* Synthetic sugar */
-            case MIPS_INS_SLE: {
-                auto operand0 = signed_(operand(0));
-                _[
-                    operand0 ^= (signed_(operand(1)) <= signed_(zero_extend(operand(2))))
-                ];
-                break;
-            }
-            case MIPS_INS_SLEU: {
-                auto operand0 = signed_(operand(0));
-                _[
-                    operand0 ^= (unsigned_(operand(1)) <= unsigned_(zero_extend(operand(2))))
-                ];
-                break;
-            }
-#endif
-            case MIPS_INS_SLT: /* Fall-through */	  
-            case MIPS_INS_SLTI: {
-                MipsExpressionFactoryCallback one(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback none(factory, program->createBasicBlock(), instruction);
-                _[	
-                    jump((signed_(operand(1)) < signed_(operand(2))), one.basicBlock(), none.basicBlock())
-                ];
-                one[
-                    operand(0) ^= constant(1),
-                    jump(directSuccessor())
-                 ];
-                none[
-                    operand(0) ^= constant(0),
-                    jump(directSuccessor())
-                 ];
-                break;
-            }
-            case MIPS_INS_SLTU: /* Fall-through */	   
-            case MIPS_INS_SLTIU: {
-                MipsExpressionFactoryCallback one(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback none(factory, program->createBasicBlock(), instruction);
-                _[	
-                    jump((unsigned_(operand(1)) < unsigned_(operand(2))), one.basicBlock(), none.basicBlock())
-                ];
-                one[
-                    operand(0) ^= constant(1), 
-                    jump(directSuccessor())		  
-                 ];
-                none[
-                    operand(0) ^= constant(0),
-                    jump(directSuccessor())
-                 ];
-                break;
-            }
-            case MIPS_INS_SRA: /* Fall-through */
-            case MIPS_INS_SRAI: 
-            case MIPS_INS_SRAV: {
-                if(getOperandType(2) == MIPS_OP_REG)
-                    _[operand(0) ^= (signed_(operand(1)) >> (unsigned_(operand(2)) %  unsigned_(constant(32))))];
-                else
-                    _[operand(0) ^= (signed_(operand(1)) >> operand(2))];
-                break;
-            }
-            case MIPS_INS_SRL: /* Fall-through */
-            case MIPS_INS_SRLI: 
-            case MIPS_INS_SRLV: {
-                if(getOperandType(2) == MIPS_OP_REG)
-                    _[operand(0) ^= (unsigned_(operand(1)) >> (unsigned_(operand(2)) %	unsigned_(constant(32))))];
-                else
-                    _[operand(0) ^= (unsigned_(operand(1)) >> operand(2))];
-                break;
-            }
-            case MIPS_INS_SB: /* Fall-through */
-            case MIPS_INS_SH:
-            case MIPS_INS_SWL:
-            case MIPS_INS_SWR:
-            case MIPS_INS_SW: {
-                auto operand0 = operand(0);
-                auto operand1 = operand(1);
-                _[
-                    std::move(operand1) ^= std::move(operand0)
-                ];
-                break;
-            }
-            case MIPS_INS_XOR: /* Fall-through */				
-            case MIPS_INS_XORI: {
-                _[
-                    operand(0) ^= (operand(1) ^ operand(2))
-                ];
-                break;
-            }
 
             case MIPS_INS_BEQL:
                 _(std::make_unique<core::ir::InlineAssembly>()); // TODO
@@ -580,10 +521,9 @@ public:
             case MIPS_INS_BEQ: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    jump(operand(0) == operand(1), (delayslot(taken) [
-                                                        jump(operand(2))
-                                                    ]).basicBlock(),
-                                                   directSuccessor())
+                    jump(operand(0) == operand(1),
+                         (delayslot(taken)[jump(operand(2))]).basicBlock(),
+                         directSuccessor())
                 ];
                 break;
             }
@@ -593,10 +533,9 @@ public:
             case MIPS_INS_BNE: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    jump(~(operand(0) == operand(1)), (delayslot(taken) [
-                                                            jump(operand(2))
-                                                        ]).basicBlock(),
-                                                        directSuccessor())
+                    jump(~(operand(0) == operand(1)),
+                         (delayslot(taken)[jump(operand(2))]).basicBlock(),
+                         directSuccessor())
                 ];
                 break;
             }
@@ -606,7 +545,9 @@ public:
             case MIPS_INS_BGEZ: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    jump((unsigned_(operand(0)) >= constant(0)), operand(1), directSuccessor())
+                    jump((signed_(operand(0)) >= constant(0)),
+                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                         directSuccessor())
                 ];
                 break;
             }
@@ -617,12 +558,10 @@ public:
                 /* This is a conditional call */
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
-                    jump((signed_(operand(0)) >= constant(0)), (delayslot(taken) [
-                                                                    call(operand(1)),
-                                                                    jump(nextDirectSuccessor())
-                                                                ]).basicBlock(),
-                                                               directSuccessor())
+                    //regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
+                    jump((signed_(operand(0)) >= constant(0)),
+                         (delayslot(taken)[call(operand(1)), jump(nextDirectSuccessor())]).basicBlock(),
+                         directSuccessor())
                 ];
                 break;
             }
@@ -632,10 +571,9 @@ public:
             case MIPS_INS_BGTZ: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    jump((signed_(operand(0)) > constant(0)), (delayslot(taken) [
-                                                                   jump(operand(1))
-                                                               ]).basicBlock(),
-                                                              directSuccessor())
+                    jump((signed_(operand(0)) > constant(0)),
+                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                         directSuccessor())
                 ];
                 break;
             }
@@ -645,10 +583,9 @@ public:
             case MIPS_INS_BLTZ: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    jump((signed_(operand(0)) < constant(0)), (delayslot(taken) [
-                                                                   jump(operand(1))
-                                                               ]).basicBlock(),
-                                                              directSuccessor())
+                    jump((signed_(operand(0)) < constant(0)),
+                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                         directSuccessor())
                 ];
                 break;
             }
@@ -659,12 +596,10 @@ public:
                 /* This is a conditional call */
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
-                    jump((signed_(operand(0)) < constant(0)), (delayslot(taken) [
-                                                                   call(operand(1)),
-                                                                   jump(nextDirectSuccessor())
-                                                               ]).basicBlock(),
-                                                              directSuccessor())
+                    //regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
+                    jump((signed_(operand(0)) < constant(0)),
+                         (delayslot(taken)[call(operand(1)), jump(nextDirectSuccessor())]).basicBlock(),
+                         directSuccessor())
                 ];
                 break;
             }
@@ -674,65 +609,48 @@ public:
             case MIPS_INS_BLEZ: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    jump((signed_(operand(0)) <= constant(0)), (delayslot(taken) [
-                                                                    jump(operand(1))
-                                                                ]).basicBlock(),
-                                                               directSuccessor())
+                    jump((signed_(operand(0)) <= constant(0)),
+                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                         directSuccessor())
                 ];
                 break;
             }
             case MIPS_INS_BEQZ: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    jump((operand(0) == constant(0)), (delayslot(taken) [
-                                                           jump(operand(1))
-                                                       ]).basicBlock(),
-                                                      directSuccessor())
+                    jump((operand(0) == constant(0)),
+                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                         directSuccessor())
                 ];
                 break;
             }
             case MIPS_INS_BNEZ: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    jump(~(operand(0) == constant(0)), (delayslot(taken) [
-                                                            jump(operand(1))
-                                                        ]).basicBlock(),
-                                                       directSuccessor())
+                    jump(~(operand(0) == constant(0)),
+                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                         directSuccessor())
                 ];
                 break;
             }
             case MIPS_INS_JR: {
-                delayslot(_)[
-                    jump(operand(0))
-                ];
+                delayslot(_)[jump(operand(0))];
                 break;
             }
             case MIPS_INS_JALR: {
-                _[
-                    operand(0) ^= constant(nextDirectSuccessorAddress)
-                ];
-
-                delayslot(_) [
-                    call(operand(1))
-                ];
+                //_[operand(0) ^= constant(nextDirectSuccessorAddress)];
+                delayslot(_) [call(operand(1))];
                 break;
             }
             case MIPS_INS_BAL: /* Fall-through */
             case MIPS_INS_JAL: {
-                _[
-                    regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress)
-                ];
-
-                delayslot(_) [
-                    call(operand(0))
-                ];
+                //_[regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress)];
+                delayslot(_)[call(operand(0))];
                 break;
             }
             case MIPS_INS_J: /* Fall-through */
             case MIPS_INS_B: {
-                delayslot(_) [
-                    jump(operand(0))
-                ];
+                delayslot(_)[jump(operand(0))];
                 break;
             }
             default: {
@@ -808,8 +726,9 @@ private:
                 /* Immediate value. */
                 return std::make_unique<core::ir::Constant>(SizedValue(sizeHint, operand.imm));
             }
-            case MIPS_OP_MEM:
+            case MIPS_OP_MEM: {
                 return std::make_unique<core::ir::Dereference>(createDereferenceAddress(operand), core::ir::MemoryDomain::MEMORY, sizeHint);
+            }
             default:
                 unreachable();
         }
@@ -821,7 +740,6 @@ private:
             createDereferenceAddress(operand), core::ir::MemoryDomain::MEMORY, 32);
     }
 
-    /* FIXME */
     std::unique_ptr<core::ir::Term> createDereferenceAddress(const cs_mips_op &operand) const {
         if (operand.type != MIPS_OP_MEM) {
             throw core::irgen::InvalidInstructionException(tr("Expected the operand to be a memory operand"));
@@ -830,13 +748,6 @@ private:
         const auto &mem = operand.mem;
 
         auto result = createRegisterAccess(mem.base);
-
-        // operand.mem and operand.reg are mutually exclusive
-        //result = std::make_unique<core::ir::BinaryOperator>(
-        //		core::ir::BinaryOperator::ADD,
-        //		std::move(result),
-        //		createRegisterAccess(operand.reg),
-        //		result->size());
 
         if (mem.disp != 0) {
             result = std::make_unique<core::ir::BinaryOperator>(
