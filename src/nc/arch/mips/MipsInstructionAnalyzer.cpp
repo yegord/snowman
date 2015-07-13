@@ -118,10 +118,15 @@ public:
                 ];
                 break;
             }
-            case MIPS_INS_ADD: /* Fall-through */		
-            case MIPS_INS_ADDI:
-            case MIPS_INS_ADDIU:
+            case MIPS_INS_ADD:		
             case MIPS_INS_ADDU: {
+                _[
+                    operand(0) ^= (operand(1) + operand(2))
+                ];
+                break;
+            }
+            case MIPS_INS_ADDI: /* Fall-through */
+            case MIPS_INS_ADDIU: {
                 _[
                     operand(0) ^= (operand(1) + signed_(operand(2)))
                 ];
