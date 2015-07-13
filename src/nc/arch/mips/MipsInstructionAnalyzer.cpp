@@ -17,6 +17,8 @@
 #include <nc/core/irgen/Expressions.h>
 #include <nc/core/irgen/InvalidInstructionException.h>
 
+#include <nc/core/arch/Instructions.h>
+
 #include "MipsArchitecture.h"
 #include "MipsInstruction.h"
 #include "MipsRegisters.h"
@@ -37,6 +39,7 @@ public:
 typedef core::irgen::expressions::ExpressionFactoryCallback<MipsExpressionFactory> MipsExpressionFactoryCallback;
 
 
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, cflag) // virtual 1-bit register for conditional branching
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, sp)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, gp)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, hilo)
@@ -54,6 +57,7 @@ class MipsInstructionAnalyzerImpl {
     const MipsInstruction *instruction_;
     core::arch::CapstoneInstructionPtr instr_;
     const cs_mips *detail_;
+    const core::arch::Instructions *instructions_;
 
 public:
     MipsInstructionAnalyzerImpl(const MipsArchitecture *architecture):
@@ -62,13 +66,11 @@ public:
         assert(architecture_ != nullptr);
     }
 
+    void setInstructions(const core::arch::Instructions *instructions) {
+        instructions_ = instructions;
+    }
 
-    void createStatements(const MipsInstruction *instruction, core::ir::Program *program) {
-        assert(instruction != nullptr);
-        assert(program != nullptr);
-
-        program_ = program;
-        instruction_ = instruction;
+    void createStatements(MipsExpressionFactoryCallback & _, const MipsInstruction *instruction, core::ir::Program *program) {
 
         instr_ = disassemble(instruction);
         /*assert(instr_ != nullptr);*/
@@ -78,24 +80,32 @@ public:
         detail_ = &instr_->detail->mips;
                 
         core::ir::BasicBlock *cachedDirectSuccessor = nullptr;
+        core::ir::BasicBlock *cachedNextDirectSuccessor = nullptr;
         auto directSuccessor = [&]() -> core::ir::BasicBlock * {
             if (!cachedDirectSuccessor) {
                 cachedDirectSuccessor = program->createBasicBlock(instruction->endAddr());
             }
             return cachedDirectSuccessor;
         };
-        
+        auto nextDirectSuccessor = [&]() -> core::ir::BasicBlock * {
+            if (!cachedNextDirectSuccessor) {
+                cachedNextDirectSuccessor = program->createBasicBlock(instruction->endAddr() + instruction->size());
+            }
+            return cachedNextDirectSuccessor;
+        };
+
+        auto delayslot = [&](MipsExpressionFactoryCallback & callback) -> MipsExpressionFactoryCallback & {
+            auto delayslot = checked_cast<const MipsInstruction *>(instructions_->get(instruction->endAddr()).get());
+            createStatements(callback, delayslot, program);
+            return callback;
+        };
+
+        auto directSuccessorAddress = instruction->endAddr();
+        auto nextDirectSuccessorAddress = directSuccessorAddress + instruction->size();
+
         MipsExpressionFactory factory(architecture_);
-        MipsExpressionFactoryCallback _(factory, program->getBasicBlockForInstruction(instruction), instruction);
 
         using namespace core::irgen::expressions;
-
-        /*
-         * The $zero-register always holds the value of zero (0).
-         */
-        _[
-            regizter(MipsRegisters::zero()) ^= constant(0)
-        ];
 
         /* Describing semantics */
         switch (instr_->id) {
@@ -108,11 +118,11 @@ public:
                 break;
             }
             case MIPS_INS_ABS: {
-                MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback emit_then(factory, program->createBasicBlock(), instruction);
                 _[	
-                    jump((signed_(operand(1)) < signed_(constant(0))), then.basicBlock(), directSuccessor())
+                    jump((signed_(operand(1)) < signed_(constant(0))), emit_then.basicBlock(), directSuccessor())
                 ];
-                then[
+                emit_then[
                     operand(0) ^= -operand(1),
                     jump(directSuccessor())
                 ];
@@ -141,100 +151,6 @@ public:
             case MIPS_INS_ANDI: {
                 _[
                     operand(0) ^= (operand(1) & unsigned_(operand(2)))
-                ];
-                break;
-            }
-            case MIPS_INS_BEQL: /* Fall-through */	  
-            case MIPS_INS_BEQ: {
-                MipsExpressionFactoryCallback delayslot(factory, program->createBasicBlock(), instruction);
-                _[
-                    jump((operand(0) == operand(1)), operand(2), directSuccessor())
-                ];
-                delayslot[
-                    operand(0) ^= -operand(1),
-                    jump(directSuccessor())
-                ];
-                break;
-            }
-            case MIPS_INS_BGEZL: /* Fall-through */
-            case MIPS_INS_BGEZ: {
-                _[
-                    jump((unsigned_(operand(0)) >= constant(0)), operand(1), directSuccessor())
-                ];
-                break;
-            }
-            case MIPS_INS_BGEZAL: /* Fall-through */
-            case MIPS_INS_BGEZALL: {
-                /* This is a conditional call */
-                MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
-                auto operand0 = unsigned_(operand(0));
-                _[	
-                    regizter(MipsRegisters::ra()) ^= constant(instruction->endAddr()),
-                    jump((operand0 >= constant(0)), then.basicBlock(), directSuccessor())
-                ];
-                then[
-                    call(operand(1)),
-                    jump(directSuccessor())
-                ];
-                break;
-            }
-            case MIPS_INS_BGTZL: /* Fall-through */	   
-            case MIPS_INS_BGTZ: {
-                _[
-                    jump((unsigned_(operand(0)) > constant(0)), operand(1), directSuccessor())
-                ];
-                break;
-            }
-            case MIPS_INS_BLTZL: /* Fall-through */	   
-            case MIPS_INS_BLTZ: {
-                _[
-                    jump((signed_(operand(0)) < constant(0)), operand(1), directSuccessor())
-                ];
-                break;
-            }
-            case MIPS_INS_BLTZALL: /* Fall-through */  
-            case MIPS_INS_BLTZAL: {
-                /* This is a conditional call */
-                MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
-                auto operand0 = signed_(operand(0));
-                _[	
-                    regizter(MipsRegisters::ra()) ^= constant(instruction->endAddr()),
-                    jump((operand0 < constant(0)), then.basicBlock(), directSuccessor())
-                ];
-                then[
-                    call(operand(1)),
-                    jump(directSuccessor())
-                ];
-                break;
-            }
-            case MIPS_INS_BLEZL: /* Fall-through */	   
-            case MIPS_INS_BLEZ: {
-                _[
-                    jump((signed_(operand(0)) <= constant(0)), operand(1), directSuccessor())
-                ];
-                break;
-            }
-            case MIPS_INS_BNEL: /* Fall-through */	  
-            case MIPS_INS_BNE: {
-                if(detail_->op_count == 3)
-                _[
-                    jump(~(operand(0) == operand(1)), operand(2), directSuccessor())
-                ];
-                else /* BNEZL */
-                _[
-                    jump(~(operand(0) == constant(0)), operand(1), directSuccessor())
-                ];
-                break;
-            }
-            case MIPS_INS_BEQZ: {
-                _[
-                    jump((operand(0) == constant(0)), operand(1), directSuccessor())
-                ];
-                break;
-            }
-            case MIPS_INS_BNEZ: {
-                _[
-                    jump(~(operand(0) == constant(0)), operand(1), directSuccessor())
                 ];
                 break;
             }
@@ -522,7 +438,7 @@ public:
                  ];
                 break;
             }
-#if 0 /* Syntetic sugar */
+#if 0 /* Synthetic sugar */
             case MIPS_INS_SGE: {
                 _[
                     operand(0) ^= (signed_(operand(1)) >= signed_(zero_extend(operand(2))))
@@ -570,7 +486,7 @@ public:
                     _[operand(0) ^= (operand(1) << operand(2))];
                 break;
             }
-#if 0 /* Syntetic sugar */
+#if 0 /* Synthetic sugar */
             case MIPS_INS_SLE: {
                 auto operand0 = signed_(operand(0));
                 _[
@@ -657,33 +573,186 @@ public:
                 ];
                 break;
             }
-            case MIPS_INS_JR: {
+
+            case MIPS_INS_BEQL:
+                _(std::make_unique<core::ir::InlineAssembly>()); // TODO
+                break;
+            case MIPS_INS_BEQ: {
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
+                    jump(operand(0) == operand(1), (delayslot(taken) [
+                                                        jump(operand(2))
+                                                    ]).basicBlock(),
+                                                   directSuccessor())
+                ];
+                break;
+            }
+            case MIPS_INS_BNEL:
+                _(std::make_unique<core::ir::InlineAssembly>()); // TODO
+                break;
+            case MIPS_INS_BNE: {
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump(~(operand(0) == operand(1)), (delayslot(taken) [
+                                                            jump(operand(2))
+                                                        ]).basicBlock(),
+                                                        directSuccessor())
+                ];
+                break;
+            }
+            case MIPS_INS_BGEZL:
+                _(std::make_unique<core::ir::InlineAssembly>()); // TODO
+                break;
+            case MIPS_INS_BGEZ: {
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump((unsigned_(operand(0)) >= constant(0)), operand(1), directSuccessor())
+                ];
+                break;
+            }
+            case MIPS_INS_BGEZALL:
+                _(std::make_unique<core::ir::InlineAssembly>()); // TODO
+                break;
+            case MIPS_INS_BGEZAL: {
+                /* This is a conditional call */
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+                _[
+                    regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
+                    jump((signed_(operand(0)) >= constant(0)), (delayslot(taken) [
+                                                                    call(operand(1)),
+                                                                    jump(nextDirectSuccessor())
+                                                                ]).basicBlock(),
+                                                               directSuccessor())
+                ];
+                break;
+            }
+            case MIPS_INS_BGTZL:
+                _(std::make_unique<core::ir::InlineAssembly>()); // TODO
+                break;
+            case MIPS_INS_BGTZ: {
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump((signed_(operand(0)) > constant(0)), (delayslot(taken) [
+                                                                   jump(operand(1))
+                                                               ]).basicBlock(),
+                                                              directSuccessor())
+                ];
+                break;
+            }
+            case MIPS_INS_BLTZL:
+                _(std::make_unique<core::ir::InlineAssembly>()); // TODO
+                break;
+            case MIPS_INS_BLTZ: {
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump((signed_(operand(0)) < constant(0)), (delayslot(taken) [
+                                                                   jump(operand(1))
+                                                               ]).basicBlock(),
+                                                              directSuccessor())
+                ];
+                break;
+            }
+            case MIPS_INS_BLTZALL:
+                _(std::make_unique<core::ir::InlineAssembly>()); // TODO
+                break;
+            case MIPS_INS_BLTZAL: {
+                /* This is a conditional call */
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+                _[
+                    regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
+                    jump((signed_(operand(0)) < constant(0)), (delayslot(taken) [
+                                                                   call(operand(1)),
+                                                                   jump(nextDirectSuccessor())
+                                                               ]).basicBlock(),
+                                                              directSuccessor())
+                ];
+                break;
+            }
+            case MIPS_INS_BLEZL:
+                _(std::make_unique<core::ir::InlineAssembly>()); // TODO
+                break;
+            case MIPS_INS_BLEZ: {
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump((signed_(operand(0)) <= constant(0)), (delayslot(taken) [
+                                                                    jump(operand(1))
+                                                                ]).basicBlock(),
+                                                               directSuccessor())
+                ];
+                break;
+            }
+            case MIPS_INS_BEQZ: {
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump((operand(0) == constant(0)), (delayslot(taken) [
+                                                           jump(operand(1))
+                                                       ]).basicBlock(),
+                                                      directSuccessor())
+                ];
+                break;
+            }
+            case MIPS_INS_BNEZ: {
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump(~(operand(0) == constant(0)), (delayslot(taken) [
+                                                            jump(operand(1))
+                                                        ]).basicBlock(),
+                                                       directSuccessor())
+                ];
+                break;
+            }
+            case MIPS_INS_JR: {
+                delayslot(_)[
                     jump(operand(0))
                 ];
                 break;
             }
-            case MIPS_INS_JALR: /* Fall-through */
-            case MIPS_INS_BAL:
+            case MIPS_INS_JALR: {
+                _[
+                    operand(0) ^= constant(nextDirectSuccessorAddress)
+                ];
+
+                delayslot(_) [
+                    call(operand(1))
+                ];
+                break;
+            }
+            case MIPS_INS_BAL: /* Fall-through */
             case MIPS_INS_JAL: {
-                    _[
-                        regizter(MipsRegisters::ra()) ^= constant(instruction->endAddr()),
-                        call(operand(0))
-                    ];
+                _[
+                    regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress)
+                ];
+
+                delayslot(_) [
+                    call(operand(0))
+                ];
                 break;
             }
             case MIPS_INS_J: /* Fall-through */
             case MIPS_INS_B: {
-                    _[
-                        jump(operand(0))
-                    ];
+                delayslot(_) [
+                    jump(operand(0))
+                ];
                 break;
             }
             default: {
                 _(std::make_unique<core::ir::InlineAssembly>());
                 break;
-           }
+            }
         } /* switch */
+    }
+
+    void createStatements(const MipsInstruction *instruction, core::ir::Program *program) {
+        assert(instruction != nullptr);
+        assert(program != nullptr);
+
+        program_ = program;
+        instruction_ = instruction;
+
+        MipsExpressionFactory factory(architecture_);
+        MipsExpressionFactoryCallback _(factory, program->getBasicBlockForInstruction(instruction), instruction);
+
+        createStatements(_, instruction, program);
     }
 
 private:
@@ -728,6 +797,11 @@ private:
             case MIPS_OP_INVALID:
                 throw core::irgen::InvalidInstructionException(tr("The instruction does not have an argument with index %1").arg(index));
             case MIPS_OP_REG: {
+                auto reg = getRegister(operand.reg)->memoryLocation();
+                /* Transform a register $zero into a constant 0. */
+                if (reg.domain() == core::ir::MemoryDomain::FIRST_REGISTER && !reg.addr()) {
+                    return std::make_unique<core::ir::Constant>(SizedValue(sizeHint, 0LL));
+                }
                 return std::make_unique<core::ir::MemoryLocationAccess>(getRegister(operand.reg)->memoryLocation().resized(sizeHint));
             }
             case MIPS_OP_IMM: {
@@ -866,11 +940,13 @@ private:
 
 MipsInstructionAnalyzer::MipsInstructionAnalyzer(const MipsArchitecture *architecture):
     impl_(std::make_unique<MipsInstructionAnalyzerImpl>(architecture))
-{}
+{
+}
 
 MipsInstructionAnalyzer::~MipsInstructionAnalyzer() {}
 
 void MipsInstructionAnalyzer::doCreateStatements(const core::arch::Instruction *instruction, core::ir::Program *program) {
+    impl_->setInstructions(instructions());
     impl_->createStatements(checked_cast<const MipsInstruction *>(instruction), program);
 }
 

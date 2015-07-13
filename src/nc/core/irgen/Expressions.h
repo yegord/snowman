@@ -1274,8 +1274,9 @@ public:
      *                                  Created statement will be added to the basic block.
      */
     template<class E>
-    void operator[](StatementBase<E> &&statement) const {
+    const ExpressionFactoryCallback & operator[](StatementBase<E> &&statement) const {
         doCallback(statement.derived());
+        return *this;
     }
 
     void operator()(std::unique_ptr<ir::Statement> statement) const {

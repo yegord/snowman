@@ -63,10 +63,12 @@ IRGenerator::IRGenerator(const image::Image *image, const arch::Instructions *in
     assert(program);
 }
 
+
 IRGenerator::~IRGenerator() {}
 
 void IRGenerator::generate() {
     auto instructionAnalyzer = image_->architecture()->createInstructionAnalyzer();
+    instructionAnalyzer->setInstructions(instructions_);
 
     /* Generate statements. */
     foreach (const auto &instr, instructions_->all()) {
