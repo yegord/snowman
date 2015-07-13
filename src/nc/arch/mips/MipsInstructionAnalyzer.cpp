@@ -87,7 +87,7 @@ public:
             }
             return cachedDirectSuccessor;
         };
-        auto nextDirectSuccessor = [&]() -> core::ir::BasicBlock * {
+        auto directSuccessorButOne = [&]() -> core::ir::BasicBlock * {
             if (!cachedNextDirectSuccessor) {
                 cachedNextDirectSuccessor = program->createBasicBlock(instruction->endAddr() + instruction->size());
             }
@@ -515,9 +515,15 @@ public:
                 break;
             }
 
-            case MIPS_INS_BEQL:
-                _(std::make_unique<core::ir::InlineAssembly>()); // TODO
+            case MIPS_INS_BEQL: {
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump(operand(0) == operand(1),
+                         (delayslot(taken)[jump(operand(2))]).basicBlock(),
+                         directSuccessorButOne())
+                ];
                 break;
+            }
             case MIPS_INS_BEQ: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
@@ -527,9 +533,15 @@ public:
                 ];
                 break;
             }
-            case MIPS_INS_BNEL:
-                _(std::make_unique<core::ir::InlineAssembly>()); // TODO
+            case MIPS_INS_BNEL: {
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump(~(operand(0) == operand(1)),
+                         (delayslot(taken)[jump(operand(2))]).basicBlock(),
+                         directSuccessorButOne())
+                ];
                 break;
+            }
             case MIPS_INS_BNE: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
@@ -539,9 +551,15 @@ public:
                 ];
                 break;
             }
-            case MIPS_INS_BGEZL:
-                _(std::make_unique<core::ir::InlineAssembly>()); // TODO
+            case MIPS_INS_BGEZL: {
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump((signed_(operand(0)) >= constant(0)),
+                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                         directSuccessorButOne())
+                ];
                 break;
+            }
             case MIPS_INS_BGEZ: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
@@ -551,23 +569,37 @@ public:
                 ];
                 break;
             }
-            case MIPS_INS_BGEZALL:
-                _(std::make_unique<core::ir::InlineAssembly>()); // TODO
+            case MIPS_INS_BGEZALL: {
+                /* This is a conditional call */
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+                _[
+                    //regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
+                    jump((signed_(operand(0)) >= constant(0)),
+                         (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
+                         directSuccessorButOne())
+                ];
                 break;
+            }
             case MIPS_INS_BGEZAL: {
                 /* This is a conditional call */
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
                     //regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
                     jump((signed_(operand(0)) >= constant(0)),
-                         (delayslot(taken)[call(operand(1)), jump(nextDirectSuccessor())]).basicBlock(),
+                         (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
                          directSuccessor())
                 ];
                 break;
             }
-            case MIPS_INS_BGTZL:
-                _(std::make_unique<core::ir::InlineAssembly>()); // TODO
+            case MIPS_INS_BGTZL: {
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump((signed_(operand(0)) > constant(0)),
+                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                         directSuccessorButOne())
+                ];
                 break;
+            }
             case MIPS_INS_BGTZ: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
@@ -577,9 +609,14 @@ public:
                 ];
                 break;
             }
-            case MIPS_INS_BLTZL:
-                _(std::make_unique<core::ir::InlineAssembly>()); // TODO
-                break;
+            case MIPS_INS_BLTZL: {
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump((signed_(operand(0)) < constant(0)),
+                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                         directSuccessorButOne())
+                ];
+            }
             case MIPS_INS_BLTZ: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
@@ -589,23 +626,37 @@ public:
                 ];
                 break;
             }
-            case MIPS_INS_BLTZALL:
-                _(std::make_unique<core::ir::InlineAssembly>()); // TODO
+            case MIPS_INS_BLTZALL: {
+                /* This is a conditional call */
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+                _[
+                    //regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
+                    jump((signed_(operand(0)) < constant(0)),
+                         (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
+                         directSuccessorButOne())
+                ];
                 break;
+            }
             case MIPS_INS_BLTZAL: {
                 /* This is a conditional call */
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
                     //regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
                     jump((signed_(operand(0)) < constant(0)),
-                         (delayslot(taken)[call(operand(1)), jump(nextDirectSuccessor())]).basicBlock(),
+                         (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
                          directSuccessor())
                 ];
                 break;
             }
-            case MIPS_INS_BLEZL:
-                _(std::make_unique<core::ir::InlineAssembly>()); // TODO
+            case MIPS_INS_BLEZL: {
+                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump((signed_(operand(0)) <= constant(0)),
+                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                         directSuccessorButOne())
+                ];
                 break;
+            }
             case MIPS_INS_BLEZ: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
