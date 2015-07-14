@@ -262,8 +262,7 @@ public:
                 ];
                 break;
             }
-            case MIPS_INS_SLT: /* Fall-through */
-            case MIPS_INS_SLTI: {
+            case MIPS_INS_SLT: {
                 MipsExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
                 MipsExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
                 _[
@@ -273,12 +272,31 @@ public:
                 ];
                 break;
             }
-            case MIPS_INS_SLTU: /* Fall-through */
-            case MIPS_INS_SLTIU: {
+            case MIPS_INS_SLTI: {
+                MipsExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump((signed_(operand(1)) < sign_extend(operand(2, 16))),
+                         _1[operand(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
+                         _0[operand(0) ^= constant(0), jump(directSuccessor())].basicBlock())
+                ];
+                break;
+            }
+            case MIPS_INS_SLTU: {
                 MipsExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
                 MipsExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
                 _[
                     jump((unsigned_(operand(1)) < unsigned_(operand(2))),
+                         _1[operand(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
+                         _0[operand(0) ^= constant(0), jump(directSuccessor())].basicBlock())
+                ];
+                break;
+            }
+            case MIPS_INS_SLTIU: {
+                MipsExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
+                _[
+                    jump((unsigned_(operand(1)) < unsigned_(sign_extend(operand(2, 16)))),
                          _1[operand(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
                          _0[operand(0) ^= constant(0), jump(directSuccessor())].basicBlock())
                 ];
