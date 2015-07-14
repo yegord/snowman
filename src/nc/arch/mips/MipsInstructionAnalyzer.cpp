@@ -113,6 +113,13 @@ public:
 
         auto op_count = detail_->op_count;
 
+        /*
+         * The $zero-register always holds the value of zero (0).
+         */
+        _[
+            regizter(MipsRegisters::zero()) ^= constant(0)
+        ];
+
         /* Describing semantics */
         switch (instr->id) {
             case MIPS_INS_CACHE: /* Fall-through */
@@ -124,7 +131,7 @@ public:
                 break;
             }
             case MIPS_INS_ABS: {
-		MipsExpressionFactoryCallback negative(factory, program->createBasicBlock(), instruction);
+			MipsExpressionFactoryCallback negative(factory, program->createBasicBlock(), instruction);
                 MipsExpressionFactoryCallback positive(factory, program->createBasicBlock(), instruction);
 				_[	
                     jump((signed_(operand(1)) < signed_(constant(0))),
@@ -793,11 +800,6 @@ private:
             case MIPS_OP_INVALID:
                 throw core::irgen::InvalidInstructionException(tr("The instruction does not have an argument with index %1").arg(index));
             case MIPS_OP_REG: {
-                auto reg = getRegister(operand.reg)->memoryLocation();
-                /* Transform a register $zero into a constant 0. */
-                if (reg.domain() == core::ir::MemoryDomain::FIRST_REGISTER && !reg.addr()) {
-                    return std::make_unique<core::ir::Constant>(SizedValue(sizeHint, 0LL));
-                }
                 return std::make_unique<core::ir::MemoryLocationAccess>(getRegister(operand.reg)->memoryLocation().resized(sizeHint));
             }
             case MIPS_OP_IMM: {
