@@ -129,7 +129,7 @@ public:
 		_[	
                     jump((signed_(operand(1)) < signed_(constant(0))),
                          (negative[operand(0) ^= -operand(1), jump(directSuccessor())]).basicBlock(),
-                         (positive[operand(0) ^= -operand(1), jump(directSuccessor())]).basicBlock())
+                         (positive[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock())
                 ];
                 break;
             }
