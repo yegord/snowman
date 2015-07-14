@@ -124,11 +124,12 @@ public:
                 break;
             }
             case MIPS_INS_ABS: {
-                MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
-                _[	
+		MipsExpressionFactoryCallback negative(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback positive(factory, program->createBasicBlock(), instruction);
+		_[	
                     jump((signed_(operand(1)) < signed_(constant(0))),
-                         (then[operand(0) ^= -operand(1), jump(directSuccessor())]).basicBlock(),
-                         directSuccessor())
+                         (negative[operand(0) ^= -operand(1), jump(directSuccessor())]).basicBlock(),
+                         (positive[operand(0) ^= -operand(1), jump(directSuccessor())]).basicBlock())
                 ];
                 break;
             }
