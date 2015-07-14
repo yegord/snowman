@@ -195,7 +195,7 @@ public:
             case MIPS_INS_MOVN: {
                 MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
                 _[
-                    jump(operand(2),
+                    jump(~(operand(2) == constant(0)),
                          (then[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock(),
                          directSuccessor())
                 ];
@@ -204,7 +204,7 @@ public:
             case MIPS_INS_MOVZ: {
                 MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
                 _[
-                    jump(~operand(2),
+                    jump(operand(2) == constant(0),
                          (then[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock(),
                          directSuccessor())
                 ];
