@@ -513,10 +513,69 @@ private:
         if (getOperandRegister(modifiedOperandIndex) == ARM_REG_PC) {
             using namespace core::irgen::expressions;
             ArmExpressionFactoryCallback _(factory_, bodyBasicBlock, instruction_);
-            _[jump(pc)];
+
+            /*
+             * Generate a call instead of a jump for the following code:
+             *
+             * mov lr, pc
+             * ldr pc, [r3]
+             *
+             * https://github.com/yegord/snowman/issues/22
+             */
+            if (isReturnAddressSaved(bodyBasicBlock)) {
+                _[call(pc)];
+            } else {
+                _[jump(pc)];
+            }
             return true;
         }
         return false;
+    }
+
+    /*
+     * \param bodyBasicBlock Valid pointer to a basic block.
+     *
+     * \return True iff the last instruction added before the current one
+     *         to the basic block is an assignment lr = pc.
+     */
+    bool isReturnAddressSaved(const core::ir::BasicBlock *bodyBasicBlock) const {
+        assert(bodyBasicBlock != nullptr);
+
+        auto begin = bodyBasicBlock->statements().crbegin();
+        auto end = bodyBasicBlock->statements().crend();
+
+        while (begin != end && (*begin)->instruction() == instruction_) {
+            ++begin;
+        }
+
+        if (begin == end) {
+            return false;
+        }
+
+        auto assignment = (*begin)->asAssignment();
+        if (!assignment) {
+            return false;
+        }
+
+        auto leftAccess = assignment->left()->asMemoryLocationAccess();
+        if (!leftAccess) {
+            return false;
+        }
+
+        if (leftAccess->memoryLocation() != ArmRegisters::lr()->memoryLocation()) {
+            return false;
+        }
+
+        auto rightAccess = assignment->right()->asMemoryLocationAccess();
+        if (!rightAccess) {
+            return false;
+        }
+
+        if (rightAccess->memoryLocation() != ArmRegisters::pc()->memoryLocation()) {
+            return false;
+        }
+
+        return true;
     }
 
     unsigned int getOperandRegister(std::size_t index) const {

@@ -30,8 +30,8 @@ ArmArchitecture::ArmArchitecture(ByteOrder byteOrder):
 
     setRegisters(ArmRegisters::instance());
 
-    masterAnalyzer_ = std::make_unique<core::MasterAnalyzer>();
-    setMasterAnalyzer(masterAnalyzer_.get());
+    static core::MasterAnalyzer masterAnalyzer;
+    setMasterAnalyzer(&masterAnalyzer);
 
     addCallingConvention(std::make_unique<DefaultCallingConvention>());
 }
