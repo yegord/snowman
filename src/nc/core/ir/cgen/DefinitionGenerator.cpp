@@ -507,12 +507,12 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeExpression(const cfl
             std::unique_ptr<likec::Expression> expression;
 
             if (const Jump *jump = statement->asJump()) {
-                assert(jump == basicNode->basicBlock()->getJump());
+                //assert(jump == basicNode->basicBlock()->getJump());
 
                 expression = makeExpression(jump->condition());
 
-                assert((jump->thenTarget().basicBlock() == thenBB && jump->elseTarget().basicBlock() == elseBB) ||
-                       (jump->thenTarget().basicBlock() == elseBB && jump->elseTarget().basicBlock() == thenBB));
+                /*assert((jump->thenTarget().basicBlock() == thenBB && jump->elseTarget().basicBlock() == elseBB) ||
+                       (jump->thenTarget().basicBlock() == elseBB && jump->elseTarget().basicBlock() == thenBB));*/
 
                 if (jump->thenTarget().basicBlock() != thenBB) {
                     expression = std::make_unique<likec::UnaryOperator>(tree(), likec::UnaryOperator::LOGICAL_NOT,
