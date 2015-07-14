@@ -126,7 +126,7 @@ public:
             case MIPS_INS_ABS: {
 		MipsExpressionFactoryCallback negative(factory, program->createBasicBlock(), instruction);
                 MipsExpressionFactoryCallback positive(factory, program->createBasicBlock(), instruction);
-		_[	
+				_[	
                     jump((signed_(operand(1)) < signed_(constant(0))),
                          (negative[operand(0) ^= -operand(1), jump(directSuccessor())]).basicBlock(),
                          (positive[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock())
@@ -340,13 +340,21 @@ public:
                 break;
             }
             case MIPS_INS_LWL: {
+				/*
 				auto operand0 = operand(0);
 				_[operand0 ^= ((operand(0) & constant(0xffff)) | (operand(1) << constant(16)))];
+				*/
+				auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+	             _(std::make_unique<core::ir::InlineAssembly>());
                 break;
             }
             case MIPS_INS_LWR: {
+            	/*
 				auto operand0 = operand(0);
 				_[operand0 ^= ((operand(0) & constant(0xffff0000)) | (operand(1)))];
+				*/
+				auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+	             _(std::make_unique<core::ir::InlineAssembly>());
                 break;
             }
             case MIPS_INS_SB: {
@@ -362,13 +370,21 @@ public:
                 break;
             }
             case MIPS_INS_SWL: {
+            	/*
 				auto operand0 = operand(0);
 				_[operand0 ^= ((operand(0) & constant(0xffff)) | (operand(1) << constant(16)))];
+				*/
+				auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+	             _(std::make_unique<core::ir::InlineAssembly>());
                 break;
             }
             case MIPS_INS_SWR: {
+            	/*
 				auto operand0 = operand(0);
 				_[operand0 ^= ((operand(0) & constant(0xffff0000)) | (operand(1)))];
+				*/
+				auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+	             _(std::make_unique<core::ir::InlineAssembly>());
                 break;
             }
             case MIPS_INS_DIV: /* Fall-through */
