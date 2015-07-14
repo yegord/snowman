@@ -55,7 +55,7 @@ class MipsInstructionAnalyzerImpl {
     MipsExpressionFactory factory_;
     core::ir::Program *program_;
     const MipsInstruction *instruction_;
-    core::arch::CapstoneInstructionPtr instr_;
+    //core::arch::CapstoneInstructionPtr instr_;
     const cs_mips *detail_;
     const core::arch::Instructions *instructions_;
 
@@ -72,12 +72,11 @@ public:
 
     void createStatements(MipsExpressionFactoryCallback & _, const MipsInstruction *instruction, core::ir::Program *program) {
 
-        instr_ = disassemble(instruction);
-        /*assert(instr_ != nullptr);*/
-        if(instr_ == nullptr)
+        auto instr = disassemble(instruction);
+        if (instr == nullptr)
             return;
        
-        detail_ = &instr_->detail->mips;
+        detail_ = &instr->detail->mips;
                 
         core::ir::BasicBlock *cachedDirectSuccessor = nullptr;
         core::ir::BasicBlock *cachedNextDirectSuccessor = nullptr;
@@ -95,8 +94,15 @@ public:
         };
 
         auto delayslot = [&](MipsExpressionFactoryCallback & callback) -> MipsExpressionFactoryCallback & {
+            auto detail = detail_;
             auto delayslot = checked_cast<const MipsInstruction *>(instructions_->get(instruction->endAddr()).get());
-            createStatements(callback, delayslot, program);
+            if (delayslot) {
+                createStatements(callback, delayslot, program);
+            }
+            else {
+                throw core::irgen::InvalidInstructionException(tr("Cannot find a delay slot at 0x%1.").arg(instruction->endAddr(), 0, 16));
+            }
+            detail_ = detail;
             return callback;
         };
 
@@ -107,8 +113,10 @@ public:
 
         using namespace core::irgen::expressions;
 
+        auto op_count = detail_->op_count;
+
         /* Describing semantics */
-        switch (instr_->id) {
+        switch (instr->id) {
             case MIPS_INS_CACHE: /* Fall-through */
             case MIPS_INS_BREAK:
             case MIPS_INS_PREF:
@@ -385,7 +393,7 @@ public:
 
             case MIPS_INS_DIV: /* Fall-through */
             case MIPS_INS_DIVU: {
-                if (detail_->op_count == 2)
+                if (op_count == 2)
                     _[
                         regizter(MipsRegisters::hi()) ^= unsigned_(operand(0)) % unsigned_(operand(1)),
                             regizter(MipsRegisters::lo()) ^= unsigned_(operand(0)) / unsigned_(operand(1))
@@ -518,8 +526,8 @@ public:
             case MIPS_INS_BEQL: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    jump(operand(0) == operand(1),
-                         (delayslot(taken)[jump(operand(2))]).basicBlock(),
+                    jump(operand(0) == operand(op_count - 2),
+                         (delayslot(taken)[jump(operand(op_count - 1))]).basicBlock(),
                          directSuccessorButOne())
                 ];
                 break;
@@ -527,8 +535,8 @@ public:
             case MIPS_INS_BEQ: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    jump(operand(0) == operand(1),
-                         (delayslot(taken)[jump(operand(2))]).basicBlock(),
+                    jump(operand(0) == operand(op_count - 2),
+                         (delayslot(taken)[jump(operand(op_count - 1))]).basicBlock(),
                          directSuccessor())
                 ];
                 break;
@@ -536,8 +544,8 @@ public:
             case MIPS_INS_BNEL: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    jump(~(operand(0) == operand(1)),
-                         (delayslot(taken)[jump(operand(2))]).basicBlock(),
+                    jump(~(operand(0) == operand(op_count - 2)),
+                         (delayslot(taken)[jump(operand(op_count - 1))]).basicBlock(),
                          directSuccessorButOne())
                 ];
                 break;
@@ -545,8 +553,8 @@ public:
             case MIPS_INS_BNE: {
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    jump(~(operand(0) == operand(1)),
-                         (delayslot(taken)[jump(operand(2))]).basicBlock(),
+                    jump(~(operand(0) == operand(op_count - 2)),
+                         (delayslot(taken)[jump(operand(op_count - 1))]).basicBlock(),
                          directSuccessor())
                 ];
                 break;
@@ -690,7 +698,7 @@ public:
             }
             case MIPS_INS_JALR: {
                 //_[operand(0) ^= constant(nextDirectSuccessorAddress)];
-                delayslot(_) [call(operand(1))];
+                delayslot(_)[call(operand(op_count - 1))];
                 break;
             }
             case MIPS_INS_BAL: /* Fall-through */
