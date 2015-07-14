@@ -339,13 +339,13 @@ public:
                 break;
             }
             case MIPS_INS_LWL: {
-                auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-                _(std::make_unique<core::ir::InlineAssembly>());
+				auto operand0 = operand(0);
+				_[operand0 ^= ((operand(0) & constant(0xffff)) | (operand(1) << constant(16)))];
                 break;
             }
             case MIPS_INS_LWR: {
-                auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-                _(std::make_unique<core::ir::InlineAssembly>());
+				auto operand0 = operand(0);
+				_[operand0 ^= ((operand(0) & constant(0xffff0000)) | (operand(1)))];
                 break;
             }
             case MIPS_INS_SB: {
@@ -361,13 +361,13 @@ public:
                 break;
             }
             case MIPS_INS_SWL: {
-                auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-                _(std::make_unique<core::ir::InlineAssembly>());
+				auto operand0 = operand(0);
+				_[operand0 ^= ((operand(0) & constant(0xffff)) | (operand(1) << constant(16)))];
                 break;
             }
             case MIPS_INS_SWR: {
-                auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-                _(std::make_unique<core::ir::InlineAssembly>());
+				auto operand0 = operand(0);
+				_[operand0 ^= ((operand(0) & constant(0xffff0000)) | (operand(1)))];
                 break;
             }
             case MIPS_INS_DIV: /* Fall-through */
