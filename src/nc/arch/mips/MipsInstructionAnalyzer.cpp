@@ -760,7 +760,8 @@ public:
 
 private:
     core::arch::CapstoneInstructionPtr disassemble(const MipsInstruction *instruction) {
-        return core::arch::Capstone(instruction->csArchitecture(), instruction->csMode()).disassemble(instruction->addr(), instruction->bytes(), instruction->size());
+        capstone_.setMode(instruction->csMode());
+        return capstone_.disassemble(instruction->addr(), instruction->bytes(), instruction->size());
     }
 
     unsigned int getOperandRegister(std::size_t index) const {
