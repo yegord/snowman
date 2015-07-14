@@ -57,8 +57,6 @@ class Touch;
 
 /**
  * Base class for different kinds of statements of intermediate representation.
- * 
- * Statements are supposed to be immutable <i>at the interface level</i>.
  */
 class Statement: public Printable, public nc::ilist_item, boost::noncopyable {
     NC_BASE_CLASS(Statement, kind)

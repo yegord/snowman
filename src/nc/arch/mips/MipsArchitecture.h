@@ -16,7 +16,6 @@ namespace mips {
  */
 class MipsArchitecture: public nc::core::arch::Architecture {
     ByteOrder byteOrder_;
-    std::unique_ptr<core::MasterAnalyzer> masterAnalyzer_;
 
 public:
     /**
