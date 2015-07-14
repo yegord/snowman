@@ -93,6 +93,4 @@ REG(f31,	F31,	1,	31 * 32,	32, "Float point register")
 REG(hilo,   HILO, 	2,  0  * 64,	64, "Pair of 32-bits == 64 bits")
 REG(lo,     LO, 	2,  0  * 32,	32, "Low half result")
 REG(hi,     HI, 	2,  1  * 32,	32, "High half result")
-
-REG(cflag,  CFLAG,  3,  0  *  1,     1, "")
 /* vim:set et sts=4 sw=4: */
