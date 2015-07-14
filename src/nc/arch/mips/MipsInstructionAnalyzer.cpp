@@ -38,7 +38,6 @@ public:
 
 typedef core::irgen::expressions::ExpressionFactoryCallback<MipsExpressionFactory> MipsExpressionFactoryCallback;
 
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, cflag) // virtual 1-bit register for conditional branching
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, sp)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, gp)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, hilo)
@@ -145,7 +144,7 @@ private:
             _[
                 jump((signed_(operand(1)) < signed_(constant(0))),
                      (_then[operand(0) ^= -operand(1), jump(directSuccessor())]).basicBlock(),
-                     (_else[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock())
+                     (_else[operand(0) ^=  operand(1), jump(directSuccessor())]).basicBlock())
             ];
             break;
         }
@@ -212,7 +211,7 @@ private:
         case MIPS_INS_MOVN: {
             MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
             _[
-                jump(operand(2),
+                jump(~(operand(2) == constant(0)),
                      (then[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock(),
                      directSuccessor())
             ];
@@ -221,7 +220,7 @@ private:
         case MIPS_INS_MOVZ: {
             MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
             _[
-                jump(~operand(2),
+                jump(operand(2) == constant(0),
                      (then[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock(),
                      directSuccessor())
             ];
@@ -268,6 +267,7 @@ private:
             break;
         }
         case MIPS_INS_SLTU: {
+                /* d = (s != t) ? 1 : 0 */
             MipsExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
             MipsExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
             _[
@@ -405,7 +405,6 @@ private:
             _(std::make_unique<core::ir::InlineAssembly>());
             break;
         }
-
         case MIPS_INS_DIV: /* Fall-through */
         case MIPS_INS_DIVU: {
             if (op_count == 2)
@@ -416,8 +415,8 @@ private:
             else
                 _[
                     regizter(MipsRegisters::hi()) ^= unsigned_(operand(1)) % unsigned_(operand(2)),
-                        regizter(MipsRegisters::lo()) ^= unsigned_(operand(1)) / unsigned_(operand(2)),
-                        operand(0) ^= regizter(MipsRegisters::lo())
+                    regizter(MipsRegisters::lo()) ^= unsigned_(operand(1)) / unsigned_(operand(2)),
+                    operand(0) ^= regizter(MipsRegisters::lo())
                 ];
             break;
         }
@@ -596,7 +595,7 @@ private:
             /* This is a conditional call */
             MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
             _[
-                //regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
+                regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
                 jump((signed_(operand(0)) >= constant(0)),
                      (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
                      directSuccessorButOne())
@@ -607,7 +606,7 @@ private:
             /* This is a conditional call */
             MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
             _[
-                //regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
+                regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
                 jump((signed_(operand(0)) >= constant(0)),
                      (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
                      directSuccessor())
@@ -653,7 +652,7 @@ private:
             /* This is a conditional call */
             MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
             _[
-                //regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
+                regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
                 jump((signed_(operand(0)) < constant(0)),
                      (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
                      directSuccessorButOne())
@@ -664,7 +663,7 @@ private:
             /* This is a conditional call */
             MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
             _[
-                //regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
+                regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
                 jump((signed_(operand(0)) < constant(0)),
                      (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
                      directSuccessor())
@@ -712,19 +711,19 @@ private:
             break;
         }
         case MIPS_INS_JALR: {
-            //_[operand(0) ^= constant(nextDirectSuccessorAddress)];
+            _[operand(0) ^= constant(nextDirectSuccessorAddress)];
             delayslot(_)[call(operand(op_count - 1))];
             break;
         }
         case MIPS_INS_BAL: /* Fall-through */
         case MIPS_INS_JAL: {
-            //_[regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress)];
-            delayslot(_)[call(operand(0))];
+            _[regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress)];
+            delayslot(_)[call(operand(op_count - 1))];
             break;
         }
         case MIPS_INS_J: /* Fall-through */
         case MIPS_INS_B: {
-            delayslot(_)[jump(operand(0))];
+            delayslot(_)[jump(operand(op_count - 1))];
             break;
         }
         default:
@@ -776,10 +775,6 @@ private:
         switch (operand.type) {
             case MIPS_OP_REG: {
                 auto &reg = getRegister(operand.reg)->memoryLocation();
-                /* Transform a register $zero into a constant 0. */
-                //if (reg.domain() == core::ir::MemoryDomain::FIRST_REGISTER && !reg.addr()) {
-                //    return std::make_unique<core::ir::Constant>(SizedValue(sizeHint, 0LL));
-                //}
                 return std::make_unique<core::ir::MemoryLocationAccess>(reg.resized(sizeHint));
             }
             case MIPS_OP_IMM: {
