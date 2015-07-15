@@ -365,21 +365,144 @@ public:
                 break;
             }
             case MIPS_INS_LWL: {
-				/*
-				auto operand0 = operand(0);
-				_[operand0 ^= ((operand(0) & constant(0xffff)) | (operand(1) << constant(16)))];
-				*/
+            	auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
+				auto rt = operand(0);
 				auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-	             _(std::make_unique<core::ir::InlineAssembly>());
+                MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _then2(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _case2(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _then3(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _case3(factory, program->createBasicBlock(), instruction);
+#if 0
+uint32
+CPU::lwl(uint32 regval, uint32 memval, uint8 offset)
+{
+	if (opt_bigendian) {
+		switch (offset)
+		{
+			case 0: return memval;
+			case 1: return (memval & 0xffffff) << 8 | (regval & 0xff);
+			case 2: return (memval & 0xffff) << 16 | (regval & 0xffff);
+			case 3: return (memval & 0xff) << 24 | (regval & 0xffffff);
+		}
+	} else /* if MIPS target is little endian */ {
+		switch (offset)
+		{
+			case 0: return (memval & 0xff) << 24 | (regval & 0xffffff);
+			case 1: return (memval & 0xffff) << 16 | (regval & 0xffff);
+			case 2: return (memval & 0xffffff) << 8 | (regval & 0xff);
+			case 3: return memval;
+		}
+	}
+	fatal_error("Invalid offset %x passed to lwl\n", offset);
+}
+#endif				
+            	if(isBE){
+					_[
+						jump((ea & constant(3)) == constant(0),	_case0[rt ^= (unsigned_(*(ea & constant(-4)))), jump(directSuccessor())].basicBlock(), _then1.basicBlock())
+    				];
+    				_then1[
+    					jump((ea & constant(3)) == constant(1), _case1[rt ^= ((unsigned_(*(ea & constant(-4))) & constant(0xffffff)) << unsigned_(constant(8)) | (rt & constant(0xff))), jump(directSuccessor())].basicBlock(), _then2.basicBlock())
+    				];
+    				_then2[
+    					jump((ea & constant(3)) == constant(2),	_case2[rt ^= ((unsigned_(*(ea & constant(-4))) & constant(0xffff)) << unsigned_(constant(16)) | (rt & constant(0xffffff00))), jump(directSuccessor())].basicBlock(), _then3.basicBlock())
+    				];
+    				_then3[
+	    				jump((ea & constant(3)) == constant(3),	_case3[rt ^= ((unsigned_(*(ea & constant(-4))) & constant(0xff)) << unsigned_(constant(24)) | (rt & constant(0xffffff))), jump(directSuccessor())].basicBlock(), directSuccessor())
+    				];
+
+             	} else /* if MIPS target is little endian */ {
+					_[
+						jump((ea & constant(3)) == constant(0), _case0[rt ^= ((unsigned_(*(ea & constant(-4))) & constant(0xff)) << unsigned_(constant(24)) | (rt & constant(0xffffff))), jump(directSuccessor())].basicBlock(), _then1.basicBlock())
+    				];
+    				_then1[
+    					jump((ea & constant(3)) == constant(1), _case1[rt ^= ((unsigned_(*(ea & constant(-4))) & constant(0xffff)) << unsigned_(constant(16)) | (rt & constant(0xffffff00))), jump(directSuccessor())].basicBlock(), _then2.basicBlock())
+    				];
+    				_then2[
+    					jump((ea & constant(3)) == constant(2),	_case2[rt ^= ((unsigned_(*(ea & constant(-4))) & constant(0xffffff)) << unsigned_(constant(8)) | (rt & constant(0xff))), jump(directSuccessor())].basicBlock(), _then3.basicBlock())
+    				];
+    				_then3[
+	    				jump((ea & constant(3)) == constant(3),	_case3[rt ^= (unsigned_(*(ea & constant(-4)))), jump(directSuccessor())].basicBlock(), directSuccessor())
+    				];
+            	}
                 break;
             }
             case MIPS_INS_LWR: {
-            	/*
-				auto operand0 = operand(0);
-				_[operand0 ^= ((operand(0) & constant(0xffff0000)) | (operand(1)))];
-				*/
+            	auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
+				auto rt = operand(0);
 				auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-	             _(std::make_unique<core::ir::InlineAssembly>());
+                MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _then2(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _case2(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _then3(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _case3(factory, program->createBasicBlock(), instruction);
+
+#if 0
+uint32
+CPU::lwr(uint32 regval, uint32 memval, uint8 offset)
+{
+	if (opt_bigendian) {
+		switch (offset)
+		{
+			case 0: return (regval & 0xffffff00) | ((unsigned)(memval & 0xff000000) >> 24);
+			case 1: return (regval & 0xffff0000) | ((unsigned)(memval & 0xffff0000) >> 16);
+			case 2: return (regval & 0xff000000) | ((unsigned)(memval & 0xffffff00) >> 8);
+			case 3: return memval;
+		}
+	} else /* if MIPS target is little endian */ {
+		switch (offset)
+		{
+			/* The SPIM source claims that "The description of the
+			 * little-endian case in Kane is totally wrong." The fact
+			 * that I ripped off the LWR algorithm from them could be
+			 * viewed as a sort of passive assumption that their claim
+			 * is correct.
+			 */
+			case 0: /* 3 in book */
+				return memval;
+			case 1: /* 0 in book */
+				return (regval & 0xff000000) | ((memval & 0xffffff00) >> 8);
+			case 2: /* 1 in book */
+				return (regval & 0xffff0000) | ((memval & 0xffff0000) >> 16);
+			case 3: /* 2 in book */
+				return (regval & 0xffffff00) | ((memval & 0xff000000) >> 24);
+		}
+	}
+	fatal_error("Invalid offset %x passed to lwr\n", offset);
+}
+#endif
+				
+            	if(isBE){
+					_[
+						jump((ea & constant(3)) == constant(0), _case0[rt ^= ((unsigned_(*(ea & constant(-4)) & constant(0xff000000)) >> unsigned_(constant(24))) | (rt & constant(0xffffff00))), jump(directSuccessor())].basicBlock(), _then1.basicBlock())
+    				];
+    				_then1[
+    					jump((ea & constant(3)) == constant(1), _case1[rt ^= ((unsigned_(*(ea & constant(-4)) & constant(0xffff0000)) >> unsigned_(constant(16))) | (rt  & constant(0xffff0000))), jump(directSuccessor())].basicBlock(), _then2.basicBlock())
+    				];
+    				_then2[
+    					jump((ea & constant(3)) == constant(2),	_case2[rt ^= ((unsigned_(*(ea & constant(-4)) & constant(0xffffff00)) >> unsigned_(constant(8))) | (rt & constant(0xff000000))), jump(directSuccessor())].basicBlock(), _then3.basicBlock())
+    				];
+    				_then3[
+	    				jump((ea & constant(3)) == constant(3),	_case3[rt ^= (*(ea & constant(-4))), jump(directSuccessor())].basicBlock(), directSuccessor())
+    				];
+             	} else /* if MIPS target is little endian */ {
+					_[
+						jump((ea & constant(3)) == constant(0),	_case0[rt ^= (*(ea & constant(-4))), jump(directSuccessor())].basicBlock(), _then1.basicBlock())
+    				];
+    				_then1[
+    					jump((ea & constant(3)) == constant(1), _case1[rt ^= ((unsigned_(*(ea & constant(-4)) & constant(0xffffff00)) >> unsigned_(constant(8))) | (rt & constant(0xff000000))), jump(directSuccessor())].basicBlock(), _then2.basicBlock())
+    				];
+    				_then2[
+    					jump((ea & constant(3)) == constant(2),	_case2[rt ^= ((unsigned_(*(ea & constant(-4)) & constant(0xffff0000)) >> unsigned_(constant(16))) | (rt  & constant(0xffff0000))), jump(directSuccessor())].basicBlock(), _then3.basicBlock())
+    				];
+    				_then3[
+	    				jump((ea & constant(3)) == constant(3),	_case3[rt ^= ((unsigned_(*(ea & constant(-4)) & constant(0xff000000)) >> unsigned_(constant(24))) | (rt & constant(0xffffff00))), jump(directSuccessor())].basicBlock(), directSuccessor())
+    				];
+            	}
                 break;
             }
             case MIPS_INS_SB: {
@@ -395,21 +518,130 @@ public:
                 break;
             }
             case MIPS_INS_SWL: {
-            	/*
-				auto operand0 = operand(0);
-				_[operand0 ^= ((operand(0) & constant(0xffff)) | (operand(1) << constant(16)))];
-				*/
+            	auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
+				auto rt = operand(0);
 				auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-	             _(std::make_unique<core::ir::InlineAssembly>());
+                MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _then2(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _case2(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _then3(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _case3(factory, program->createBasicBlock(), instruction);
+#if 0
+uint32
+CPU::swl(uint32 regval, uint32 memval, uint8 offset)
+{
+	if (opt_bigendian) {
+		switch (offset) {
+			case 0: return regval; 
+			case 1: return (memval & 0xff000000) | (regval >> 8 & 0xffffff); 
+			case 2: return (memval & 0xffff0000) | (regval >> 16 & 0xffff); 
+			case 3: return (memval & 0xffffff00) | (regval >> 24 & 0xff); 
+		}
+	} else /* if MIPS target is little endian */ {
+		switch (offset) {
+			case 0: return (memval & 0xffffff00) | (regval >> 24 & 0xff); 
+			case 1: return (memval & 0xffff0000) | (regval >> 16 & 0xffff); 
+			case 2: return (memval & 0xff000000) | (regval >> 8 & 0xffffff); 
+			case 3: return regval; 
+		}
+	}
+	fatal_error("Invalid offset %x passed to swl\n", offset);
+}
+#endif				
+            	if(isBE){
+					_[
+						jump((ea & constant(3)) == constant(3),	_case3[rt ^= (*(ea & constant(-4))), jump(directSuccessor())].basicBlock(), _then1.basicBlock())
+    				];
+    				_then1[
+    					jump((ea & constant(3)) == constant(1), _case1[rt ^= ((*(ea & constant(-4)) & constant(0xff000000)) | ((unsigned_(rt) >> unsigned_(constant(8))) & constant(0xffffff))), jump(directSuccessor())].basicBlock(), _then2.basicBlock())
+    				];
+    				_then2[
+    					jump((ea & constant(3)) == constant(2),	_case2[rt ^= ((*(ea & constant(-4)) & constant(0xffff0000)) | ((unsigned_(rt) >> unsigned_(constant(16))) & constant(0xffff))), jump(directSuccessor())].basicBlock(), _then3.basicBlock())
+    				];
+    				_then3[
+	    				jump((ea & constant(3)) == constant(3),	_case3[rt ^= ((*(ea & constant(-4)) & constant(0xffffff00)) | ((unsigned_(rt) >> unsigned_(constant(24))) & constant(0xff))), jump(directSuccessor())].basicBlock(), directSuccessor())
+    				];
+             	} else /* if MIPS target is little endian */ {
+					_[
+						jump((ea & constant(3)) == constant(0), _case0[rt ^= ((*(ea & constant(-4)) & constant(0xffffff00)) | ((unsigned_(rt) >> unsigned_(constant(24))) & constant(0xff))), jump(directSuccessor())].basicBlock(), _then1.basicBlock())
+    				];
+    				_then1[
+    					jump((ea & constant(3)) == constant(1), _case1[rt ^= ((*(ea & constant(-4)) & constant(0xffff0000)) | ((unsigned_(rt) >> unsigned_(constant(16))) & constant(0xffff))), jump(directSuccessor())].basicBlock(), _then2.basicBlock())
+    				];
+    				_then2[
+    					jump((ea & constant(3)) == constant(2),	_case2[rt ^= ((*(ea & constant(-4)) & constant(0xff000000)) | ((unsigned_(rt) >> unsigned_(constant(8))) & constant(0xffffff))), jump(directSuccessor())].basicBlock(), _then3.basicBlock())
+    				];
+    				_then3[
+	    				jump((ea & constant(3)) == constant(3),	_case3[rt ^= (*(ea & constant(-4))), jump(directSuccessor())].basicBlock(), directSuccessor())
+    				];
+    				//_[rt ^= (*(ea & ~constant(3)) & (constant(0xffffff00) << signed_((ea & constant(3))))) | ((unsigned_(rt) >> (constant(8) * (ea & constant(3)))) & unsigned_(constant(0xffffffff)) >> (constant(4) - (ea & constant(3))))];
+            	}
                 break;
             }
             case MIPS_INS_SWR: {
-            	/*
-				auto operand0 = operand(0);
-				_[operand0 ^= ((operand(0) & constant(0xffff0000)) | (operand(1)))];
-				*/
+            	auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
+				auto rt = operand(0);
 				auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-	             _(std::make_unique<core::ir::InlineAssembly>());
+                MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _then2(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _case2(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _then3(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback _case3(factory, program->createBasicBlock(), instruction);
+
+#if 0
+uint32
+CPU::swr(uint32 regval, uint32 memval, uint8 offset)
+{
+	if (opt_bigendian) {
+		switch (offset) {
+			case 0: return ((regval << 24) & 0xff000000) | (memval & 0xffffff); 
+			case 1: return ((regval << 16) & 0xffff0000) | (memval & 0xffff); 
+			case 2: return ((regval << 8) & 0xffffff00) | (memval & 0xff); 
+			case 3: return regval; 
+		}
+	} else /* if MIPS target is little endian */ {
+		switch (offset) {
+			case 0: return regval; 
+			case 1: return ((regval << 8) & 0xffffff00) | (memval & 0xff); 
+			case 2: return ((regval << 16) & 0xffff0000) | (memval & 0xffff); 
+			case 3: return ((regval << 24) & 0xff000000) | (memval & 0xffffff); 
+		}
+	}
+	fatal_error("Invalid offset %x passed to swr\n", offset);
+}
+#endif
+				
+            	if(isBE){
+					_[
+						jump((ea & constant(3)) == constant(0), _case0[rt ^= ((*(ea & constant(-4)) & constant(0xffffff)) | ((unsigned_(rt) << unsigned_(constant(24))) & constant(0xff000000))), jump(directSuccessor())].basicBlock(), _then1.basicBlock())
+    				];
+    				_then1[
+    					jump((ea & constant(3)) == constant(1), _case1[rt ^= ((*(ea & constant(-4)) & constant(0xffff)) | ((unsigned_(rt) << unsigned_(constant(16))) & constant(0xffff0000))), jump(directSuccessor())].basicBlock(), _then2.basicBlock())
+    				];
+    				_then2[
+    					jump((ea & constant(3)) == constant(2),	_case2[rt ^= ((*(ea & constant(-4)) & constant(0xff)) | ((unsigned_(rt) << unsigned_(constant(8))) & constant(0xffffff00))), jump(directSuccessor())].basicBlock(), _then3.basicBlock())
+    				];
+    				_then3[
+	    				jump((ea & constant(3)) == constant(3),	_case3[rt ^= (*(ea & constant(-4))), jump(directSuccessor())].basicBlock(), directSuccessor())
+    				];
+             	} else /* if MIPS target is little endian */ {
+					_[
+						jump((ea & constant(3)) == constant(0),	_case0[rt ^= (*(ea & constant(-4))), jump(directSuccessor())].basicBlock(), _then1.basicBlock())
+    				];
+    				_then1[
+    					jump((ea & constant(3)) == constant(1), _case1[rt ^= ((*(ea & constant(-4)) & constant(0xff)) | ((unsigned_(rt) << unsigned_(constant(8))) & constant(0xffffff00))), jump(directSuccessor())].basicBlock(), _then2.basicBlock())
+    				];
+    				_then2[
+    					jump((ea & constant(3)) == constant(2),	_case2[rt ^= ((*(ea & constant(-4)) & constant(0xffff)) | ((unsigned_(rt) << unsigned_(constant(16))) & constant(0xffff0000))), jump(directSuccessor())].basicBlock(), _then3.basicBlock())
+    				];
+    				_then3[
+	    				jump((ea & constant(3)) == constant(3),	_case3[rt ^= ((*(ea & constant(-4)) & constant(0xffffffff)) | ((unsigned_(rt) << unsigned_(constant(24))) & constant(0xff000000))), jump(directSuccessor())].basicBlock(), directSuccessor())
+    				];
+            	}
                 break;
             }
             case MIPS_INS_DIV: /* Fall-through */
