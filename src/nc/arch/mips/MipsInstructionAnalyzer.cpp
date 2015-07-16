@@ -368,6 +368,9 @@ public:
             	auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
 				auto rt = operand(0);
 				auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+				auto offset = (ea & constant(3));
+				auto memval = *(ea & constant(-4));
+				
                 MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
                 MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
                 MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
@@ -401,54 +404,42 @@ CPU::lwl(uint32 regval, uint32 memval, uint8 offset)
 #endif				
             	if(isBE){
 					_[
-						jump((ea & constant(3)) == constant(0),
-						_case0[rt ^= (unsigned_(*(ea & constant(-4)))),
+						jump(offset == constant(0),
+						_case0[rt ^= (unsigned_(memval)),
 							jump(directSuccessor())].basicBlock(),
-								_then1.basicBlock())
-    				];
-    				_then1[
-    					jump((ea & constant(3)) == constant(1),
-    					_case1[rt ^= ((unsigned_(*(ea & constant(-4))) & constant(0xffffff)) << unsigned_(constant(8)) | (rt & constant(0xff))),
+					_then1[
+    					jump(offset == constant(1),
+    					_case1[rt ^= ((unsigned_(memval) & constant(0xffffff)) << unsigned_(constant(8)) | (rt & constant(0xff))),
     						jump(directSuccessor())].basicBlock(),
-    							_then2.basicBlock())
-    				];
     				_then2[
-    					jump((ea & constant(3)) == constant(2),
-    					_case2[rt ^= ((unsigned_(*(ea & constant(-4))) & constant(0xffff)) << unsigned_(constant(16)) | (rt & constant(0xffffff00))),
+    					jump(offset == constant(2),
+    					_case2[rt ^= ((unsigned_(memval) & constant(0xffff)) << unsigned_(constant(16)) | (rt & constant(0xffffff00))),
     						jump(directSuccessor())].basicBlock(),
-    							_then3.basicBlock())
-    				];
     				_then3[
-	    				jump((ea & constant(3)) == constant(3),
-	    				_case3[rt ^= ((unsigned_(*(ea & constant(-4))) & constant(0xff)) << unsigned_(constant(24)) | (rt & constant(0xffffff))),
+	    				jump(offset == constant(3),
+	    				_case3[rt ^= ((unsigned_(memval) & constant(0xff)) << unsigned_(constant(24)) | (rt & constant(0xffffff))),
 	    					jump(directSuccessor())].basicBlock(),
-	    						directSuccessor())
+	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
     				];
-
              	} else /* if MIPS target is little endian */ {
 					_[
-						jump((ea & constant(3)) == constant(0),
-						_case0[rt ^= ((unsigned_(*(ea & constant(-4))) & constant(0xff)) << unsigned_(constant(24)) | (rt & constant(0xffffff))),
+						jump(offset == constant(0),
+						_case0[rt ^= ((unsigned_(memval) & constant(0xff)) << unsigned_(constant(24)) | (rt & constant(0xffffff))),
 							jump(directSuccessor())].basicBlock(),
-								 _then1.basicBlock())
-    				];
-    				_then1[
-    					jump((ea & constant(3)) == constant(1),
-    					_case1[rt ^= ((unsigned_(*(ea & constant(-4))) & constant(0xffff)) << unsigned_(constant(16)) | (rt & constant(0xffffff00))),
+	   				_then1[
+    					jump(offset == constant(1),
+    					_case1[rt ^= ((unsigned_(memval) & constant(0xffff)) << unsigned_(constant(16)) | (rt & constant(0xffffff00))),
     						jump(directSuccessor())].basicBlock(),
-    							_then2.basicBlock())
-    				];
     				_then2[
-    					jump((ea & constant(3)) == constant(2),
-    					_case2[rt ^= ((unsigned_(*(ea & constant(-4))) & constant(0xffffff)) << unsigned_(constant(8)) | (rt & constant(0xff))),
+    					jump(offset == constant(2),
+    					_case2[rt ^= ((unsigned_(memval) & constant(0xffffff)) << unsigned_(constant(8)) | (rt & constant(0xff))),
     						jump(directSuccessor())].basicBlock(),
-    							_then3.basicBlock())
-    				];
     				_then3[
-	    				jump((ea & constant(3)) == constant(3),
-	    				_case3[rt ^= (unsigned_(*(ea & constant(-4)))),
+	    				jump(offset == constant(3),
+	    				_case3[rt ^= (unsigned_(memval)),
 	    					jump(directSuccessor())].basicBlock(),
 	    						directSuccessor())
+    				].basicBlock())].basicBlock())].basicBlock())
     				];
             	}
                 break;
@@ -457,6 +448,9 @@ CPU::lwl(uint32 regval, uint32 memval, uint8 offset)
             	auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
 				auto rt = operand(0);
 				auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+				auto offset = (ea & constant(3));
+				auto memval = *(ea & constant(-4));
+
                 MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
                 MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
                 MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
@@ -502,54 +496,44 @@ CPU::lwr(uint32 regval, uint32 memval, uint8 offset)
 				
             	if(isBE){
 					_[
-						jump((ea & constant(3)) == constant(0),
-						_case0[rt ^= ((unsigned_(*(ea & constant(-4)) & constant(0xff000000)) >> unsigned_(constant(24))) | (rt & constant(0xffffff00))),
+						jump(offset == constant(0),
+						_case0[rt ^= ((unsigned_(memval & constant(0xff000000)) >> unsigned_(constant(24))) | (rt & constant(0xffffff00))),
 							jump(directSuccessor())].basicBlock(),
-								_then1.basicBlock())
-    				];
-    				_then1[
-    					jump((ea & constant(3)) == constant(1),
-    					_case1[rt ^= ((unsigned_(*(ea & constant(-4)) & constant(0xffff0000)) >> unsigned_(constant(16))) | (rt  & constant(0xffff0000))),
+					_then1[
+    					jump(offset == constant(1),
+    					_case1[rt ^= ((unsigned_(memval & constant(0xffff0000)) >> unsigned_(constant(16))) | (rt  & constant(0xffff0000))),
     						jump(directSuccessor())].basicBlock(),
-    							_then2.basicBlock())
-    				];
     				_then2[
-    					jump((ea & constant(3)) == constant(2),
-    					_case2[rt ^= ((unsigned_(*(ea & constant(-4)) & constant(0xffffff00)) >> unsigned_(constant(8))) | (rt & constant(0xff000000))),
+    					jump(offset == constant(2),
+    					_case2[rt ^= ((unsigned_(memval & constant(0xffffff00)) >> unsigned_(constant(8))) | (rt & constant(0xff000000))),
     						jump(directSuccessor())].basicBlock(),
-    							_then3.basicBlock())
-    				];
     				_then3[
-	    				jump((ea & constant(3)) == constant(3),
-	    				_case3[rt ^= (*(ea & constant(-4))),
+	    				jump(offset == constant(3),
+	    				_case3[rt ^= (memval),
 	    					jump(directSuccessor())].basicBlock(), 
 	    						directSuccessor())
+    				].basicBlock())].basicBlock())].basicBlock())
     				];
              	} else /* if MIPS target is little endian */ {
 					_[
-						jump((ea & constant(3)) == constant(0),
-						_case0[rt ^= (*(ea & constant(-4))),
+						jump(offset == constant(0),
+						_case0[rt ^= (memval),
 							jump(directSuccessor())].basicBlock(),
-								_then1.basicBlock())
-    				];
-    				_then1[
-    					jump((ea & constant(3)) == constant(1),
-    					_case1[rt ^= ((unsigned_(*(ea & constant(-4)) & constant(0xffffff00)) >> unsigned_(constant(8))) | (rt & constant(0xff000000))),
+					_then1[
+    					jump(offset == constant(1),
+    					_case1[rt ^= ((unsigned_(memval & constant(0xffffff00)) >> unsigned_(constant(8))) | (rt & constant(0xff000000))),
     						jump(directSuccessor())].basicBlock(),
-    							_then2.basicBlock())
-    				];
     				_then2[
-    					jump((ea & constant(3)) == constant(2),
-    					_case2[rt ^= ((unsigned_(*(ea & constant(-4)) & constant(0xffff0000)) >> unsigned_(constant(16))) | (rt  & constant(0xffff0000))),
+    					jump(offset == constant(2),
+    					_case2[rt ^= ((unsigned_(memval & constant(0xffff0000)) >> unsigned_(constant(16))) | (rt  & constant(0xffff0000))),
     						jump(directSuccessor())].basicBlock(),
-    							_then3.basicBlock())
-    				];
-    				_then3[
-	    				jump((ea & constant(3)) == constant(3),
-	    					_case3[rt ^= ((unsigned_(*(ea & constant(-4)) & constant(0xff000000)) >> unsigned_(constant(24))) | (rt & constant(0xffffff00))),
+     				_then3[
+	    				jump(offset == constant(3),
+	    					_case3[rt ^= ((unsigned_(memval & constant(0xff000000)) >> unsigned_(constant(24))) | (rt & constant(0xffffff00))),
 	    						jump(directSuccessor())].basicBlock(),
 	    							directSuccessor())
-    				];
+    				].basicBlock())].basicBlock())].basicBlock())
+    			];
             	}
                 break;
             }
@@ -569,6 +553,9 @@ CPU::lwr(uint32 regval, uint32 memval, uint8 offset)
             	auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
 				auto rt = operand(0);
 				auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+				auto offset = (ea & constant(3));
+				auto memval = *(ea & constant(-4));
+
                 MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
                 MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
                 MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
@@ -600,53 +587,41 @@ CPU::swl(uint32 regval, uint32 memval, uint8 offset)
 #endif				
             	if(isBE){
 					_[
-						jump((ea & constant(3)) == constant(3),
-						_case3[rt ^= (*(ea & constant(-4))),
+						jump(offset == constant(3),
+						_case3[rt ^= (memval),
 							jump(directSuccessor())].basicBlock(),
-								_then1.basicBlock())
-    				];
-    				_then1[
-    					jump((ea & constant(3)) == constant(1),
-    					_case1[rt ^= ((*(ea & constant(-4)) & constant(0xff000000)) | ((unsigned_(rt) >> unsigned_(constant(8))) & constant(0xffffff))),
+					_then1[
+    					jump(offset == constant(1),
+    					_case1[rt ^= ((memval & constant(0xff000000)) | ((unsigned_(rt) >> unsigned_(constant(8))) & constant(0xffffff))),
     						jump(directSuccessor())].basicBlock(),
-    							_then2.basicBlock())
-    				];
     				_then2[
-    					jump((ea & constant(3)) == constant(2),
-    					_case2[rt ^= ((*(ea & constant(-4)) & constant(0xffff0000)) | ((unsigned_(rt) >> unsigned_(constant(16))) & constant(0xffff))),
+    					jump(offset == constant(2),
+    					_case2[rt ^= ((memval & constant(0xffff0000)) | ((unsigned_(rt) >> unsigned_(constant(16))) & constant(0xffff))),
     						jump(directSuccessor())].basicBlock(),
-    							_then3.basicBlock())
-    				];
     				_then3[
-	    				jump((ea & constant(3)) == constant(3),
-	    				_case3[rt ^= ((*(ea & constant(-4)) & constant(0xffffff00)) | ((unsigned_(rt) >> unsigned_(constant(24))) & constant(0xff))),
+	    				jump(offset == constant(3),
+	    				_case3[rt ^= ((memval & constant(0xffffff00)) | ((unsigned_(rt) >> unsigned_(constant(24))) & constant(0xff))),
 	    					jump(directSuccessor())].basicBlock(),
-	    						directSuccessor())
+	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
     				];
              	} else /* if MIPS target is little endian */ {
 					_[
-						jump((ea & constant(3)) == constant(0),
-						_case0[rt ^= ((*(ea & constant(-4)) & constant(0xffffff00)) | ((unsigned_(rt) >> unsigned_(constant(24))) & constant(0xff))),
+						jump(offset == constant(0),
+						_case0[rt ^= ((memval & constant(0xffffff00)) | ((unsigned_(rt) >> unsigned_(constant(24))) & constant(0xff))),
 							jump(directSuccessor())].basicBlock(),
-								_then1.basicBlock())
-    				];
-    				_then1[
-    					jump((ea & constant(3)) == constant(1),
-    					_case1[rt ^= ((*(ea & constant(-4)) & constant(0xffff0000)) | ((unsigned_(rt) >> unsigned_(constant(16))) & constant(0xffff))),
+	 				_then1[
+    					jump(offset == constant(1),
+    					_case1[rt ^= ((memval & constant(0xffff0000)) | ((unsigned_(rt) >> unsigned_(constant(16))) & constant(0xffff))),
     						jump(directSuccessor())].basicBlock(),
-    							_then2.basicBlock())
-    				];
-    				_then2[
-    					jump((ea & constant(3)) == constant(2),
-    					_case2[rt ^= ((*(ea & constant(-4)) & constant(0xff000000)) | ((unsigned_(rt) >> unsigned_(constant(8))) & constant(0xffffff))),
+     				_then2[
+    					jump(offset == constant(2),
+    					_case2[rt ^= ((memval & constant(0xff000000)) | ((unsigned_(rt) >> unsigned_(constant(8))) & constant(0xffffff))),
     						jump(directSuccessor())].basicBlock(),
-    							_then3.basicBlock())
-    				];
     				_then3[
-	    				jump((ea & constant(3)) == constant(3),
-	    				_case3[rt ^= (*(ea & constant(-4))),
+	    				jump(offset == constant(3),
+	    				_case3[rt ^= (memval),
 	    					jump(directSuccessor())].basicBlock(), 
-	    						directSuccessor())
+	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
     				];
     				//_[rt ^= (*(ea & ~constant(3)) & (constant(0xffffff00) << signed_((ea & constant(3))))) | ((unsigned_(rt) >> (constant(8) * (ea & constant(3)))) & unsigned_(constant(0xffffffff)) >> (constant(4) - (ea & constant(3))))];
             	}
@@ -656,6 +631,9 @@ CPU::swl(uint32 regval, uint32 memval, uint8 offset)
             	auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
 				auto rt = operand(0);
 				auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+				auto offset = (ea & constant(3));
+				auto memval = *(ea & constant(-4));
+
                 MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
                 MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
                 MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
@@ -689,51 +667,51 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
 				
             	if(isBE){
 					_[
-						jump((ea & constant(3)) == constant(0),
-						_case0[rt ^= ((*(ea & constant(-4)) & constant(0xffffff)) | ((unsigned_(rt) << unsigned_(constant(24))) & constant(0xff000000))),
+						jump(offset == constant(0),
+						_case0[rt ^= ((memval & constant(0xffffff)) | ((unsigned_(rt) << unsigned_(constant(24))) & constant(0xff000000))),
 							jump(directSuccessor())].basicBlock(),
 								_then1.basicBlock())
     				];
     				_then1[
-    					jump((ea & constant(3)) == constant(1),
-    					_case1[rt ^= ((*(ea & constant(-4)) & constant(0xffff)) | ((unsigned_(rt) << unsigned_(constant(16))) & constant(0xffff0000))),
+    					jump(offset == constant(1),
+    					_case1[rt ^= ((memval & constant(0xffff)) | ((unsigned_(rt) << unsigned_(constant(16))) & constant(0xffff0000))),
     						jump(directSuccessor())].basicBlock(),
     							_then2.basicBlock())
     				];
     				_then2[
-    					jump((ea & constant(3)) == constant(2),
-    					_case2[rt ^= ((*(ea & constant(-4)) & constant(0xff)) | ((unsigned_(rt) << unsigned_(constant(8))) & constant(0xffffff00))),
+    					jump(offset == constant(2),
+    					_case2[rt ^= ((memval & constant(0xff)) | ((unsigned_(rt) << unsigned_(constant(8))) & constant(0xffffff00))),
     						jump(directSuccessor())].basicBlock(),
     							_then3.basicBlock())
     				];
     				_then3[
-	    				jump((ea & constant(3)) == constant(3),
-	    				_case3[rt ^= (*(ea & constant(-4))),
+	    				jump(offset == constant(3),
+	    				_case3[rt ^= (memval),
 	    					jump(directSuccessor())].basicBlock(),
 	    						directSuccessor())
     				];
              	} else /* if MIPS target is little endian */ {
 					_[
-						jump((ea & constant(3)) == constant(0),
-						_case0[rt ^= (*(ea & constant(-4))),
+						jump(offset == constant(0),
+						_case0[rt ^= (memval),
 							jump(directSuccessor())].basicBlock(),
 								_then1.basicBlock())
     				];
     				_then1[
-    					jump((ea & constant(3)) == constant(1),
-    					_case1[rt ^= ((*(ea & constant(-4)) & constant(0xff)) | ((unsigned_(rt) << unsigned_(constant(8))) & constant(0xffffff00))),
+    					jump(offset == constant(1),
+    					_case1[rt ^= ((memval & constant(0xff)) | ((unsigned_(rt) << unsigned_(constant(8))) & constant(0xffffff00))),
     						jump(directSuccessor())].basicBlock(),
     							_then2.basicBlock())
     				];
     				_then2[
-    					jump((ea & constant(3)) == constant(2),
-    					_case2[rt ^= ((*(ea & constant(-4)) & constant(0xffff)) | ((unsigned_(rt) << unsigned_(constant(16))) & constant(0xffff0000))),
+    					jump(offset == constant(2),
+    					_case2[rt ^= ((memval & constant(0xffff)) | ((unsigned_(rt) << unsigned_(constant(16))) & constant(0xffff0000))),
     						jump(directSuccessor())].basicBlock(),
     							_then3.basicBlock())
     				];
     				_then3[
-	    				jump((ea & constant(3)) == constant(3),
-	    				_case3[rt ^= ((*(ea & constant(-4)) & constant(0xffffffff)) | ((unsigned_(rt) << unsigned_(constant(24))) & constant(0xff000000))),
+	    				jump(offset == constant(3),
+	    				_case3[rt ^= ((memval & constant(0xffffffff)) | ((unsigned_(rt) << unsigned_(constant(24))) & constant(0xff000000))),
 	    					jump(directSuccessor())].basicBlock(),
 	    						directSuccessor())
     				];
