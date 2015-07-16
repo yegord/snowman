@@ -438,9 +438,9 @@ CPU::lwl(uint32 regval, uint32 memval, uint8 offset)
 	    				jump(offset == constant(3),
 	    				_case3[rt ^= (unsigned_(memval)),
 	    					jump(directSuccessor())].basicBlock(),
-	    						directSuccessor())
-    				].basicBlock())].basicBlock())].basicBlock())
+	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
     				];
+    				//_[rt ^= ((memval & (constant(0xffffff00) << signed_(offset))) | ((unsigned_(rt) >> (constant(8) * offset)) & unsigned_(constant(0xffffffff)) >> (constant(4) - offset)))];
             	}
                 break;
             }
@@ -511,8 +511,7 @@ CPU::lwr(uint32 regval, uint32 memval, uint8 offset)
 	    				jump(offset == constant(3),
 	    				_case3[rt ^= (memval),
 	    					jump(directSuccessor())].basicBlock(), 
-	    						directSuccessor())
-    				].basicBlock())].basicBlock())].basicBlock())
+	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
     				];
              	} else /* if MIPS target is little endian */ {
 					_[
@@ -531,8 +530,7 @@ CPU::lwr(uint32 regval, uint32 memval, uint8 offset)
 	    				jump(offset == constant(3),
 	    					_case3[rt ^= ((unsigned_(memval & constant(0xff000000)) >> unsigned_(constant(24))) | (rt & constant(0xffffff00))),
 	    						jump(directSuccessor())].basicBlock(),
-	    							directSuccessor())
-    				].basicBlock())].basicBlock())].basicBlock())
+	    							directSuccessor())].basicBlock())].basicBlock())].basicBlock())
     			];
             	}
                 break;
@@ -623,7 +621,6 @@ CPU::swl(uint32 regval, uint32 memval, uint8 offset)
 	    					jump(directSuccessor())].basicBlock(), 
 	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
     				];
-    				//_[rt ^= (*(ea & ~constant(3)) & (constant(0xffffff00) << signed_((ea & constant(3))))) | ((unsigned_(rt) >> (constant(8) * (ea & constant(3)))) & unsigned_(constant(0xffffffff)) >> (constant(4) - (ea & constant(3))))];
             	}
                 break;
             }
@@ -670,50 +667,38 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
 						jump(offset == constant(0),
 						_case0[rt ^= ((memval & constant(0xffffff)) | ((unsigned_(rt) << unsigned_(constant(24))) & constant(0xff000000))),
 							jump(directSuccessor())].basicBlock(),
-								_then1.basicBlock())
-    				];
-    				_then1[
+					_then1[
     					jump(offset == constant(1),
     					_case1[rt ^= ((memval & constant(0xffff)) | ((unsigned_(rt) << unsigned_(constant(16))) & constant(0xffff0000))),
     						jump(directSuccessor())].basicBlock(),
-    							_then2.basicBlock())
-    				];
     				_then2[
     					jump(offset == constant(2),
     					_case2[rt ^= ((memval & constant(0xff)) | ((unsigned_(rt) << unsigned_(constant(8))) & constant(0xffffff00))),
     						jump(directSuccessor())].basicBlock(),
-    							_then3.basicBlock())
-    				];
     				_then3[
 	    				jump(offset == constant(3),
 	    				_case3[rt ^= (memval),
 	    					jump(directSuccessor())].basicBlock(),
-	    						directSuccessor())
+	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
     				];
              	} else /* if MIPS target is little endian */ {
 					_[
 						jump(offset == constant(0),
 						_case0[rt ^= (memval),
 							jump(directSuccessor())].basicBlock(),
-								_then1.basicBlock())
-    				];
-    				_then1[
+					_then1[
     					jump(offset == constant(1),
     					_case1[rt ^= ((memval & constant(0xff)) | ((unsigned_(rt) << unsigned_(constant(8))) & constant(0xffffff00))),
     						jump(directSuccessor())].basicBlock(),
-    							_then2.basicBlock())
-    				];
-    				_then2[
+ 	   				_then2[
     					jump(offset == constant(2),
     					_case2[rt ^= ((memval & constant(0xffff)) | ((unsigned_(rt) << unsigned_(constant(16))) & constant(0xffff0000))),
     						jump(directSuccessor())].basicBlock(),
-    							_then3.basicBlock())
-    				];
     				_then3[
 	    				jump(offset == constant(3),
 	    				_case3[rt ^= ((memval & constant(0xffffffff)) | ((unsigned_(rt) << unsigned_(constant(24))) & constant(0xff000000))),
 	    					jump(directSuccessor())].basicBlock(),
-	    						directSuccessor())
+	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
     				];
             	}
                 break;
