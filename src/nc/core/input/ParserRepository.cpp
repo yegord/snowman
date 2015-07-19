@@ -30,6 +30,7 @@
 #include <nc/common/make_unique.h>
 
 #include <nc/input/elf/ElfParser.h>
+#include <nc/input/mach-o/MachOParser.h>
 #include <nc/input/pe/PeParser.h>
 
 #include "Parser.h"
@@ -41,6 +42,7 @@ namespace {
 ParserRepository *createInstance() {
     static ParserRepository result;
     result.registerParser(std::make_unique<nc::input::elf::ElfParser>());
+    result.registerParser(std::make_unique<nc::input::mach_o::MachOParser>());
     result.registerParser(std::make_unique<nc::input::pe::PeParser>());
     return &result;
 }

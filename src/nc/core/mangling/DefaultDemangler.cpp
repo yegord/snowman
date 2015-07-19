@@ -17,22 +17,39 @@ namespace nc {
 namespace core {
 namespace mangling {
 
+namespace {
+
 struct FreeDeleter {
     void operator()(void *ptr) const {
         free(ptr);
     }
 };
 
-QString DefaultDemangler::demangle(const QString &symbol) const {
+QString doDemangle(const char *symbol) {
     int status;
-    auto byteArray = symbol.toLatin1();
-    if (auto output = std::unique_ptr<char[], FreeDeleter>(__cxa_demangle(byteArray.constData(), nullptr, nullptr, &status))) {
+    if (auto output = std::unique_ptr<char[], FreeDeleter>(__cxa_demangle(symbol, nullptr, nullptr, &status))) {
         return QLatin1String(output.get());
-    } else if (auto output = std::unique_ptr<char[], FreeDeleter>(__unDName(nullptr, byteArray.constData(), 0, 0))) {
-        return QLatin1String(output.get());
-    } else {
-        return QString();
     }
+    if (auto output = std::unique_ptr<char[], FreeDeleter>(__unDName(nullptr, symbol, 0, 0))) {
+        /* __unDName returns the input string, if fails do demangle. */
+        if (strcmp(output.get(), symbol)) {
+            return QLatin1String(output.get());
+        }
+    }
+    return QString();
+}
+
+} // anonymous namespace
+
+QString DefaultDemangler::demangle(const QString &symbol) const {
+    auto byteArray = symbol.toLatin1();
+    auto result = doDemangle(byteArray.constData());
+
+    if (result.isNull() && symbol.startsWith('_')) {
+        result = doDemangle(byteArray.constData() + 1);
+    }
+
+    return result;
 }
 
 }}} // namespace nc::core::mangling
