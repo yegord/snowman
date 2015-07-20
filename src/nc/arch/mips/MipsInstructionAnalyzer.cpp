@@ -40,6 +40,7 @@ typedef core::irgen::expressions::ExpressionFactoryCallback<MipsExpressionFactor
 
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, sp)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, gp)
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, ra)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, hilo)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, lo)
 
@@ -718,7 +719,6 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
                     ];
                 break;
             }
-
             case MIPS_INS_MFHI: {
                 auto operand0 = operand(0);
                 _[
