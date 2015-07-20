@@ -25,7 +25,7 @@ namespace mach_o {
 namespace {
 
 using nc::core::input::read;
-using nc::core::input::getString;
+using nc::core::input::getAsciizString;
 using nc::core::input::ParseError;
 
 boost::optional<std::pair<SmallBitSize, ByteOrder>>
@@ -171,7 +171,7 @@ private:
         byteOrder_.convertFrom(command.nsects);
         byteOrder_.convertFrom(command.initprot);
 
-        log_.debug(tr("Found segment '%1' with %2 sections.").arg(getString(command.segname)).arg(command.nsects));
+        log_.debug(tr("Found segment '%1' with %2 sections.").arg(getAsciizString(command.segname)).arg(command.nsects));
 
         for (uint32_t i = 0; i < command.nsects; ++i) {
             log_.debug(tr("Parsing section number %1.").arg(i));
@@ -190,8 +190,8 @@ private:
         byteOrder_.convertFrom(section.offset);
         byteOrder_.convertFrom(section.flags);
 
-        auto sectionName = getString(section.sectname);
-        auto segmentName = getString(section.segname);
+        auto sectionName = getAsciizString(section.sectname);
+        auto segmentName = getAsciizString(section.segname);
 
         log_.debug(tr("Found section '%1' in segment '%2', addr = 0x%3, size = 0x%4.")
                        .arg(sectionName)
@@ -242,6 +242,15 @@ private:
 
         log_.debug(tr("Found a symbol table with %1 entries.").arg(command.nsyms));
 
+        if (!source_->seek(command.stroff)) {
+            throw ParseError(tr("Could not seek to the string table."));
+        }
+
+        auto stringTable = source_->read(command.strsize);
+        if (checked_cast<uint32_t>(stringTable.size()) != command.strsize) {
+            throw ParseError(tr("Could not read string table."));
+        }
+
         if (!source_->seek(command.symoff)) {
             throw ParseError(tr("Could not seek to the symbol table."));
         }
@@ -259,16 +268,7 @@ private:
             byteOrder_.convertFrom(symbol.n_sect);
             byteOrder_.convertFrom(symbol.n_value);
 
-            QString name;
-            if (symbol.n_strx != 0) {
-                if (symbol.n_strx > command.strsize) {
-                    throw ParseError(tr("Symbol number %1 has string table index 0x%2 out of range.").arg(i).arg(symbol.n_strx, 0, 16));
-                }
-                auto pos = source_->pos();
-                source_->seek(command.stroff + symbol.n_strx);
-                name = getString(source_->read(command.strsize - symbol.n_strx));
-                source_->seek(pos);
-            }
+            QString name = getAsciizString(stringTable, symbol.n_strx);
 
             boost::optional<ConstantValue> value;
             if ((symbol.n_type & N_TYPE) != N_UNDF) {

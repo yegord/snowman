@@ -50,7 +50,7 @@ namespace pe {
 namespace {
 
 using nc::core::input::read;
-using nc::core::input::getString;
+using nc::core::input::getAsciizString;
 using nc::core::input::ParseError;
 
 const ByteOrder peByteOrder = ByteOrder::LittleEndian;
@@ -183,8 +183,8 @@ private:
             peByteOrder.convertFrom(sectionHeader.SizeOfRawData);
 
             auto section = std::make_unique<core::image::Section>(
-                getString(sectionHeader.Name), sectionHeader.VirtualAddress + optionalHeader_.ImageBase, sectionHeader.SizeOfRawData
-            );
+                getAsciizString(sectionHeader.Name), sectionHeader.VirtualAddress + optionalHeader_.ImageBase,
+                sectionHeader.SizeOfRawData);
 
             section->setAllocated((sectionHeader.Characteristics & IMAGE_SCN_MEM_DISCARDABLE) == 0);
             section->setReadable(sectionHeader.Characteristics & IMAGE_SCN_MEM_READ);
@@ -250,21 +250,12 @@ private:
             return;
         }
 
-        std::unique_ptr<char[]> stringTable(new char[stringTableSize]);
-        memset(stringTable.get(), 0, 4);
-        if (source_->read(stringTable.get() + 4, stringTableSize - 4) != stringTableSize - 4) {
+        QByteArray stringTable(4, 0);
+        stringTable.resize(stringTableSize);
+        if (!read(source_, stringTable.data()[4], stringTableSize - 4)) {
             log_.warning(tr("Cannot read the string table."));
             return;
         }
-
-        auto getStringFromTable = [&](uint32_t offset) -> QString {
-            if (offset < stringTableSize) {
-                return QString::fromLatin1(
-                    stringTable.get() + offset, qstrnlen(stringTable.get() + offset, stringTableSize - offset));
-            } else {
-                return QString();
-            }
-        };
 
         foreach (IMAGE_SYMBOL &symbol, symbols) {
             peByteOrder.convertFrom(symbol.Type);
@@ -287,9 +278,9 @@ private:
 
             QString name;
             if (symbol.N.Name.Short) {
-                name = getString(symbol.N.ShortName);
+                name = getAsciizString(symbol.N.ShortName);
             } else {
-                name = getStringFromTable(symbol.N.Name.Long);
+                name = getAsciizString(stringTable, symbol.N.Name.Long);
             }
 
             auto value = symbol.Value;
@@ -307,7 +298,7 @@ private:
         foreach (auto section, image_->sections()) {
             if (section->name().startsWith('/')) {
                 if (auto offset = stringToInt<uint32_t>(section->name().mid(1))) {
-                    QString newName = getStringFromTable(*offset);
+                    QString newName = getAsciizString(stringTable, *offset);
                     if (!newName.isEmpty()) {
                         section->setName(newName);
                     }
