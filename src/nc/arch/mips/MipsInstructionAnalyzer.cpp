@@ -493,7 +493,6 @@ CPU::lwr(uint32 regval, uint32 memval, uint8 offset)
 	fatal_error("Invalid offset %x passed to lwr\n", offset);
 }
 #endif
-				
             	if(isBE){
 					_[
 						jump(offset == constant(0),
@@ -544,7 +543,9 @@ CPU::lwr(uint32 regval, uint32 memval, uint8 offset)
                 break;
             }
             case MIPS_INS_SW: {
-                _[operand(0) ^= operand(1)];
+		        auto operand0 = operand(0);
+                auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+                _[operand0 ^= operand1];
                 break;
             }
             case MIPS_INS_SWL: {
@@ -661,7 +662,6 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
 	fatal_error("Invalid offset %x passed to swr\n", offset);
 }
 #endif
-				
             	if(isBE){
 					_[
 						jump(offset == constant(0),
@@ -1119,16 +1119,18 @@ private:
         const auto &mem = operand.mem;
 
         auto result = createRegisterAccess(mem.base);
+        auto offsetValue = SizedValue(result->size(), mem.disp);
 
-        if (mem.disp != 0) {
-            result = std::make_unique<core::ir::BinaryOperator>(
-                core::ir::BinaryOperator::ADD,
-                std::move(result),
-                std::make_unique<core::ir::Constant>(SizedValue(result->size(), mem.disp)),
-                result->size()
-            );
+        if (offsetValue.value() || !result) {
+            auto offset = std::make_unique<core::ir::Constant>(offsetValue);
+
+            if (result) {
+                result = std::make_unique<core::ir::BinaryOperator>(core::ir::BinaryOperator::ADD, std::move(result), std::move(offset), result->size());
+            } else {
+                result = std::move(offset);
+            }
         }
-
+        
         return result;
     }
 
