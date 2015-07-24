@@ -721,9 +721,9 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
             }
             case MIPS_INS_MFHI: {
                 auto operand0 = operand(0);
-                /*_[
+                _[
                     std::move(operand0) ^= regizter(MipsRegisters::hi())
-                ];*/
+                ];
                 break;
             }
             case MIPS_INS_MTHI: {
