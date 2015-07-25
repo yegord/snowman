@@ -33,7 +33,7 @@ MipsArchitecture::MipsArchitecture(ByteOrder byteOrder):
     static core::MasterAnalyzer masterAnalyzer;
     setMasterAnalyzer(&masterAnalyzer);
 
-    addCallingConvention(std::make_unique<DefaultCallingConvention>());
+    addCallingConvention(std::make_unique<DefaultCallingConvention>(this));
 }
 
 MipsArchitecture::~MipsArchitecture() {}

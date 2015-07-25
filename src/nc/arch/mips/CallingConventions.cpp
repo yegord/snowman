@@ -14,13 +14,13 @@ namespace nc {
 namespace arch {
 namespace mips {
 
-DefaultCallingConvention::DefaultCallingConvention():
+DefaultCallingConvention::DefaultCallingConvention(const MipsArchitecture *architecture_):
     core::ir::calling::Convention(QLatin1String("Default"))
 {
     setStackPointer(MipsRegisters::sp()->memoryLocation());
 
     setFirstArgumentOffset(0);
-    setArgumentAlignment(32);
+    setArgumentAlignment(architecture_->bitness());
 
     std::vector<core::ir::MemoryLocation> args;
     args.push_back(MipsRegisters::a0()->memoryLocation());
