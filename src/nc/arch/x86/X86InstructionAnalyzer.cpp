@@ -223,6 +223,12 @@ public:
                 ];
                 break;
             }
+            case UD_Icqo: {
+                _[
+                    regizter(X86Registers::rdx()) ^= signed_(regizter(X86Registers::rax())) >> constant(63)
+                ];
+                break;
+            }
             case UD_Icld: {
                 _[
                     df ^= constant(0)
