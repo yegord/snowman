@@ -633,10 +633,11 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
         case Statement::ASSIGNMENT: {
             const Assignment *assignment = statement->asAssignment();
 
+#if 1
             if (!liveness_.isLive(assignment->left())) {
                 return nullptr;
             }
-
+#endif
             if (nc::contains(intermediateTerms_, assignment->left())) {
                 return nullptr;
             }
@@ -700,13 +701,15 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
                     if (callSignature->returnValue()) {
                         const Term *returnValueTerm = callHook->getReturnValueTerm(callSignature->returnValue().get());
 
-                        return std::make_unique<likec::ExpressionStatement>(tree(),
-                            std::make_unique<likec::BinaryOperator>(tree(),
-                                likec::BinaryOperator::ASSIGN,
-                                makeExpression(returnValueTerm),
-                                std::make_unique<likec::Typecast>(tree(),
-                                    parent().makeType(parent().types().getType(returnValueTerm)),
-                                    std::move(callOperator))));
+                        if (liveness_.isLive(returnValueTerm)) {
+                            return std::make_unique<likec::ExpressionStatement>(tree(),
+                                                                                std::make_unique<likec::BinaryOperator>(tree(),
+                                                                                likec::BinaryOperator::ASSIGN,
+                                                                                makeExpression(returnValueTerm),
+                                                                                std::make_unique<likec::Typecast>(tree(),
+                                                                                parent().makeType(parent().types().getType(returnValueTerm)),
+                                                                                std::move(callOperator))));
+                        }
                     }
                 }
             }

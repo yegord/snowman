@@ -172,7 +172,7 @@ void X86MasterAnalyzer::detectCallingConvention(core::Context &context, const co
             setConvention("cdecl32");
             break;
         case 64:
-            setConvention("amd64");
+            setConvention("microsoft64");
             break;
     }
 }
