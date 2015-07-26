@@ -708,7 +708,7 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
             }
             case MIPS_INS_WSBH: {
 				_[
-					operand(0) ^= ((unsigned_(operand(1, 16)) >> unsigned_(constant(8))) | (unsigned_(operand(1, 16)) << unsigned_(constant(8))))
+					operand(0) ^= zero_extend((unsigned_(operand(1, 16)) >> unsigned_(constant(8))) | (unsigned_(operand(1, 16)) << unsigned_(constant(8))))
             	];
             	break;
             }
