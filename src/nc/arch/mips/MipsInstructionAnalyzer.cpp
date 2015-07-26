@@ -43,6 +43,8 @@ NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, gp)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, ra)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, hilo)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, lo)
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, hi)
+
 
 } // anonymous namespace
 
