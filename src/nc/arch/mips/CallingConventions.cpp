@@ -29,8 +29,8 @@ DefaultCallingConvention::DefaultCallingConvention(const MipsArchitecture *archi
     args.push_back(MipsRegisters::a3()->memoryLocation());
     addArgumentGroup(std::move(args));
 
-    addReturnValueLocation(MipsRegisters::v1()->memoryLocation());
     addReturnValueLocation(MipsRegisters::v0()->memoryLocation());
+    addReturnValueLocation(MipsRegisters::v1()->memoryLocation());
 
     addEnterStatement(std::make_unique<core::ir::Assignment>(
         std::make_unique<core::ir::MemoryLocationAccess>(MipsRegisters::ra()->memoryLocation()),
