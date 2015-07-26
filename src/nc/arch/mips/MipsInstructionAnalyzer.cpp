@@ -706,7 +706,20 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
             	}
                 break;
             }
-            case MIPS_INS_DIV: /* Fall-through */
+            case MIPS_INS_DIV: {
+                if (op_count == 2)
+                    _[
+                        regizter(MipsRegisters::hi()) ^= signed_(operand(0)) % signed_(operand(1)),
+                        regizter(MipsRegisters::lo()) ^= signed_(operand(0)) / signed_(operand(1))
+                    ];
+                else
+                    _[
+                        regizter(MipsRegisters::hi()) ^= signed_(operand(1)) % signed_(operand(2)),
+                        regizter(MipsRegisters::lo()) ^= signed_(operand(1)) / signed_(operand(2)),
+                       	operand(0) ^= regizter(MipsRegisters::lo())
+                    ];
+                break;
+            }
             case MIPS_INS_DIVU: {
                 if (op_count == 2)
                     _[
