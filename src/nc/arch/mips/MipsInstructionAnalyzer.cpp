@@ -134,11 +134,11 @@ public:
                 break;
             }
             case MIPS_INS_ABS: {
-			MipsExpressionFactoryCallback negative(factory, program->createBasicBlock(), instruction);
+				MipsExpressionFactoryCallback negative(factory, program->createBasicBlock(), instruction);
                 MipsExpressionFactoryCallback positive(factory, program->createBasicBlock(), instruction);
 				_[	
                     jump((signed_(operand(1)) < signed_(constant(0))),
-                         (negative[operand(0) ^= -operand(1), jump(directSuccessor())]).basicBlock(),
+                         (negative[operand(0) ^= -(operand(1)), jump(directSuccessor())]).basicBlock(),
                          (positive[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock())
                 ];
                 break;
@@ -155,7 +155,7 @@ public:
             }
             case MIPS_INS_NEG: /* Fall-through */
             case MIPS_INS_NEGU: {
-                _[operand(0) ^= (constant(0) - operand(1))];
+                _[operand(0) ^=  -(operand(1))];
                 break;
             }
             case MIPS_INS_AND: {
@@ -175,7 +175,7 @@ public:
                 break;
             }
             case MIPS_INS_NOT: {
-                _[operand(0) ^= ~operand(1)];
+                _[operand(0) ^= ~(operand(1))];
                 break;
             }
             case MIPS_INS_ADDI: /* Fall-through */
