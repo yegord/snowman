@@ -408,42 +408,42 @@ CPU::lwl(uint32 regval, uint32 memval, uint8 offset)
             	if(isBE){
 					_[
 						jump(offset == constant(0),
-						_case0[rt ^= (unsigned_(memval)),
+						_case0[rt ^= (memval),
 							jump(directSuccessor())].basicBlock(),
 					_then1[
     					jump(offset == constant(1),
-    					_case1[rt ^= ((unsigned_(memval) & constant(0xffffff)) << unsigned_(constant(8)) | (rt & constant(0xff))),
+    					_case1[rt ^= ((memval & constant(0xffffff)) << constant(8) | (rt & constant(0xff))),
     						jump(directSuccessor())].basicBlock(),
     				_then2[
     					jump(offset == constant(2),
-    					_case2[rt ^= ((unsigned_(memval) & constant(0xffff)) << unsigned_(constant(16)) | (rt & constant(0xffffff00))),
+    					_case2[rt ^= ((memval & constant(0xffff)) << constant(16) | (rt & constant(0xffffff00))),
     						jump(directSuccessor())].basicBlock(),
     				_then3[
 	    				jump(offset == constant(3),
-	    				_case3[rt ^= ((unsigned_(memval) & constant(0xff)) << unsigned_(constant(24)) | (rt & constant(0xffffff))),
+	    				_case3[rt ^= ((memval & constant(0xff)) << constant(24) | (rt & constant(0xffffff))),
 	    					jump(directSuccessor())].basicBlock(),
 	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
     				];
              	} else /* if MIPS target is little endian */ {
 					_[
 						jump(offset == constant(0),
-						_case0[rt ^= ((unsigned_(memval) & constant(0xff)) << unsigned_(constant(24)) | (rt & constant(0xffffff))),
+						_case0[rt ^= (((memval & constant(0xff)) << constant(24)) | (rt & constant(0xffffff))),
 							jump(directSuccessor())].basicBlock(),
 	   				_then1[
     					jump(offset == constant(1),
-    					_case1[rt ^= ((unsigned_(memval) & constant(0xffff)) << unsigned_(constant(16)) | (rt & constant(0xffffff00))),
+    					_case1[rt ^= (((memval & constant(0xffff)) << constant(16)) | (rt & constant(0xffffff00))),
     						jump(directSuccessor())].basicBlock(),
     				_then2[
     					jump(offset == constant(2),
-    					_case2[rt ^= ((unsigned_(memval) & constant(0xffffff)) << unsigned_(constant(8)) | (rt & constant(0xff))),
+    					_case2[rt ^= (((memval & constant(0xffffff)) << constant(8)) | (rt & constant(0xff))),
     						jump(directSuccessor())].basicBlock(),
     				_then3[
 	    				jump(offset == constant(3),
-	    				_case3[rt ^= (unsigned_(memval)),
+	    				_case3[rt ^= (memval),
 	    					jump(directSuccessor())].basicBlock(),
 	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
     				];
-    				//_[rt ^= ((memval & (constant(0xffffff00) << signed_(offset))) | ((unsigned_(rt) >> (constant(8) * offset)) & unsigned_(constant(0xffffffff)) >> (constant(4) - offset)))];
+    				//_[rt ^= ((memval & (constant(0xffffff00) << signed_(offset))) | ((unsigned_(rt) >> (constant(8) * offset)) & constant(0xffffffff)) >> (constant(4) - offset)))];
             	}
                 break;
             }
@@ -499,15 +499,15 @@ CPU::lwr(uint32 regval, uint32 memval, uint8 offset)
             	if(isBE){
 					_[
 						jump(offset == constant(0),
-						_case0[rt ^= ((unsigned_(memval & constant(0xff000000)) >> unsigned_(constant(24))) | (rt & constant(0xffffff00))),
+						_case0[rt ^= ((unsigned_(memval & constant(0xff000000)) >> constant(24)) | (rt & constant(0xffffff00))),
 							jump(directSuccessor())].basicBlock(),
 					_then1[
     					jump(offset == constant(1),
-    					_case1[rt ^= ((unsigned_(memval & constant(0xffff0000)) >> unsigned_(constant(16))) | (rt  & constant(0xffff0000))),
+    					_case1[rt ^= ((unsigned_(memval & constant(0xffff0000)) >> constant(16)) | (rt  & constant(0xffff0000))),
     						jump(directSuccessor())].basicBlock(),
     				_then2[
     					jump(offset == constant(2),
-    					_case2[rt ^= ((unsigned_(memval & constant(0xffffff00)) >> unsigned_(constant(8))) | (rt & constant(0xff000000))),
+    					_case2[rt ^= ((unsigned_(memval & constant(0xffffff00)) >> constant(8)) | (rt & constant(0xff000000))),
     						jump(directSuccessor())].basicBlock(),
     				_then3[
 	    				jump(offset == constant(3),
@@ -522,15 +522,15 @@ CPU::lwr(uint32 regval, uint32 memval, uint8 offset)
 							jump(directSuccessor())].basicBlock(),
 					_then1[
     					jump(offset == constant(1),
-    					_case1[rt ^= ((unsigned_(memval & constant(0xffffff00)) >> unsigned_(constant(8))) | (rt & constant(0xff000000))),
+    					_case1[rt ^= ((unsigned_(memval & constant(0xffffff00)) >> constant(8)) | (rt & constant(0xff000000))),
     						jump(directSuccessor())].basicBlock(),
     				_then2[
     					jump(offset == constant(2),
-    					_case2[rt ^= ((unsigned_(memval & constant(0xffff0000)) >> unsigned_(constant(16))) | (rt  & constant(0xffff0000))),
+    					_case2[rt ^= ((unsigned_(memval & constant(0xffff0000)) >> constant(16)) | (rt  & constant(0xffff0000))),
     						jump(directSuccessor())].basicBlock(),
      				_then3[
 	    				jump(offset == constant(3),
-	    					_case3[rt ^= ((unsigned_(memval & constant(0xff000000)) >> unsigned_(constant(24))) | (rt & constant(0xffffff00))),
+	    					_case3[rt ^= ((unsigned_(memval & constant(0xff000000)) >> constant(24)) | (rt & constant(0xffffff00))),
 	    						jump(directSuccessor())].basicBlock(),
 	    							directSuccessor())].basicBlock())].basicBlock())].basicBlock())
     			];
@@ -594,30 +594,30 @@ CPU::swl(uint32 regval, uint32 memval, uint8 offset)
 							jump(directSuccessor())].basicBlock(),
 					_then1[
     					jump(offset == constant(1),
-    					_case1[rt ^= ((memval & constant(0xff000000)) | ((unsigned_(rt) >> unsigned_(constant(8))) & constant(0xffffff))),
+    					_case1[rt ^= ((memval & constant(0xff000000)) | ((unsigned_(rt) >> constant(8)) & constant(0xffffff))),
     						jump(directSuccessor())].basicBlock(),
     				_then2[
     					jump(offset == constant(2),
-    					_case2[rt ^= ((memval & constant(0xffff0000)) | ((unsigned_(rt) >> unsigned_(constant(16))) & constant(0xffff))),
+    					_case2[rt ^= ((memval & constant(0xffff0000)) | ((unsigned_(rt) >> constant(16)) & constant(0xffff))),
     						jump(directSuccessor())].basicBlock(),
     				_then3[
 	    				jump(offset == constant(3),
-	    				_case3[rt ^= ((memval & constant(0xffffff00)) | ((unsigned_(rt) >> unsigned_(constant(24))) & constant(0xff))),
+	    				_case3[rt ^= ((memval & constant(0xffffff00)) | ((unsigned_(rt) >> constant(24)) & constant(0xff))),
 	    					jump(directSuccessor())].basicBlock(),
 	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
     				];
              	} else /* if MIPS target is little endian */ {
 					_[
 						jump(offset == constant(0),
-						_case0[rt ^= ((memval & constant(0xffffff00)) | ((unsigned_(rt) >> unsigned_(constant(24))) & constant(0xff))),
+						_case0[rt ^= ((memval & constant(0xffffff00)) | ((unsigned_(rt) >> constant(24)) & constant(0xff))),
 							jump(directSuccessor())].basicBlock(),
 	 				_then1[
     					jump(offset == constant(1),
-    					_case1[rt ^= ((memval & constant(0xffff0000)) | ((unsigned_(rt) >> unsigned_(constant(16))) & constant(0xffff))),
+    					_case1[rt ^= ((memval & constant(0xffff0000)) | ((unsigned_(rt) >> constant(16)) & constant(0xffff))),
     						jump(directSuccessor())].basicBlock(),
      				_then2[
     					jump(offset == constant(2),
-    					_case2[rt ^= ((memval & constant(0xff000000)) | ((unsigned_(rt) >> unsigned_(constant(8))) & constant(0xffffff))),
+    					_case2[rt ^= ((memval & constant(0xff000000)) | ((unsigned_(rt) >> constant(8)) & constant(0xffffff))),
     						jump(directSuccessor())].basicBlock(),
     				_then3[
 	    				jump(offset == constant(3),
@@ -668,15 +668,15 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
             	if(isBE){
 					_[
 						jump(offset == constant(0),
-						_case0[rt ^= ((memval & constant(0xffffff)) | ((unsigned_(rt) << unsigned_(constant(24))) & constant(0xff000000))),
+						_case0[rt ^= ((memval & constant(0xffffff)) | ((rt << constant(24)) & constant(0xff000000))),
 							jump(directSuccessor())].basicBlock(),
 					_then1[
     					jump(offset == constant(1),
-    					_case1[rt ^= ((memval & constant(0xffff)) | ((unsigned_(rt) << unsigned_(constant(16))) & constant(0xffff0000))),
+    					_case1[rt ^= ((memval & constant(0xffff)) | ((rt << constant(16)) & constant(0xffff0000))),
     						jump(directSuccessor())].basicBlock(),
     				_then2[
     					jump(offset == constant(2),
-    					_case2[rt ^= ((memval & constant(0xff)) | ((unsigned_(rt) << unsigned_(constant(8))) & constant(0xffffff00))),
+    					_case2[rt ^= ((memval & constant(0xff)) | ((rt << constant(8)) & constant(0xffffff00))),
     						jump(directSuccessor())].basicBlock(),
     				_then3[
 	    				jump(offset == constant(3),
@@ -691,15 +691,15 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
 							jump(directSuccessor())].basicBlock(),
 					_then1[
     					jump(offset == constant(1),
-    					_case1[rt ^= ((memval & constant(0xff)) | ((unsigned_(rt) << unsigned_(constant(8))) & constant(0xffffff00))),
+    					_case1[rt ^= ((memval & constant(0xff)) | ((rt << constant(8)) & constant(0xffffff00))),
     						jump(directSuccessor())].basicBlock(),
  	   				_then2[
     					jump(offset == constant(2),
-    					_case2[rt ^= ((memval & constant(0xffff)) | ((unsigned_(rt) << unsigned_(constant(16))) & constant(0xffff0000))),
+    					_case2[rt ^= ((memval & constant(0xffff)) | ((rt << constant(16)) & constant(0xffff0000))),
     						jump(directSuccessor())].basicBlock(),
     				_then3[
 	    				jump(offset == constant(3),
-	    				_case3[rt ^= ((memval & constant(0xffffffff)) | ((unsigned_(rt) << unsigned_(constant(24))) & constant(0xff000000))),
+	    				_case3[rt ^= ((memval & constant(0xffffffff)) | ((rt << constant(24)) & constant(0xff000000))),
 	    					jump(directSuccessor())].basicBlock(),
 	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
     				];
@@ -708,7 +708,7 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
             }
             case MIPS_INS_WSBH: {
 				_[
-					operand(0) ^= zero_extend((unsigned_(operand(1, 16)) >> unsigned_(constant(8))) | (unsigned_(operand(1, 16)) << unsigned_(constant(8))))
+					operand(0) ^= zero_extend((unsigned_(operand(1, 16)) >> constant(8)) | (operand(1, 16) << constant(8)))
             	];
             	break;
             }
