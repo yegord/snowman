@@ -25,6 +25,8 @@ set(SOURCES
     image/ByteSource.h
     image/Image.cpp
     image/Image.h
+    image/Platform.h
+    image/Platform.cpp
     image/Reader.cpp
     image/Reader.h
     image/Relocation.h

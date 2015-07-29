@@ -55,7 +55,7 @@ namespace ir {
 namespace cgen {
 
 void CodeGenerator::makeCompilationUnit() {
-    tree().setPointerSize(image().architecture()->bitness());
+    tree().setPointerSize(image().platform().architecture()->bitness());
     tree().setRoot(std::make_unique<likec::CompilationUnit>(tree()));
 
     foreach (const Function *function, functions().list()) {
@@ -207,7 +207,8 @@ std::unique_ptr<likec::Expression> CodeGenerator::makeInitialValue(const MemoryL
         ByteAddr addr = memoryLocation.addr() / CHAR_BIT;
         ByteSize size = memoryLocation.size() / CHAR_BIT;
 
-        if (auto value = image::Reader(&image()).readInt<ConstantValue>(addr, size, image().architecture()->getByteOrder(MemoryDomain::MEMORY))) {
+        if (auto value = image::Reader(&image()).readInt<ConstantValue>(
+                addr, size, image().platform().architecture()->getByteOrder(MemoryDomain::MEMORY))) {
             if (auto integerType = type->as<likec::IntegerType>()) {
                 return std::make_unique<likec::IntegerConstant>(tree(), *value, integerType);
             } else {

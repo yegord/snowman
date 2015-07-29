@@ -56,7 +56,7 @@ void X86MasterAnalyzer::createProgram(core::Context &context) const {
     /*
      * Patch the IR to implement x86-64 implicit zero extend.
      */
-    if (context.image()->architecture()->bitness() == 64) {
+    if (context.image()->platform().architecture()->bitness() == 64) {
         auto minDomain = X86Registers::rax()->memoryLocation().domain();
         auto maxDomain = X86Registers::r15()->memoryLocation().domain();
 
@@ -90,7 +90,7 @@ void X86MasterAnalyzer::createProgram(core::Context &context) const {
 void X86MasterAnalyzer::detectCallingConventions(core::Context &context) const {
     context.logToken().info(tr("Detecting calling conventions."));
 
-    auto architecture = context.image()->architecture();
+    auto architecture = context.image()->platform().architecture();
 
     if (architecture->bitness() == 32) {
         using core::ir::calling::CalleeId;
@@ -117,7 +117,7 @@ void X86MasterAnalyzer::detectCallingConventions(core::Context &context) const {
 
         ud_t ud_obj_;
         ud_init(&ud_obj_);
-        ud_set_mode(&ud_obj_, context.image()->architecture()->bitness());
+        ud_set_mode(&ud_obj_, context.image()->platform().architecture()->bitness());
 
         foreach (auto function, context.functions()->list()) {
             if (!function->entry()->address()) {
@@ -158,7 +158,8 @@ void X86MasterAnalyzer::detectCallingConventions(core::Context &context) const {
 }
 
 void X86MasterAnalyzer::detectCallingConvention(core::Context &context, const core::ir::calling::CalleeId &calleeId) const {
-    auto architecture = context.image()->architecture();
+    const auto &platform = context.image()->platform();
+    auto architecture = platform.architecture();
 
     auto setConvention = [&](const char *name) {
         context.conventions()->setConvention(calleeId, architecture->getCallingConvention(QLatin1String(name)));
@@ -172,7 +173,11 @@ void X86MasterAnalyzer::detectCallingConvention(core::Context &context, const co
             setConvention("cdecl32");
             break;
         case 64:
-            setConvention("amd64");
+            if (platform.operatingSystem() == core::image::Platform::Windows) {
+                setConvention("microsoft64");
+            } else {
+                setConvention("amd64");
+            }
             break;
     }
 }

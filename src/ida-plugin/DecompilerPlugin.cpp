@@ -215,7 +215,10 @@ std::unique_ptr<gui::Project> DecompilerPlugin::createIdaProject() const {
     auto image = project->image().get();
 
     /* Set architecture. */
-    image->setArchitecture(IdaFrontend::architecture());
+    image->platform().setArchitecture(IdaFrontend::architecture());
+
+    /* Set the OS. */
+    image->platform().setOperatingSystem(IdaFrontend::operatingSystem());
 
     /* Set demangler. */
     image->setDemangler(std::make_unique<IdaDemangler>());

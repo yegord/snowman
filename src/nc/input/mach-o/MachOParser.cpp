@@ -103,13 +103,13 @@ public:
 
         switch (header.cputype) {
             case CPU_TYPE_I386:
-                image_->setArchitecture(QLatin1String("i386"));
+                image_->platform().setArchitecture(QLatin1String("i386"));
                 break;
             case CPU_TYPE_X86_64:
-                image_->setArchitecture(QLatin1String("x86-64"));
+                image_->platform().setArchitecture(QLatin1String("x86-64"));
                 break;
             case CPU_TYPE_ARM:
-                image_->setArchitecture(QLatin1String(byteOrder_ == ByteOrder::LittleEndian ? "arm-le" : "arm-be"));
+                image_->platform().setArchitecture(QLatin1String(byteOrder_ == ByteOrder::LittleEndian ? "arm-le" : "arm-be"));
                 break;
             default:
                 throw ParseError(tr("Unknown CPU type: %1.").arg(header.cputype));

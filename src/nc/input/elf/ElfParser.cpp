@@ -168,16 +168,16 @@ private:
 
         switch (ehdr_.e_machine) {
             case EM_386:
-                image_->setArchitecture(QLatin1String("i386"));
+                image_->platform().setArchitecture(QLatin1String("i386"));
                 break;
             case EM_X86_64:
-                image_->setArchitecture(QLatin1String("x86-64"));
+                image_->platform().setArchitecture(QLatin1String("x86-64"));
                 break;
             case EM_ARM:
                 if (byteOrder_ == ByteOrder::LittleEndian) {
-                    image_->setArchitecture(QLatin1String("arm-le"));
+                    image_->platform().setArchitecture(QLatin1String("arm-le"));
                 } else {
-                    image_->setArchitecture(QLatin1String("arm-be"));
+                    image_->platform().setArchitecture(QLatin1String("arm-be"));
                 }
                 break;
             case EM_MIPS: /* FALL Through */

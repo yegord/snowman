@@ -101,8 +101,8 @@ void MasterAnalyzer::detectCallingConventions(Context &) const {
 }
 
 void MasterAnalyzer::detectCallingConvention(Context &context, const ir::calling::CalleeId &calleeId) const {
-    if (!context.image()->architecture()->conventions().empty()) {
-        context.conventions()->setConvention(calleeId, context.image()->architecture()->conventions().front());
+    if (!context.image()->platform().architecture()->conventions().empty()) {
+        context.conventions()->setConvention(calleeId, context.image()->platform().architecture()->conventions().front());
     }
 }
 
@@ -124,8 +124,8 @@ void MasterAnalyzer::dataflowAnalysis(Context &context, ir::Function *function) 
 
     context.hooks()->instrument(function, dataflow.get());
 
-    ir::dflow::DataflowAnalyzer(*dataflow, context.image()->architecture(), context.cancellationToken(), context.logToken())
-        .analyze(ir::CFG(function->basicBlocks()));
+    ir::dflow::DataflowAnalyzer(*dataflow, context.image()->platform().architecture(), context.cancellationToken(),
+                                context.logToken()).analyze(ir::CFG(function->basicBlocks()));
 
     context.dataflows()->emplace(function, std::move(dataflow));
 }
@@ -143,7 +143,7 @@ void MasterAnalyzer::reconstructVariables(Context &context) const {
 
     std::unique_ptr<ir::vars::Variables> variables(new ir::vars::Variables());
 
-    ir::vars::VariableAnalyzer(*variables, *context.dataflows(), context.image()->architecture())
+    ir::vars::VariableAnalyzer(*variables, *context.dataflows(), context.image()->platform().architecture())
         .analyze();
 
     context.setVariables(std::move(variables));
@@ -165,7 +165,7 @@ void MasterAnalyzer::livenessAnalysis(Context &context, const ir::Function *func
     std::unique_ptr<ir::liveness::Liveness> liveness(new ir::liveness::Liveness());
 
     ir::liveness::LivenessAnalyzer(*liveness, function,
-        *context.dataflows()->at(function), context.image()->architecture(),
+        *context.dataflows()->at(function), context.image()->platform().architecture(),
         *context.graphs()->at(function), *context.hooks(), *context.signatures(),
         context.logToken())
     .analyze();
