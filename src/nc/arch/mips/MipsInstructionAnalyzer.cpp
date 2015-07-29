@@ -707,6 +707,16 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
                 break;
             }
             /* Kudos to hlide  */
+            /*case MIPS_INS_WSBW: {
+            	auto operand0 = operand(0);
+            	auto operand1 = operand(1);
+				_[
+					operand1 ^= ((unsigned_(operand1 & constant(0x00ff00ff)) << constant(8)) | (unsigned_(operand1 & constant(0xff00ff00)) >> constant(8))),
+					operand0 ^= ((unsigned_(operand1) >> constant(16)) | (operand1 << (constant(32) - constant(16)))),
+            	];
+            	break;
+            }*/
+            /* Kudos to hlide  */
             case MIPS_INS_WSBH: {
 				_[
 					operand(0) ^= ((unsigned_(operand(1) & constant(0x00ff00ff)) << constant(8)) | (unsigned_(operand(1) & constant(0xff00ff00)) >> constant(8)))
