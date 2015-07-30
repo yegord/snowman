@@ -409,7 +409,7 @@ void PeParser::doParse(QIODevice *source, core::image::Image *image, const LogTo
         case IMAGE_FILE_MACHINE_R4000:
         case IMAGE_FILE_MACHINE_R10000:
         case IMAGE_FILE_MACHINE_WCEMIPSV2:
-            image->platform().setArchitecturee(QLatin1String("mips-le"));
+            image->platform().setArchitecture(QLatin1String("mips-le"));
             break;
         default:
             throw ParseError(tr("Unknown machine id: 0x%1.").arg(fileHeader.Machine, 0, 16));
