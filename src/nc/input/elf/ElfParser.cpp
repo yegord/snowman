@@ -183,9 +183,9 @@ private:
             case EM_MIPS: /* FALL Through */
             case EM_MIPS_RS3_LE:
                 if (byteOrder_ == ByteOrder::LittleEndian) {
-                    image_->setArchitecture(QLatin1String("mips-le"));
+                    image_->platform().etArchitecture(QLatin1String("mips-le"));
                 } else {
-                    image_->setArchitecture(QLatin1String("mips-be"));
+                    image_->platform().setArchitecture(QLatin1String("mips-be"));
                 }
                 break;
             default:
