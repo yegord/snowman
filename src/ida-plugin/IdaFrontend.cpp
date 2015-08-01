@@ -162,7 +162,7 @@ QString IdaFrontend::architecture() {
 }
 
 core::image::Platform::OperatingSystem IdaFrontend::operatingSystem() {
-    if (inf.filetype == f_WIN || inf.filetype == f_COFF || inf.filetype == f_PE) {
+    if (inf.filetype == f_WIN || inf.filetype == f_PE) {
         return core::image::Platform::Windows;
     }
     return core::image::Platform::UnknownOS;
