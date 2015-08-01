@@ -143,9 +143,9 @@ QString IdaFrontend::architecture() {
     } else if (inf.procName == QLatin1String("ARMB")) {
         return QLatin1String("arm-be");
     }
-    else if (inf.procName == QLatin1String("MIPSL")) {
+    else if (inf.procName == QLatin1String("mipsl")) {
         return QLatin1String("mips-le");
-    } else if (inf.procName == QLatin1String("MIPSB")) {
+    } else if (inf.procName == QLatin1String("mipsb")) {
         return QLatin1String("mips-be");
     } else {
         /* Assume x86 by default. */
