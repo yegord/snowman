@@ -134,7 +134,7 @@ void MasterAnalyzer::reconstructSignatures(Context &context) const {
     context.logToken().info(tr("Reconstructing function signatures."));
 
     ir::calling::SignatureAnalyzer(*context.signatures(), *context.dataflows(), *context.hooks(),
-        context.cancellationToken(), context.logToken())
+        *context.livenesses(), context.cancellationToken(), context.logToken())
         .analyze();
 }
 
@@ -166,8 +166,8 @@ void MasterAnalyzer::livenessAnalysis(Context &context, const ir::Function *func
 
     ir::liveness::LivenessAnalyzer(*liveness, function,
         *context.dataflows()->at(function), context.image()->platform().architecture(),
-        *context.graphs()->at(function), *context.hooks(), *context.signatures(),
-        context.logToken())
+        context.graphs() ? context.graphs()->at(function).get() : nullptr, *context.hooks(),
+        context.signatures(), context.logToken())
     .analyze();
 
     context.livenesses()->emplace(function, std::move(liveness));
@@ -238,6 +238,9 @@ void MasterAnalyzer::decompile(Context &context) const {
     context.cancellationToken().poll();
 
     dataflowAnalysis(context);
+    context.cancellationToken().poll();
+
+    livenessAnalysis(context);
     context.cancellationToken().poll();
 
     reconstructSignatures(context);

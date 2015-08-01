@@ -33,6 +33,10 @@ namespace dflow {
     class Uses;
 }
 
+namespace liveness {
+    class Livenesses;
+}
+
 namespace calling {
 
 class FunctionSignature;
@@ -49,6 +53,7 @@ class SignatureAnalyzer {
     Signatures &signatures_;
     const dflow::Dataflows &dataflows_;
     const Hooks &hooks_;
+    const liveness::Livenesses &livenesses_;
     const CancellationToken &canceled_;
     const LogToken &log_;
 
@@ -90,11 +95,12 @@ public:
      * \param signatures An object where to store reconstructed signatures.
      * \param dataflows Dataflows.
      * \param hooks Hooks manager.
+     * \param livenesses Livenesses.
      * \param canceled Cancellation token.
      * \param log Log token.
      */
     SignatureAnalyzer(Signatures &signatures, const dflow::Dataflows &dataflows, const Hooks &hooks,
-                      const CancellationToken &canceled, const LogToken &log);
+                      const liveness::Livenesses &livenesses, const CancellationToken &canceled, const LogToken &log);
 
     /**
      * Destructor.
