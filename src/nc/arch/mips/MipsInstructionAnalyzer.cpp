@@ -727,11 +727,20 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
             /* Kudos to hlide  */
             case MIPS_INS_BITREV: {
             	auto operand0 = operand(0);
+				/*
 				_[
 					operand0 ^= ((unsigned_(operand(1) & constant(0x00ff00ff)) << constant(8)) | (unsigned_(operand(1) & constant(0xff00ff00)) >> constant(8))),
 					operand0 ^= ((unsigned_(operand0) >> constant(16)) | (operand0 << (constant(32) - constant(16)))),
 					operand0 ^= (((operand0 & constant(0x01010101)) << constant(7)) | ((operand0 & constant(0x02020202)) << constant(6)) | ((operand0 & constant(0x04040404)) << constant(5)) | ((operand0 & constant(0x08080808)) << constant(4)) | (unsigned_(operand0 & constant(0x10101010)) >> constant(4)) | (unsigned_(operand0 & constant(0x20202020)) >> constant(5)) | (unsigned_(operand0 & constant(0x40404040)) >> constant(6)) | (unsigned_(operand0 & constant(0x80808080)) >> constant(7)))
             	];
+            	*/
+				_[
+					operand0 ^= (((unsigned_(operand(1)) >> constant(1)) & constant(0x55555555)) | ((operand(1) & constant(0x55555555)) << constant(1))),
+					operand0 ^= (((unsigned_(operand0) >> constant(2)) & constant(0x33333333)) | ((operand0 & constant(0x33333333)) << constant(2))),
+					operand0 ^= (((unsigned_(operand0) >> constant(4)) & constant(0x0F0F0F0F)) | ((operand0 & constant(0x0F0F0F0F)) << constant(4))),
+					operand0 ^= (((unsigned_(operand0) >> constant(8)) & constant(0x00FF00FF)) | ((operand0 & constant(0x00FF00FF)) << constant(8))),
+					operand0 ^= (operand0 & constant(0x0000FFFF))
+            	];            	            	
             	break;
             }
             case MIPS_INS_DIV: {
