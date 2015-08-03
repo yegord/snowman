@@ -1048,13 +1048,11 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
                 ];
                 break;
             }
-            case MIPS_INS_JR: {
-                delayslot(_)[jump(operand(0))];
-                break;
-            }
             case MIPS_INS_JALR: {
+           		_[regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress)];
                 _[operand(0) ^= constant(nextDirectSuccessorAddress)];
                 delayslot(_)[call(operand(op_count - 1))];
+               	_[jump(constant(nextDirectSuccessorAddress))];
                 break;
             }
             case MIPS_INS_BAL: /* Fall-through */
@@ -1062,13 +1060,17 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
             	if (op_count == 1){
                 	_[regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress)];
                 	delayslot(_)[call(operand(0))];
+                	_[jump(constant(nextDirectSuccessorAddress))];
             	} else {
+            	    _[regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress)];
                 	_[operand(0) ^= constant(nextDirectSuccessorAddress)];
                   	delayslot(_)[call(operand(op_count - 1))];
+                  	_[jump(constant(nextDirectSuccessorAddress))];
             	}
                 break;
             }
             case MIPS_INS_J: /* Fall-through */
+            case MIPS_INS_JR:
             case MIPS_INS_B: {
                 delayslot(_)[jump(operand(0))];
                 break;
