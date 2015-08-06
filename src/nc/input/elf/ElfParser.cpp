@@ -183,7 +183,12 @@ private:
             case EM_MIPS: /* FALL Through */
             case EM_MIPS_RS3_LE:
                 if (byteOrder_ == ByteOrder::LittleEndian) {
-                    image_->platform().setArchitecture(QLatin1String("mips-le"));
+                    if ((ehdr_.e_flags & 0x00FF0000) == 0x00A20000) { // E_MIPS_ALLEGREX
+                        image_->setArchitecture(QLatin1String("allegrex"));
+                    }
+                    else {
+                        image_->setArchitecture(QLatin1String("mips-le"));
+                    }
                 } else {
                     image_->platform().setArchitecture(QLatin1String("mips-be"));
                 }
