@@ -633,10 +633,11 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
         case Statement::ASSIGNMENT: {
             const Assignment *assignment = statement->asAssignment();
 
+#if 1
             if (!liveness_.isLive(assignment->left())) {
                 return nullptr;
             }
-
+#endif
             if (nc::contains(intermediateTerms_, assignment->left())) {
                 return nullptr;
             }
@@ -708,6 +709,7 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
                                     std::make_unique<likec::Typecast>(tree(),
                                         parent().makeType(parent().types().getType(returnValueTerm)),
                                         std::move(callOperator))));
+                        }
                         }
                     }
                 }
