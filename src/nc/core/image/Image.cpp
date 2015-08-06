@@ -28,7 +28,6 @@
 #include <nc/common/Range.h>
 #include <nc/common/make_unique.h>
 
-#include <nc/core/arch/ArchitectureRepository.h>
 #include <nc/core/image/Image.h>
 #include <nc/core/mangling/DefaultDemangler.h>
 
@@ -38,22 +37,10 @@
 namespace nc { namespace core { namespace image {
 
 Image::Image():
-    architecture_(nullptr),
     demangler_(new mangling::DefaultDemangler())
 {}
 
 Image::~Image() {}
-
-void Image::setArchitecture(const arch::Architecture *architecture) {
-    assert(architecture != nullptr);
-    assert(architecture_ == nullptr && "Can't set the architecture twice.");
-
-    architecture_ = architecture;
-}
-
-void Image::setArchitecture(const QString &name) {
-    setArchitecture(arch::ArchitectureRepository::instance()->getArchitecture(name));
-}
 
 void Image::addSection(std::unique_ptr<Section> section) {
     assert(section != nullptr);
@@ -119,10 +106,6 @@ void Image::setDemangler(std::unique_ptr<mangling::Demangler> demangler) {
     assert(demangler != nullptr);
 
     demangler_ = std::move(demangler);
-}
-
-void Image::setDemangler(const QString &) {
-    /* Currently only the bundled demangler is supported. */
 }
 
 }}} // namespace nc::core::image

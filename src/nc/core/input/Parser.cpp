@@ -28,6 +28,7 @@
 
 #include <QIODevice>
 
+#include <nc/core/image/Image.h>
 #include <nc/core/input/ParseError.h>
 
 namespace nc { namespace core { namespace input {
@@ -52,6 +53,8 @@ void Parser::parse(QIODevice *source, image::Image *image, const LogToken &log) 
         }
         throw;
     }
+
+    assert(image->platform().architecture() && "The parser must set the architecture.");
 }
 
 }}} // namespace nc::core::input

@@ -1026,8 +1026,12 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeConstant(const Term 
     const types::Type *type = parent().types().getType(term);
 
 #ifdef NC_PREFER_FUNCTIONS_TO_CONSTANTS
-    if (auto functionDeclaration = parent().makeFunctionDeclaration(value.value())) {
-        return std::make_unique<likec::FunctionIdentifier>(tree(), functionDeclaration);
+    if (auto section = parent().image().getSectionContainingAddress(value.value())) {
+        if (section->isCode()) {
+            if (auto functionDeclaration = parent().makeFunctionDeclaration(value.value())) {
+                return std::make_unique<likec::FunctionIdentifier>(tree(), functionDeclaration);
+            }
+        }
     }
 #endif
 
@@ -1035,7 +1039,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeConstant(const Term 
     if (!type->pointee() || type->pointee()->size() <= 1) {
         auto isAscii = [](const QString &string) -> bool {
             foreach (QChar c, string) {
-                if (c >= 0x80) {
+                if (c >= 0x80 || (c <= 0x20 && c != '\r' && c != '\n' && c != '\t')) {
                     return false;
                 }
             }
@@ -1044,7 +1048,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeConstant(const Term 
 
         QString string = image::Reader(&parent().image()).readAsciizString(value.value(), 1024);
 
-        if (!string.isNull() && isAscii(string)) {
+        if (!string.isEmpty() && isAscii(string)) {
             return std::make_unique<likec::String>(tree(), string);
         }
     }

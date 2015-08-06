@@ -22,10 +22,18 @@ PKG_NAME = 'capstone'
 if os.path.exists(PATH_LIB64) and os.path.exists(PATH_LIB32):
     PKG_NAME = 'capstone-windows'
 
-VERSION = '3.0.3'
+VERSION = '3.0.4'
 SYSTEM = sys.platform
 
+# virtualenv breaks import, but get_python_lib() will work.
 SITE_PACKAGES = os.path.join(get_python_lib(), "capstone")
+if "--user" in sys.argv:
+    try:
+        from site import getusersitepackages
+        SITE_PACKAGES = os.path.join(getusersitepackages(), "capstone")
+    except ImportError:
+        pass
+
 
 SETUP_DATA_FILES = []
 
@@ -47,7 +55,6 @@ def copy_sources():
 
     dir_util.copy_tree("../../arch", "src/arch/")
     dir_util.copy_tree("../../include", "src/include/")
-    dir_util.copy_tree("../../msvc/headers", "src/msvc/headers")
 
     src.extend(glob.glob("../../*.[ch]"))
     src.extend(glob.glob("../../*.mk"))

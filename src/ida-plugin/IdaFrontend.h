@@ -32,6 +32,7 @@
 
 #include <nc/common/RangeClass.h>
 #include <nc/common/Types.h>
+#include <nc/core/image/Platform.h>
 
 QT_BEGIN_NAMESPACE
 class QApplication;
@@ -96,9 +97,14 @@ public:
     static QString demangle(const QString &mangled);
 
     /**
-     * \returns Name of the archtecture of the current binary.
+     * \returns The name of the archtecture of the current binary.
      */
     static QString architecture();
+
+    /**
+     * \returns The operating system of the current binary.
+     */
+    static core::image::Platform::OperatingSystem operatingSystem();
 
     /**
      * Converts the current image file to nc's internal representation.

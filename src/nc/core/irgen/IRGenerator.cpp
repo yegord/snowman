@@ -67,7 +67,7 @@ IRGenerator::IRGenerator(const image::Image *image, const arch::Instructions *in
 IRGenerator::~IRGenerator() {}
 
 void IRGenerator::generate() {
-    auto instructionAnalyzer = image_->architecture()->createInstructionAnalyzer();
+    auto instructionAnalyzer = image_->platform().architecture()->createInstructionAnalyzer();
     instructionAnalyzer->setInstructions(instructions_);
 
     /* Generate statements. */
@@ -99,7 +99,7 @@ void IRGenerator::computeJumpTargets(ir::BasicBlock *basicBlock) {
 
     /* Prepare context for quick and dirty dataflow analysis. */
     ir::dflow::Dataflow dataflow;
-    ir::dflow::DataflowAnalyzer analyzer(dataflow, image_->architecture(), canceled_, log_);
+    ir::dflow::DataflowAnalyzer analyzer(dataflow, image_->platform().architecture(), canceled_, log_);
     ir::dflow::ReachingDefinitions definitions;
 
     foreach (auto statement, basicBlock->statements()) {
@@ -190,7 +190,7 @@ std::vector<ByteAddr> IRGenerator::getJumpTableEntries(const ir::Term *target, c
 
     image::Reader reader(image_);
 
-    auto byteOrder = image_->architecture()->getByteOrder(ir::MemoryDomain::MEMORY);
+    auto byteOrder = image_->platform().architecture()->getByteOrder(ir::MemoryDomain::MEMORY);
 
     ByteAddr address = arrayAccess.base();
     while (auto entry = reader.readInt<ByteAddr>(address, entrySize, byteOrder)) {
@@ -220,7 +220,7 @@ bool IRGenerator::isInstructionAddress(ByteAddr address) {
     }
 
     if (!disassembler_) {
-        disassembler_ = image_->architecture()->createDisassembler();
+        disassembler_ = image_->platform().architecture()->createDisassembler();
     }
 
     return disassembler_->disassembleSingleInstruction(address, section) != nullptr;
@@ -244,8 +244,8 @@ std::unique_ptr<arch::Instructions> IRGenerator::explore(const image::Image *ima
     auto instructions = std::make_unique<arch::Instructions>();
     ir::Program program;
 
-    auto disassembler = image->architecture()->createDisassembler();
-    auto instructionAnalyzer = image->architecture()->createInstructionAnalyzer();
+    auto disassembler = image->platform().architecture()->createDisassembler();
+    auto instructionAnalyzer = image->platform().architecture()->createInstructionAnalyzer();
 
     auto exploreAddress = [&](ByteAddr address){
         if (instructions->get(address)) {

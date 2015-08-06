@@ -81,7 +81,7 @@ void Driver::disassemble(Context &context, const image::ByteSource *source, Byte
     try {
         auto newInstructions = std::make_shared<arch::Instructions>(*context.instructions());
 
-        context.image()->architecture()->createDisassembler()->disassemble(
+        context.image()->platform().architecture()->createDisassembler()->disassemble(
             source,
             begin,
             end,
@@ -98,7 +98,7 @@ void Driver::disassemble(Context &context, const image::ByteSource *source, Byte
 
 void Driver::decompile(Context &context) {
     try {
-        context.image()->architecture()->masterAnalyzer()->decompile(context);
+        context.image()->platform().architecture()->masterAnalyzer()->decompile(context);
     } catch (const CancellationException &) {
         context.logToken().info(tr("Decompilation canceled."));
         throw;

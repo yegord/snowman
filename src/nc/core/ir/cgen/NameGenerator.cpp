@@ -69,7 +69,7 @@ NameAndComment NameGenerator::getFunctionName(const image::Symbol *symbol) const
 }
 
 NameAndComment NameGenerator::getGlobalVariableName(const MemoryLocation &memoryLocation) const {
-    if (auto reg = image_.architecture()->registers()->getRegister(memoryLocation)) {
+    if (auto reg = image_.platform().architecture()->registers()->getRegister(memoryLocation)) {
         return reg->lowercaseName();
     }
 
@@ -108,7 +108,7 @@ NameAndComment NameGenerator::getGlobalVariableName(const image::Symbol *symbol)
 NameAndComment NameGenerator::getLocalVariableName(const MemoryLocation &memoryLocation, std::size_t serial) const {
     QString name;
 
-    if (auto reg = image_.architecture()->registers()->getRegister(memoryLocation)) {
+    if (auto reg = image_.platform().architecture()->registers()->getRegister(memoryLocation)) {
         name = reg->lowercaseName();
         assert(!name.isEmpty());
 
@@ -124,7 +124,7 @@ NameAndComment NameGenerator::getLocalVariableName(const MemoryLocation &memoryL
 
 NameAndComment NameGenerator::getArgumentName(const Term *term, std::size_t serial) const {
     if (auto access = term->asMemoryLocationAccess()) {
-        if (auto reg = image_.architecture()->registers()->getRegister(access->memoryLocation())) {
+        if (auto reg = image_.platform().architecture()->registers()->getRegister(access->memoryLocation())) {
             return reg->lowercaseName();
         }
     }
