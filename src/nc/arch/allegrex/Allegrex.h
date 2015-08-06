@@ -554,7 +554,7 @@ enum allegrex_reg
 
 struct allegrex_instruction
 {
-    enum allegrex_insn_id insn;
+    enum allegrex_insn_id id;
     const char *name;
     unsigned int opcode;
     unsigned int mask;

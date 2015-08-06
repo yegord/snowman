@@ -403,13 +403,13 @@ void PeParser::doParse(QIODevice *source, core::image::Image *image, const LogTo
             break;
         case IMAGE_FILE_MACHINE_R3000_BE: /* FALLTHROUGH */
         case IMAGE_FILE_MACHINE_MIPSFPU:
-            image->setArchitecture(QLatin1String("mips-be"));
+            image->platform().setArchitecture(QLatin1String("mips-be"));
             break;
         case IMAGE_FILE_MACHINE_R3000: /* FALLTHROUGH */
         case IMAGE_FILE_MACHINE_R4000:
         case IMAGE_FILE_MACHINE_R10000:
         case IMAGE_FILE_MACHINE_WCEMIPSV2:
-            image->setArchitecture(QLatin1String("mips-le"));
+            image->platform().setArchitecture(QLatin1String("mips-le"));
             break;
         default:
             throw ParseError(tr("Unknown machine id: 0x%1.").arg(fileHeader.Machine, 0, 16));
