@@ -261,14 +261,16 @@ private:
  */
 class IntrinsicExpression: public ExpressionBase<IntrinsicExpression> {
     typedef ExpressionBase<IntrinsicExpression> base_type;
+
+public:
+    IntrinsicExpression(int kind): kind_(kind) {}
+
+    int kind() const { return kind_; }
+
+private:
+    int kind_;
 };
 
-/**
- * Class for undefined expressions.
- */
-class UndefinedExpression: public ExpressionBase<UndefinedExpression> {
-    typedef ExpressionBase<UndefinedExpression> base_type;
-};
 
 /**
  * Class for constant expressions.
@@ -465,14 +467,20 @@ struct binary_expression_operator_kind: public binary_operator_kind<unsignedOper
 // -------------------------------------------------------------------------- //
 inline
 IntrinsicExpression
-intrinsic() {
-    return IntrinsicExpression();
+intrinsic(int kind = ir::Intrinsic::UNKNOWN) {
+    return IntrinsicExpression(kind);
 }
 
 inline
-UndefinedExpression
+IntrinsicExpression
 undefined() {
-    return UndefinedExpression();
+    return intrinsic(ir::Intrinsic::UNDEFINED);
+}
+
+inline
+IntrinsicExpression
+return_address() {
+    return intrinsic(ir::Intrinsic::RETURN_ADDRESS);
 }
 
 inline
@@ -907,21 +915,7 @@ protected:
             throw InvalidInstructionException(tr("Size of the intrinsic expression is unknown"));
         }
 
-        return std::make_unique<ir::Intrinsic>(ir::Intrinsic::UNKNOWN, expression.size());
-    }
-
-    /**
-     * \param expression               Undefined expression to create term from.
-     * \returns                        Newly created term for the given expression.
-     */
-    std::unique_ptr<ir::Term> doCreateTerm(UndefinedExpression &expression) const {
-        NC_UNUSED(expression);
-
-        if (!expression.size()) {
-            throw InvalidInstructionException(tr("Size of the undefined expression is unknown"));
-        }
-
-        return std::make_unique<ir::Intrinsic>(ir::Intrinsic::UNDEFINED, expression.size());
+        return std::make_unique<ir::Intrinsic>(expression.kind(), expression.size());
     }
 
     /**

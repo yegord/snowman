@@ -1024,8 +1024,12 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeConstant(const Term 
     const types::Type *type = parent().types().getType(term);
 
 #ifdef NC_PREFER_FUNCTIONS_TO_CONSTANTS
-    if (auto functionDeclaration = parent().makeFunctionDeclaration(value.value())) {
-        return std::make_unique<likec::FunctionIdentifier>(tree(), functionDeclaration);
+    if (auto section = parent().image().getSectionContainingAddress(value.value())) {
+        if (section->isCode()) {
+            if (auto functionDeclaration = parent().makeFunctionDeclaration(value.value())) {
+                return std::make_unique<likec::FunctionIdentifier>(tree(), functionDeclaration);
+            }
+        }
     }
 #endif
 

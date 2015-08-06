@@ -239,7 +239,7 @@ private:
          */
         std::vector<IMAGE_SYMBOL> symbols(fileHeader_.NumberOfSymbols);
 
-        if (!read(source_, symbols[0], fileHeader_.NumberOfSymbols)) {
+        if (!read(source_, *symbols.data(), fileHeader_.NumberOfSymbols)) {
             log_.warning(tr("Cannot read the symbol table."));
             return;
         }
