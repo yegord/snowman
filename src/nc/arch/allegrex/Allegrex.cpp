@@ -156,15 +156,16 @@ static const struct allegrex_instruction instructions[] =
     { I_ADDU,      "addu",      0x00000021, 0xFC0007FF, "%d, %s, %t",                 0 },
     { I_AND,       "and",       0x00000024, 0xFC0007FF, "%d, %s, %t",                 0 },
     { I_ANDI,      "andi",      0x30000000, 0xFC000000, "%t, %s, %I",                 0 },
-    { I_BEQ,       "b",         0x10000000, 0xFFFF0000, "%O",                         _AL|CBD },
-    { I_BEQ,       "beqz",      0x10000000, 0xFC1F0000, "%s, %O",                     _AL|CBD },
+    { I_BEQ,       "b",         0x10000000, 0xFFFF0000, "%O",                         CBD|_AL },
+    { I_BEQ,       "beqz",      0x10000000, 0xFC1F0000, "%s, %O",                     CBD|_AL },
     { I_BEQ,       "beq",       0x10000000, 0xFC000000, "%s, %t, %O",                 CBD },
-    { I_BEQL,      "beqzl",     0x50000000, 0xFC1F0000, "%s, %O",                     _AL|CBL },
+    { I_BEQL,      "beqzl",     0x50000000, 0xFC1F0000, "%s, %O",                     CBL|_AL },
     { I_BEQL,      "beql",      0x50000000, 0xFC000000, "%s, %t, %O",                 CBL },
-    { I_BGEZ,      "b",         0x04010000, 0xFFFF0000, "%O",                         _AL|CBD },
+    { I_BGEZ,      "b",         0x04010000, 0xFFFF0000, "%O",                         CBD|_AL },
     { I_BGEZ,      "bgez",      0x04010000, 0xFC1F0000, "%s, %O",                     CBD },
-    { I_BGEZAL,    "bal",       0x04110000, 0xFFFF0000, "%O",                         _AL|CBD },
+    { I_BGEZAL,    "bal",       0x04110000, 0xFFFF0000, "%O",                         CBD|_AL },
     { I_BGEZAL,    "bgezal",    0x04110000, 0xFC1F0000, "%s, %O",                     CBD },
+    { I_BGEZALL,   "bgezall",   0x04130000, 0xFC1F0000, "%s, %O",                     CBL },
     { I_BGEZL,     "bgezl",     0x04030000, 0xFC1F0000, "%s, %O",                     CBL },
     { I_BGTZ,      "bgtz",      0x1C000000, 0xFC1F0000, "%s, %O",                     CBD },
     { I_BGTZL,     "bgtzl",     0x5C000000, 0xFC1F0000, "%s, %O",                     CBL },
@@ -1658,9 +1659,9 @@ const allegrex_instruction *allegrex_decode_instruction(unsigned int opcode, int
     }
 }
 
-const allegrex_operand *allegrex_decode_operands(const allegrex_instruction *insn, unsigned int opcode, struct allegrex_operand operand[8])
+void allegrex_decode_operands(const allegrex_instruction *insn, unsigned int opcode, unsigned int pc, struct allegrex_operand operand[8])
 {
-    return 0;
+    decode_operands(insn, opcode, pc, operand);
 }
 
 char *allegrex_disassemble_instruction(const allegrex_instruction *insn, unsigned int opcode, unsigned int pc, int prtall)

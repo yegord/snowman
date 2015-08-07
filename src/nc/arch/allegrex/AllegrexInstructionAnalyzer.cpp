@@ -38,6 +38,7 @@ namespace nc {
 
                 typedef core::irgen::expressions::ExpressionFactoryCallback<AllegrexExpressionFactory> AllegrexExpressionFactoryCallback;
 
+                NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, zero);
                 NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, sp);
                 NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, gp);
                 NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, ra);
@@ -158,130 +159,598 @@ namespace nc {
                     }
                 }
 
-                std::unique_ptr<core::ir::Term> gpr(int index) const {
-                    auto &reg = gpr_(index)->memoryLocation();
-                    return std::make_unique<core::ir::MemoryLocationAccess>(reg.resized(32));
-                }
-
-                std::unique_ptr<core::ir::Term> fpr(int index) const {
-                    auto &reg = fpr_(index)->memoryLocation();
-                    return std::make_unique<core::ir::MemoryLocationAccess>(reg.resized(32));
-                }
-
-                std::unique_ptr<core::ir::Term> vpr(int index) const {
-                    throw core::irgen::InvalidInstructionException(tr("Invalid VPR number: %1").arg(index));
-                }
-
-
                 void createStatements(AllegrexExpressionFactoryCallback & _, const AllegrexInstruction *instruction, core::ir::Program *program) {
                     using namespace core::irgen::expressions;
 
-                    auto insn = disassemble(instruction);
+                    allegrex_operand operand[8];
+
+                    auto insn = disassemble(instruction, operand);
                     if (insn == nullptr)
                         return;
+
+                    _[regizter(AllegrexRegisters::zero()) ^= constant(0)];
+
+                    auto gpr = [&](int index) -> core::irgen::expressions::TermExpression {
+                        if (index != R_ZERO) {
+                            auto &reg = gpr_(operand[index].reg)->memoryLocation();
+                            return core::irgen::expressions::TermExpression(std::make_unique<core::ir::MemoryLocationAccess>(reg.resized(32)));
+                        }
+                        return core::irgen::expressions::TermExpression(std::make_unique<core::ir::Constant>(SizedValue(32, 0)));
+                    };
+
+                    auto gpr16 = [&](int index) -> core::irgen::expressions::TermExpression {
+                        if (index != R_ZERO) {
+                            auto &reg = gpr_(operand[index].reg)->memoryLocation();
+                            return core::irgen::expressions::TermExpression(std::make_unique<core::ir::MemoryLocationAccess>(reg.resized(16)));
+                        }
+                        return core::irgen::expressions::TermExpression(std::make_unique<core::ir::Constant>(SizedValue(16, 0)));
+                    };
+
+                    auto gpr8 = [&](int index) -> core::irgen::expressions::TermExpression {
+                        if (index != R_ZERO) {
+                            auto &reg = gpr_(operand[index].reg)->memoryLocation();
+                            return core::irgen::expressions::TermExpression(std::make_unique<core::ir::MemoryLocationAccess>(reg.resized(8)));
+                        }
+                        return core::irgen::expressions::TermExpression(std::make_unique<core::ir::Constant>(SizedValue(8, 0)));
+                    };
+
+                    auto gpr5 = [&](int index) -> core::irgen::expressions::TermExpression {
+                        if (index != R_ZERO) {
+                            auto &reg = gpr_(operand[index].reg)->memoryLocation();
+                            return core::irgen::expressions::TermExpression(std::make_unique<core::ir::MemoryLocationAccess>(reg.resized(5)));
+                        }
+                        return core::irgen::expressions::TermExpression(std::make_unique<core::ir::Constant>(SizedValue(5, 0)));
+                    };
+
+                    auto fpr = [&](int index) -> core::irgen::expressions::TermExpression {
+                        auto &reg = fpr_(operand[index].reg)->memoryLocation();
+                        return core::irgen::expressions::TermExpression(std::make_unique<core::ir::MemoryLocationAccess>(reg.resized(32)));
+                    };
+
+                    auto vpr = [&](int index) -> core::irgen::expressions::TermExpression {
+                        throw core::irgen::InvalidInstructionException(tr("Invalid VPR number: %1").arg(index));
+                    };
+
+                    auto imm = [&](int index) -> core::irgen::expressions::TermExpression {
+                        return core::irgen::expressions::TermExpression(std::make_unique<core::ir::Constant>(SizedValue(32, operand[index].imm)));
+                    };
+
+                    auto mem = [&](int index, int sizeHint) -> core::irgen::expressions::TermExpression {
+                        return core::irgen::expressions::TermExpression(
+                            std::make_unique<core::ir::Dereference>(
+                                std::make_unique<core::ir::BinaryOperator>(
+                                    core::ir::BinaryOperator::ADD,
+                                    AllegrexInstructionAnalyzer::createTerm(gpr_(operand[index].mem.base)),
+                                    std::make_unique<core::ir::Constant>(SizedValue(32, operand[index].mem.disp)),
+                                    32
+                                ),
+                                core::ir::MemoryDomain::MEMORY,
+                                sizeHint
+                            )
+                        );
+                    };
+
+
+                    auto delayslot = [&](AllegrexExpressionFactoryCallback & callback) -> AllegrexExpressionFactoryCallback & {
+                        auto delayslot = checked_cast<const AllegrexInstruction *>(instructions_->get(instruction->endAddr()).get());
+                        if (delayslot) {
+                            createStatements(callback, delayslot, program);
+                        }
+                        else {
+                            throw core::irgen::InvalidInstructionException(tr("Cannot find a delay slot at 0x%1.").arg(instruction->endAddr(), 0, 16));
+                        }
+                        return callback;
+                    };
+
+                    core::ir::BasicBlock *cachedDirectSuccessor = nullptr;
+                    core::ir::BasicBlock *cachedNextDirectSuccessor = nullptr;
+                    auto directSuccessor = [&]() -> core::ir::BasicBlock * {
+                        if (!cachedDirectSuccessor) {
+                            cachedDirectSuccessor = program->createBasicBlock(instruction->endAddr());
+                        }
+                        return cachedDirectSuccessor;
+                    };
+                    auto directSuccessorButOne = [&]() -> core::ir::BasicBlock * {
+                        if (!cachedNextDirectSuccessor) {
+                            cachedNextDirectSuccessor = program->createBasicBlock(instruction->endAddr() + instruction->size());
+                        }
+                        return cachedNextDirectSuccessor;
+                    };
+
+                    auto directSuccessorAddress = constant(instruction->endAddr());
+                    auto nextDirectSuccessorAddress = constant(instruction->endAddr() + instruction->size());
+
+                    AllegrexExpressionFactory factory(architecture_);
 
                     switch (insn->id)
                     {
                     case I_ADD:
+                    case I_ADDU: {
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= gpr(1) + gpr(2)];
+                        break;
+                    }
                     case I_ADDI:
-                    case I_ADDIU:
-                    case I_ADDU:
-                    case I_AND:
-                    case I_ANDI:
-                    case I_BEQ:
-                    case I_BEQL:
-                    case I_BGEZ:
-                    case I_BGEZAL:
-                    case I_BGEZL:
-                    case I_BGTZ:
-                    case I_BGTZL:
+                    case I_ADDIU: {
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= gpr(1) + imm(2)];
+                        break;
+                    }
+                    case I_AND: {
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= gpr(1) & gpr(2)];
+                        break;
+                    }
+                    case I_ANDI: {
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= gpr(1) & imm(2)];
+                        break;
+                    }
+                    case I_BEQ:  {
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(gpr(0) == gpr(1),
+                                 (delayslot(then)[jump(imm(2))]).basicBlock(),
+                                 directSuccessor())
+                        ];
+                        break;
+                    }
+                    case I_BEQL: {
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(gpr(0) == gpr(1),
+                                 (delayslot(then)[jump(imm(2))]).basicBlock(),
+                                 directSuccessorButOne())
+                        ];
+                        break;
+                    }
+                    case I_BGEZ: {
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(signed_(gpr(0)) >= constant(0),
+                                 (delayslot(then)[jump(imm(1))]).basicBlock(),
+                                 directSuccessor())
+                        ];
+                        break;
+                    }
+                    case I_BGEZAL: {
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(signed_(gpr(0)) >= constant(0),
+                                 (delayslot(then)[call(imm(1)), jump(directSuccessorButOne())]).basicBlock(),
+                                 directSuccessor())
+                        ];
+                        break;
+                    }
+                    case I_BGEZALL: {
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(signed_(gpr(0)) >= constant(0),
+                                 (delayslot(then)[call(imm(1)), jump(directSuccessorButOne())]).basicBlock(),
+                                 directSuccessorButOne())
+                        ];
+                        break;
+                    }
+                    case I_BGEZL: {
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(signed_(gpr(0)) >= constant(0),
+                                 (delayslot(then)[jump(imm(1))]).basicBlock(),
+                                 directSuccessorButOne())
+                        ];
+                        break;
+                    }
+                    case I_BGTZ: {
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(signed_(gpr(0)) > constant(0),
+                                 (delayslot(then)[jump(imm(1))]).basicBlock(),
+                                 directSuccessor())
+                        ];
+                        break;
+                    }
+                    case I_BGTZL: {
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(signed_(gpr(0)) > constant(0),
+                                 (delayslot(then)[jump(imm(1))]).basicBlock(),
+                                 directSuccessorButOne())
+                        ];
+                        break;
+                    }
                     case I_BITREV:
-                    case I_BLEZ:
-                    case I_BLEZL:
-                    case I_BLTZ:
-                    case I_BLTZL:
-                    case I_BLTZAL:
-                    case I_BLTZALL:
-                    case I_BNE:
-                    case I_BNEL:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
+                    case I_BLEZ: {
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(signed_(gpr(0)) <= constant(0),
+                                 (delayslot(then)[jump(imm(1))]).basicBlock(),
+                                 directSuccessor())
+                        ];
+                        break;
+                    }
+                    case I_BLEZL: {
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(signed_(gpr(0)) <= constant(0),
+                                 (delayslot(then)[jump(imm(1))]).basicBlock(),
+                                 directSuccessorButOne())
+                        ];
+                        break;
+                    }
+                    case I_BLTZ: {
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(signed_(gpr(0)) < constant(0),
+                                 (delayslot(then)[jump(imm(1))]).basicBlock(),
+                                 directSuccessor())
+                        ];
+                        break;
+                    }
+                    case I_BLTZL: {
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(signed_(gpr(0)) < constant(0),
+                                 (delayslot(then)[jump(imm(1))]).basicBlock(),
+                                 directSuccessorButOne())
+                        ];
+                    }
+                    case I_BLTZAL: {
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(signed_(gpr(0)) < constant(0),
+                                 (delayslot(then)[call(imm(1)), jump(directSuccessorButOne())]).basicBlock(),
+                                 directSuccessor())
+                        ];
+                        break;
+                    }
+                    case I_BLTZALL: {
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(signed_(gpr(0)) < constant(0),
+                                 (delayslot(then)[call(imm(1)), jump(directSuccessorButOne())]).basicBlock(),
+                                 directSuccessorButOne())
+                        ];
+                        break;
+                    }
+                    case I_BNE: {
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(~(gpr(0) == gpr(1)),
+                                 (delayslot(then)[jump(imm(2))]).basicBlock(),
+                                 directSuccessor())
+                        ];
+                        break;
+                    }
+                    case I_BNEL: {
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(~(gpr(0) == gpr(1)),
+                                 (delayslot(then)[jump(imm(2))]).basicBlock(),
+                                 directSuccessorButOne())
+                        ];
+                        break;
+                    }
                     case I_BREAK:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_CACHE:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_CFC0:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_CLO:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_CLZ:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_CTC0:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_MAX:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_MIN:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_DBREAK:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_DIV:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_DIVU:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_DRET:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_ERET:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_EXT:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_INS:
-                    case I_J:
-                    case I_JR:
-                    case I_JALR:
-                    case I_JAL:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;                   
+                    case I_J: {
+                        delayslot(_)[jump(imm(0))];
+                        break;
+                    }
+                    case I_JR: {
+                        if (operand[0].reg == R_RA) {
+                            delayslot(_)[jump(return_address())];
+                        } else {
+                            delayslot(_)[jump(gpr(0))];
+                        }
+                        break;
+                    }
+                    case I_JALR: {
+                        delayslot(_)[call(gpr(0)), jump(directSuccessorButOne())];
+                        break;
+                    }
+                    case I_JAL: {
+                        delayslot(_)[call(imm(0)), jump(directSuccessorButOne())];
+                        break;
+                    }
                     case I_LB:
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= sign_extend(mem(1, 8))];
+                        else
+                            _[zero ^= sign_extend(mem(1, 8))];
+                        break;
                     case I_LBU:
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= zero_extend(mem(1, 8))];
+                        else
+                            _[zero ^= zero_extend(mem(1, 8))];
+                        break;
                     case I_LH:
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= sign_extend(mem(1, 16))];
+                        else
+                            _[zero ^= sign_extend(mem(1, 16))];
+                        break;
                     case I_LHU:
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= zero_extend(mem(1, 16))];
+                        else
+                            _[zero ^= zero_extend(mem(1, 16))];
+                        break;
                     case I_LL:
-                    case I_LUI:
-                    case I_LW:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
+                    case I_LUI: {
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= (imm(1) << constant(16))];
+                        break;
+                    }
+                    case I_LW: {
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= mem(1, 32)];
+                        break;
+                    }
                     case I_LWL:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_LWR:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_MADD:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_MADDU:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_MFC0:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_MFDR:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_MFHI:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_MFIC:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_MFLO:
-                    case I_MOVN:
-                    case I_MOVZ:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
+                    case I_MOVN: {
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(~(gpr(2) == constant(0)),
+                                 (then[gpr(0) ^= gpr(1), jump(directSuccessorButOne())]).basicBlock(),
+                                 directSuccessor())
+                        ];
+                        break;
+                    }
+                    case I_MOVZ:{
+                        AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump(gpr(2) == constant(0),
+                                 (then[gpr(0) ^= gpr(1), jump(directSuccessorButOne())]).basicBlock(),
+                                 directSuccessor())
+                        ];
+                        break;
+                    }
                     case I_MSUB:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_MSUBU:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_MTC0:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_MTDR:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_MTIC:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_HALT:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_MTHI:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_MTLO:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_MULT:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_MULTU:
-                    case I_NOR:
-                    case I_OR:
-                    case I_ORI:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
+                    case I_NOR: {
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= ~(gpr(1) | gpr(2))];
+                        break;
+                    }
+                    case I_OR: {
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= gpr(1) ^ gpr(2)];
+                        break;
+                    }
+                    case I_ORI: {
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= gpr(1) ^ imm(2)];
+                        break;
+                    }
                     case I_ROTR:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_ROTV:
-                    case I_SEB:
-                    case I_SEH:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
+                    case I_SEB: {
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= sign_extend(gpr8(1))];
+                        break;
+                    }
+                    case I_SEH: {
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= sign_extend(gpr16(1))];
+                        break;
+                    }
                     case I_SB:
+                        _[mem(1, 8) ^= truncate(gpr(0), 8)];
+                        break;
                     case I_SC:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_SH:
+                        _[mem(1, 16) ^= truncate(gpr(0), 16)];
+                        break;
                     case I_SLLV:
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= (unsigned_(gpr(1)) << zero_extend(gpr5(2)))];
+                        break;
                     case I_SLL:
-                    case I_SLT:
-                    case I_SLTI:
-                    case I_SLTIU:
-                    case I_SLTU:
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= (unsigned_(gpr(1)) << imm(2))];
+                        break;
+                    case I_SLT: {
+                        AllegrexExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
+                        AllegrexExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump((signed_(gpr(1)) < signed_(gpr(2))),
+                                 _1[gpr(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
+                                 _0[gpr(0) ^= constant(0), jump(directSuccessor())].basicBlock())
+                        ];
+                        break;
+                    }
+                    case I_SLTI: {
+                        AllegrexExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
+                        AllegrexExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump((signed_(gpr(1)) < signed_(imm(2))),
+                                 _1[gpr(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
+                                 _0[gpr(0) ^= constant(0), jump(directSuccessor())].basicBlock())
+                        ];
+                        break;
+                    }
+                    case I_SLTIU: {
+                        AllegrexExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
+                        AllegrexExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump((unsigned_(gpr(1)) < unsigned_(imm(2))),
+                                 _1[gpr(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
+                                 _0[gpr(0) ^= constant(0), jump(directSuccessor())].basicBlock())
+                        ];
+                        break;
+                    }
+                    case I_SLTU: {
+                        AllegrexExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
+                        AllegrexExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
+                        _[
+                            jump((unsigned_(gpr(1)) < unsigned_(gpr(2))),
+                                 _1[gpr(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
+                                 _0[gpr(0) ^= constant(0), jump(directSuccessor())].basicBlock())
+                        ];
+                        break;
+                    }
                     case I_SRA:
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= (signed_(gpr(1)) >> imm(2))];
+                        break;
                     case I_SRAV:
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= (signed_(gpr(1)) >> zero_extend(gpr5(2)))];
+                        break;
                     case I_SRLV:
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= (unsigned_(gpr(1)) >> zero_extend(gpr5(2)))];
+                        break;
                     case I_SRL:
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= (unsigned_(gpr(1)) >> imm(2))];
+                        break;
                     case I_SW:
+                        _[mem(1, 32) ^= gpr(0)];
+                        break;
                     case I_SWL:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_SWR:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_SUB:
-                    case I_SUBU:
+                    case I_SUBU: {
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= gpr(1) - gpr(2)];
+                        break;
+                    }
                     case I_SYNC:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_SYSCALL:
-                    case I_XOR:
-                    case I_XORI:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
+                    case I_XOR: {
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= gpr(1) ^ gpr(2)];
+                        break;
+                    }
+                    case I_XORI: {
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= gpr(1) ^ imm(2)];
+                        break;
+                    }
                     case I_WSBH:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
                     case I_WSBW:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
+
                     case I_ABS_S:
                     case I_ADD_S:
                     case I_BC1F:
@@ -322,6 +791,9 @@ namespace nc {
                     case I_SUB_S:
                     case I_SWC1:
                     case I_TRUNC_W_S:
+                        _(std::make_unique<core::ir::InlineAssembly>());
+                        break;
+
                     case I_BVF:
                     case I_BVFL:
                     case I_BVT:
@@ -600,89 +1072,14 @@ namespace nc {
                     }
                 }
 
-                const nc::arch::allegrex::allegrex_instruction *disassemble(const AllegrexInstruction *instruction) {
-                    return allegrex_decode_instruction(*((int32_t *)instruction->bytes()), true);
-                }
-
-                static const core::arch::Register *getRegister(int reg) {
-                    switch (reg) {
-
-#if 0
-#define REG(uppercase, lowercase) \
-            case MIPS_REG_##uppercase: return AllegrexRegisters::lowercase()
-                        REG(ZERO, zero);
-                        REG(AT, at);
-                        REG(V0, v0);
-                        REG(V1, v1);
-                        REG(A0, a0);
-                        REG(A1, a1);
-                        REG(A2, a2);
-                        REG(A3, a3);
-                        REG(T0, t0);
-                        REG(T1, t1);
-                        REG(T2, t2);
-                        REG(T3, t3);
-                        REG(T4, t4);
-                        REG(T5, t5);
-                        REG(T6, t6);
-                        REG(T7, t7);
-                        REG(S0, s0);
-                        REG(S1, s1);
-                        REG(S2, s2);
-                        REG(S3, s3);
-                        REG(S4, s4);
-                        REG(S5, s5);
-                        REG(S6, s6);
-                        REG(S7, s7);
-                        REG(T8, t8);
-                        REG(T9, t9);
-                        REG(K0, k0);
-                        REG(K1, k1);
-                        REG(GP, gp);
-                        REG(SP, sp);
-                        REG(FP, fp); /*REG(S8, s8);*/
-                        REG(RA, ra);
-
-                        REG(F0, f0);
-                        REG(F1, f1);
-                        REG(F2, f2);
-                        REG(F3, f3);
-                        REG(F4, f4);
-                        REG(F5, f5);
-                        REG(F6, f6);
-                        REG(F7, f7);
-                        REG(F8, f8);
-                        REG(F9, f9);
-                        REG(F10, f10);
-                        REG(F11, f11);
-                        REG(F12, f12);
-                        REG(F13, f13);
-                        REG(F14, f14);
-                        REG(F15, f15);
-                        REG(F16, f16);
-                        REG(F17, f17);
-                        REG(F18, f18);
-                        REG(F19, f19);
-                        REG(F20, f20);
-                        REG(F21, f21);
-                        REG(F22, f22);
-                        REG(F23, f23);
-                        REG(F24, f24);
-                        REG(F25, f25);
-                        REG(F26, f26);
-                        REG(F27, f27);
-                        REG(F28, f28);
-                        REG(F29, f29);
-                        REG(F30, f30);
-                        REG(F31, f31);
-
-                        REG(HI, hi);
-                        REG(LO, lo);
-#undef REG
-#endif
-                    default:
-                        throw core::irgen::InvalidInstructionException(tr("Invalid register number: %1").arg(reg));
+                const nc::arch::allegrex::allegrex_instruction *disassemble(const AllegrexInstruction *instruction, allegrex_operand operand[8]) {
+                    auto opcode = *((int32_t *)instruction->bytes());
+                    auto insn = allegrex_decode_instruction(opcode, false);
+                    if (insn) {
+                        allegrex_decode_operands(insn, opcode, instruction->addr(), operand);
+                        return insn;
                     }
+                    return nullptr;
                 }
             };
 
