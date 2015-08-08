@@ -19,6 +19,7 @@ set(SOURCES
     LogToken.h
     Logger.cpp
     Logger.h
+    Memoization.h
     PrintCallback.h
     Printable.h
     Range.h

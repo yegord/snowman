@@ -85,6 +85,8 @@ void LivenessAnalyzer::computeInvisibleJumps() {
                 if (witch->boundsCheckNode()) {
                     invisibleJumps_.push_back(witch->boundsCheckNode()->basicBlock()->getJump());
                 }
+                invisibleJumps_.push_back(witch->switchNode()->basicBlock()->getJump());
+                makeLive(witch->switchTerm());
             }
         }
     }

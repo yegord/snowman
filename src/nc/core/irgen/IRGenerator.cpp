@@ -24,8 +24,10 @@
 
 #include "IRGenerator.h"
 
+#include <cassert>
 #include <queue>
 
+#include <boost/range/algorithm_ext/is_sorted.hpp>
 #include <boost/unordered_set.hpp>
 
 #include <nc/common/Foreach.h>
@@ -81,11 +83,36 @@ void IRGenerator::generate() {
         canceled_.poll();
     }
 
+#ifndef NDEBUG
+    /*
+     * Check statements are shorted by their instructions' addresses.
+     * ir::Program::createBasicBlock(ByteAddr) relies on this while splitting basic blocks.
+     */
+    foreach (auto basicBlock, program_->basicBlocks()) {
+        assert((boost::is_sorted(basicBlock->statements(), [](const ir::Statement *a, const ir::Statement *b) -> bool {
+            return a->instruction()->addr() < b->instruction()->addr();
+        })));
+    }
+#endif
+
     /* Compute jump targets. */
     foreach (auto basicBlock, program_->basicBlocks()) {
         computeJumpTargets(basicBlock);
         canceled_.poll();
     }
+
+#ifndef NDEBUG
+    /*
+     * Check that jump is always the last instruction in a basic block.
+     */
+    foreach (auto basicBlock, program_->basicBlocks()) {
+        foreach (auto statement, basicBlock->statements()) {
+            if (auto jump = statement->asJump()) {
+                assert(jump == basicBlock->statements().back());
+            }
+        }
+    }
+#endif
 
     /* Add jumps to direct successors where necessary. */
     foreach (auto basicBlock, program_->basicBlocks()) {
