@@ -216,20 +216,29 @@ namespace nc {
                     };
 
                     auto mem = [&](int index, int sizeHint) -> core::irgen::expressions::TermExpression {
-                        return core::irgen::expressions::TermExpression(
-                            std::make_unique<core::ir::Dereference>(
-                                std::make_unique<core::ir::BinaryOperator>(
-                                    core::ir::BinaryOperator::ADD,
+                        if (operand[index].mem.disp) {
+                            return core::irgen::expressions::TermExpression(
+                                std::make_unique<core::ir::Dereference>(
+                                    std::make_unique<core::ir::BinaryOperator>(
+                                        core::ir::BinaryOperator::ADD,
+                                        AllegrexInstructionAnalyzer::createTerm(gpr_(operand[index].mem.base)),
+                                        std::make_unique<core::ir::Constant>(SizedValue(32, operand[index].mem.disp)),
+                                        32
+                                    ),
+                                    core::ir::MemoryDomain::MEMORY,
+                                    sizeHint
+                                )
+                            );
+                        } else {
+                            return core::irgen::expressions::TermExpression(
+                                std::make_unique<core::ir::Dereference>(
                                     AllegrexInstructionAnalyzer::createTerm(gpr_(operand[index].mem.base)),
-                                    std::make_unique<core::ir::Constant>(SizedValue(32, operand[index].mem.disp)),
-                                    32
-                                ),
-                                core::ir::MemoryDomain::MEMORY,
-                                sizeHint
-                            )
-                        );
+                                    core::ir::MemoryDomain::MEMORY,
+                                    sizeHint
+                                )
+                            );
+                        }
                     };
-
 
                     auto delayslot = [&](AllegrexExpressionFactoryCallback & callback) -> AllegrexExpressionFactoryCallback & {
                         auto delayslot = checked_cast<const AllegrexInstruction *>(instructions_->get(instruction->endAddr()).get());
@@ -565,7 +574,7 @@ namespace nc {
                         AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
                         _[
                             jump(~(gpr(2) == constant(0)),
-                                 (then[gpr(0) ^= gpr(1), jump(directSuccessorButOne())]).basicBlock(),
+                                 (then[gpr(0) ^= gpr(1), jump(directSuccessor())]).basicBlock(),
                                  directSuccessor())
                         ];
                         break;
@@ -574,7 +583,7 @@ namespace nc {
                         AllegrexExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
                         _[
                             jump(gpr(2) == constant(0),
-                                 (then[gpr(0) ^= gpr(1), jump(directSuccessorButOne())]).basicBlock(),
+                                 (then[gpr(0) ^= gpr(1), jump(directSuccessor())]).basicBlock(),
                                  directSuccessor())
                         ];
                         break;
