@@ -710,7 +710,6 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
                                         parent().makeType(parent().types().getType(returnValueTerm)),
                                         std::move(callOperator))));
                         }
-                        }
                     }
                 }
             }
