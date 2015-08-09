@@ -67,8 +67,7 @@ public:
         DEREFERENCE, ///< Dereference.
         UNARY_OPERATOR, ///< Unary operator.
         BINARY_OPERATOR, ///< Binary operator.
-        CHOICE, ///< Choice between two terms.
-        USER = 1000 ///< Base for user-defined terms.
+        CHOICE ///< Choice between two terms.
     };
 
     /**
