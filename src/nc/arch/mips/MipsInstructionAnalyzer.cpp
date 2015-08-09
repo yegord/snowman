@@ -229,47 +229,24 @@ public:
                 _[operand(0) ^= sign_extend(operand(1, 16))];
                 break;
             }
-            case MIPS_INS_SEQ: {
-                /* d = (s == t) ? 1 : 0 */
-                MipsExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
-                _[
-                    jump(operand(1) == operand(2),
-                         _1[operand(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
-                         _0[operand(0) ^= constant(0), jump(directSuccessor())].basicBlock())
-                ];
-                break;
-            }
             case MIPS_INS_SNE: {
                 /* d = (s != t) ? 1 : 0 */
-                MipsExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
-                _[
-                    jump(~(operand(1) == operand(2)),
-                         _1[operand(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
-                         _0[operand(0) ^= constant(0), jump(directSuccessor())].basicBlock())
-                ];
-                break;
-            }
-            case MIPS_INS_SEQI: {
-                MipsExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
-                _[
-                    jump(operand(1) == signed_(operand(2)),
-                         _1[operand(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
-                         _0[operand(0) ^= constant(0), jump(directSuccessor())].basicBlock())
-                ];
+                _[operand(0) ^= ~(operand(1) == operand(2))];
                 break;
             }
             case MIPS_INS_SNEI: {
                 /* d = (s != t) ? 1 : 0 */
-                MipsExpressionFactoryCallback _1(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _0(factory, program->createBasicBlock(), instruction);
-                _[
-                    jump(~(operand(1) == signed_(operand(2))),
-                         _1[operand(0) ^= constant(1), jump(directSuccessor())].basicBlock(),
-                         _0[operand(0) ^= constant(0), jump(directSuccessor())].basicBlock())
-                ];
+                _[operand(0) ^= ~(operand(1) == signed_(operand(2)))];
+                break;
+            }
+            case MIPS_INS_SEQ: {
+                /* d = (s == t) ? 1 : 0 */
+                _[operand(0) ^= (operand(1) == operand(2))];
+                break;
+            }
+            case MIPS_INS_SEQI: {
+            	/* d = (s == t) ? 1 : 0 */
+                _[operand(0) ^= (operand(1) == signed_(operand(2)))];
                 break;
             }
             case MIPS_INS_SLT: {
