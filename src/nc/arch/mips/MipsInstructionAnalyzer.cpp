@@ -357,7 +357,7 @@ CPU::lwl(uint32 regval, uint32 memval, uint8 offset)
 	}
 	fatal_error("Invalid offset %x passed to lwl\n", offset);
 }
-#endif				
+#endif
             	if(isBE){
 					_[
 						jump(offset == constant(0),

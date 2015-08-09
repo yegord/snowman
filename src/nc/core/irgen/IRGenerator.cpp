@@ -82,7 +82,7 @@ void IRGenerator::generate() {
         canceled_.poll();
     }
 
-#if 0//ndef NDEBUG
+#ifndef NDEBUG
     /*
      * Check statements are shorted by their instructions' addresses.
      * ir::Program::createBasicBlock(ByteAddr) relies on this while splitting basic blocks.
