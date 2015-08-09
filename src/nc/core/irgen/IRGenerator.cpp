@@ -83,17 +83,17 @@ void IRGenerator::generate() {
         canceled_.poll();
     }
 
-#ifndef NDEBUG
-    /*
-     * Check statements are shorted by their instructions' addresses.
-     * ir::Program::createBasicBlock(ByteAddr) relies on this while splitting basic blocks.
-     */
-    foreach (auto basicBlock, program_->basicBlocks()) {
-        assert((boost::is_sorted(basicBlock->statements(), [](const ir::Statement *a, const ir::Statement *b) -> bool {
-            return a->instruction()->addr() < b->instruction()->addr();
-        })));
-    }
-#endif
+//#ifndef NDEBUG
+//    /*
+//     * Check statements are shorted by their instructions' addresses.
+//     * ir::Program::createBasicBlock(ByteAddr) relies on this while splitting basic blocks.
+//     */
+//    foreach (auto basicBlock, program_->basicBlocks()) {
+//        assert((boost::is_sorted(basicBlock->statements(), [](const ir::Statement *a, const ir::Statement *b) -> bool {
+//            return a->instruction()->addr() < b->instruction()->addr();
+//        })));
+//    }
+//#endif
 
     /* Compute jump targets. */
     foreach (auto basicBlock, program_->basicBlocks()) {
