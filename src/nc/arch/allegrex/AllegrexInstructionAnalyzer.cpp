@@ -76,7 +76,7 @@ namespace nc {
 
                     AllegrexExpressionFactoryCallback _(factory_, program->getBasicBlockForInstruction(instruction), instruction);
 
-                    createStatements(_, instruction, program);
+                    createStatements(_, instruction, program, nullptr);
                 }
 
             private:
@@ -168,7 +168,8 @@ namespace nc {
 
                 core::ir::BasicBlock *createStatements(AllegrexExpressionFactoryCallback & _,
                                                        const AllegrexInstruction *instruction,
-                                                       core::ir::Program *program) {
+                                                       core::ir::Program *program,
+                                                       const AllegrexInstruction *delayslotOwner) {
                     using namespace core::irgen::expressions;
 
                     allegrex_operand operand[8];
@@ -180,7 +181,7 @@ namespace nc {
 
                     auto delayslotCallback = [&](AllegrexExpressionFactoryCallback &callback) -> AllegrexExpressionFactoryCallback & {
                         if (auto delayslotInstruction = getDelayslotInstruction(instruction)) {
-                            callback.setBasicBlock(createStatements(callback, delayslotInstruction, program));
+                            callback.setBasicBlock(createStatements(callback, delayslotInstruction, program, instruction));
                         }
                         return callback;
                     };
@@ -626,7 +627,7 @@ namespace nc {
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
                     case I_MOVN: {
-                        auto move = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction)[
+                        auto move = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
                             gpr(0) ^= gpr(1)
                         ];
                         _[
@@ -637,7 +638,7 @@ namespace nc {
                         return move.basicBlock();
                     }
                     case I_MOVZ:{
-                        auto move = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction)[
+                        auto move = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
                             gpr(0) ^= gpr(1)
                         ];
                         _[
