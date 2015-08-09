@@ -80,7 +80,7 @@ public:
         detail_ = &instr->detail->mips;
                 
         core::ir::BasicBlock *cachedDirectSuccessor = nullptr;
-        core::ir::BasicBlock *cachedNextDirectSuccessor = nullptr;
+        core::ir::BasicBlock *cachedDirectSuccessorButOne = nullptr;
         auto directSuccessor = [&]() -> core::ir::BasicBlock * {
             if (!cachedDirectSuccessor) {
                 cachedDirectSuccessor = program->createBasicBlock(instruction->endAddr());
@@ -88,10 +88,10 @@ public:
             return cachedDirectSuccessor;
         };
         auto directSuccessorButOne = [&]() -> core::ir::BasicBlock * {
-            if (!cachedNextDirectSuccessor) {
-                cachedNextDirectSuccessor = program->createBasicBlock(instruction->endAddr() + instruction->size());
+            if (!cachedDirectSuccessorButOne) {
+                cachedDirectSuccessorButOne = program->createBasicBlock(instruction->endAddr() + instruction->size());
             }
-            return cachedNextDirectSuccessor;
+            return cachedDirectSuccessorButOne;
         };
 
         auto delayslot = [&](MipsExpressionFactoryCallback & callback) -> MipsExpressionFactoryCallback & {
@@ -108,7 +108,7 @@ public:
         };
 
         auto directSuccessorAddress = instruction->endAddr();
-        auto nextDirectSuccessorAddress = directSuccessorAddress + instruction->size();
+        auto directSuccessorButOneAddress = directSuccessorAddress + instruction->size();
 
         MipsExpressionFactory factory(architecture_);
 
@@ -937,7 +937,7 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
                 /* This is a conditional call */
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
+                    regizter(MipsRegisters::ra()) ^= constant(directSuccessorButOneAddress),
                     jump((signed_(operand(0)) >= constant(0)),
                          (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
                          directSuccessorButOne())
@@ -948,7 +948,7 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
                 /* This is a conditional call */
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
+                    regizter(MipsRegisters::ra()) ^= constant(directSuccessorButOneAddress),
                     jump((signed_(operand(0)) >= constant(0)),
                          (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
                          directSuccessor())
@@ -994,7 +994,7 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
                 /* This is a conditional call */
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
+                    regizter(MipsRegisters::ra()) ^= constant(directSuccessorButOneAddress),
                     jump((signed_(operand(0)) < constant(0)),
                          (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
                          directSuccessorButOne())
@@ -1005,7 +1005,7 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
                 /* This is a conditional call */
                 MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
                 _[
-                    regizter(MipsRegisters::ra()) ^= constant(nextDirectSuccessorAddress),
+                    regizter(MipsRegisters::ra()) ^= constant(directSuccessorButOneAddress),
                     jump((signed_(operand(0)) < constant(0)),
                          (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
                          directSuccessor())
@@ -1049,7 +1049,7 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
                 break;
             }
             case MIPS_INS_JALR: {
-                _[operand(0) ^= constant(nextDirectSuccessorAddress)];
+                _[operand(0) ^= constant(directSuccessorButOneAddress)];
                 delayslot(_)[call(operand(op_count - 1)), jump(directSuccessorButOne())];
                 break;
             }
@@ -1058,7 +1058,7 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
             	if (op_count == 1){
                 	delayslot(_)[call(operand(0)), jump(directSuccessorButOne())];
             	} else {
-                	_[operand(0) ^= constant(nextDirectSuccessorAddress)];
+                	_[operand(0) ^= constant(directSuccessorButOneAddress)];
                   	delayslot(_)[call(operand(op_count - 1)), jump(directSuccessorButOne())];
             	}
                 break;
