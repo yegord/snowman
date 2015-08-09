@@ -1016,18 +1016,15 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
             	}
                 break;
             }
-            case MIPS_INS_JR: {
+            case MIPS_INS_J: /* Fall-through */
+            case MIPS_INS_JR:
+            case MIPS_INS_B: {
             	if(getOperandRegister(0) == MIPS_REG_RA){
             		delayslot(_)[jump(return_address())];
             	} else {
                 	delayslot(_)[jump(operand(0))];
-            	}
-                break;
-            }
-            case MIPS_INS_J: /* Fall-through */
-            case MIPS_INS_B: {
-                delayslot(_)[jump(operand(0))];
-                break;
+            	}                
+            	break;
             }
             default: {
                 _(std::make_unique<core::ir::InlineAssembly>());
