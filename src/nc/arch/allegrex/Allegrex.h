@@ -57,6 +57,7 @@ enum allegrex_insn_id
     I_BEQL,
     I_BGEZ,
     I_BGEZAL,
+    I_BGEZALL,
     I_BGEZL,
     I_BGTZ,
     I_BGTZL,
@@ -554,7 +555,7 @@ enum allegrex_reg
 
 struct allegrex_instruction
 {
-    enum allegrex_insn_id insn;
+    enum allegrex_insn_id id;
     const char *name;
     unsigned int opcode;
     unsigned int mask;
@@ -587,10 +588,11 @@ struct allegrex_operand
         float fimm;
         allegrex_operand_mem mem;
     };
+    allegrex_operand() : type(O_NONE) {}
 };
 
 extern const allegrex_instruction *allegrex_decode_instruction(unsigned int opcode, int allowalias);
-extern const allegrex_operand *allegrex_decode_operands(const allegrex_instruction *insn, unsigned int opcode, struct allegrex_operand operand[8]);
+extern void allegrex_decode_operands(const allegrex_instruction *insn, unsigned int opcode, unsigned int pc, struct allegrex_operand operand[8]);
 extern char *allegrex_disassemble_instruction(unsigned int opcode, unsigned int pc, int prtall);
 extern char *allegrex_disassemble_instruction(const allegrex_instruction *insn, unsigned int opcode, unsigned int pc, int prtall);
 
