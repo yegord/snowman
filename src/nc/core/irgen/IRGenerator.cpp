@@ -100,7 +100,7 @@ void IRGenerator::generate() {
         canceled_.poll();
     }
 
-#if 0//ndef NDEBUG
+#ifndef NDEBUG
     /*
      * Check that a terminator statement is always the last statement in the basic block.
      */

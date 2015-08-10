@@ -542,8 +542,8 @@ CPU::swl(uint32 regval, uint32 memval, uint8 offset)
 #endif				
             	if(isBE){
 					_[
-						jump(offset == constant(3),
-						_case3[rt ^= (memval),
+						jump(offset == constant(0),
+						_case0[rt ^= (memval),
 							jump(directSuccessor())].basicBlock(),
 					_then1[
     					jump(offset == constant(1),
