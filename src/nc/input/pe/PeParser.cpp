@@ -130,6 +130,7 @@ public:
         parseSections();
         parseSymbols();
         parseImports();
+        parseExports();
     }
 
 private:
@@ -365,6 +366,53 @@ private:
                     entryAddress, image_->addSymbol(std::make_unique<core::image::Symbol>(
                                       core::image::SymbolType::FUNCTION, std::move(name), boost::none))));
             }
+        }
+    }
+    void parseExports() {
+        if (optionalHeader_.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress == 0) {
+            return;
+        }
+
+        auto reader = core::image::Reader(image_);
+
+        IMAGE_EXPORT_DIRECTORY directory;
+        auto directoryAddress =
+            optionalHeader_.ImageBase + optionalHeader_.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+        image_->readBytes(directoryAddress, reinterpret_cast<char *>(&directory), sizeof(directory));
+
+        peByteOrder.convertFrom(directory.Characteristics);
+        peByteOrder.convertFrom(directory.Name);
+        peByteOrder.convertFrom(directory.NumberOfFunctions);
+        peByteOrder.convertFrom(directory.NumberOfNames);
+        peByteOrder.convertFrom(directory.AddressOfFunctions);
+        peByteOrder.convertFrom(directory.AddressOfNames);
+        peByteOrder.convertFrom(directory.AddressOfNameOrdinal);
+
+        for (DWORD i = 0; i < directory.NumberOfNames; i++) {
+            WORD ordinal;
+            DWORD nameRVA;
+            image_->readBytes(optionalHeader_.ImageBase + directory.AddressOfNames + i * sizeof(nameRVA),
+                              reinterpret_cast<char *>(&nameRVA), sizeof(nameRVA));
+            image_->readBytes(optionalHeader_.ImageBase + directory.AddressOfNameOrdinal + i * sizeof(ordinal),
+                              reinterpret_cast<char *>(&ordinal), sizeof(ordinal));
+            peByteOrder.convertFrom(nameRVA);
+            peByteOrder.convertFrom(ordinal);
+
+            DWORD entry;
+            image_->readBytes(optionalHeader_.ImageBase + directory.AddressOfFunctions + ordinal * sizeof(entry),
+                              reinterpret_cast<char *>(&entry), sizeof(entry));
+
+            peByteOrder.convertFrom(entry);
+
+            if (entry >= directoryAddress &&
+                entry < directoryAddress + optionalHeader_.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size) {
+                // entries with the export section are forwarded to another dll
+                continue;
+            }
+
+            auto name = reader.readAsciizString(optionalHeader_.ImageBase + nameRVA, 1024);
+            image_->addSymbol(std::make_unique<core::image::Symbol>(core::image::SymbolType::FUNCTION, std::move(name),
+                                                                    optionalHeader_.ImageBase + entry));
         }
     }
 };
