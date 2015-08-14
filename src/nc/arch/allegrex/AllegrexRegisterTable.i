@@ -223,4 +223,6 @@ REG(s713,	S713,	3,	125 * 32,	32, "Scalar float point register")
 REG(s723,	S723,	3,	126 * 32,	32, "Scalar float point register")
 REG(s733,	S733,	3,	127 * 32,	32, "Scalar float point register")
 
+REG(tmp,    TMP, 	4,  1 * 32,	32, "Temporary register")
+
 /* vim:set et sts=4 sw=4: */

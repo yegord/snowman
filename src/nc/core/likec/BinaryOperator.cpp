@@ -419,6 +419,59 @@ Expression *BinaryOperator::rewrite() {
             }
             break;
         }
+        case SHL: 
+        case SHR: {
+            if (isZero(right())) {
+                auto type = getType();
+                return std::make_unique<Typecast>(tree(), type, releaseLeft()).release();
+            }
+            break;
+        }
+        case BITWISE_OR:
+        case BITWISE_XOR: {
+            if (isZero(left())) {
+                auto type = getType();
+                return std::make_unique<Typecast>(tree(), type, releaseRight()).release();
+            }
+            if (isZero(right())) {
+                auto type = getType();
+                return std::make_unique<Typecast>(tree(), type, releaseLeft()).release();
+            }
+            break;
+        }
+        case BITWISE_AND: {
+            if (isZero(left())) {
+                auto type = getType();
+                return std::make_unique<Typecast>(tree(), type, releaseLeft()).release();
+            }
+            if (isZero(right())) {
+                auto type = getType();
+                return std::make_unique<Typecast>(tree(), type, releaseRight()).release();
+            }
+            break;
+        }
+        case LOGICAL_OR: {
+            if (isZero(left()) || isOne(right())) {
+                auto type = getType();
+                return std::make_unique<Typecast>(tree(), type, releaseRight()).release();
+            }
+            if (isZero(right()) || isOne(left())) {
+                auto type = getType();
+                return std::make_unique<Typecast>(tree(), type, releaseLeft()).release();
+            }
+            break;
+        }
+        case LOGICAL_AND: {
+            if (isZero(left()) || isOne(right())) {
+                auto type = getType();
+                return std::make_unique<Typecast>(tree(), type, releaseLeft()).release();
+            }
+            if (isZero(right()) || isOne(left())) {
+                auto type = getType();
+                return std::make_unique<Typecast>(tree(), type, releaseRight()).release();
+            }
+            break;
+        }
     }
 
     /*

@@ -43,7 +43,7 @@ namespace nc {
                 NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, gp);
                 NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, ra);
                 NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, hilo);
-                NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, lo);
+                NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, tmp);
 
             } // anonymous namespace
 
@@ -276,25 +276,14 @@ namespace nc {
                     {
                     case I_ADD:
                     case I_ADDU: {
-                        if (operand[0].reg != R_ZERO) {
-                            if (operand[1].reg != R_ZERO)
-                                if (operand[2].reg != R_ZERO)
-                                    _[gpr(0) ^= gpr(1) + gpr(2)];
-                                else
-                                    _[gpr(0) ^= gpr(1)];
-                            else
-                                _[gpr(0) ^= gpr(2)];
-                        }
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= gpr(1) + gpr(2)];
                         break;
                     }
                     case I_ADDI:
                     case I_ADDIU: {
-                        if (operand[0].reg != R_ZERO) {
-                            if (operand[1].reg != R_ZERO)
-                                _[gpr(0) ^= gpr(1) + imm(2)];
-                            else 
-                                _[gpr(0) ^= imm(2)];
-                        }
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= gpr(1) + imm(2)];
                         break;
                     }
                     case I_AND: {
@@ -395,9 +384,20 @@ namespace nc {
                         ];
                         break;
                     }
-                    case I_BITREV:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                    case I_BITREV: {
+                        auto rt = unsigned_(gpr(1));
+                        auto swap = [&](unsigned shift, unsigned mask) {
+                            return ((std::move(rt) >> constant(shift)) & constant(mask)) | ((std::move(rt) & constant(mask)) << constant(shift));
+                        };
+                        _[
+                            rt ^= swap(1,  0x55555555),
+                            rt ^= swap(2,  0x33333333),
+                            rt ^= swap(4,  0x0F0F0F0F),
+                            rt ^= swap(8,  0x00FF00FF),
+                            rt ^= (std::move(rt) >> constant(16)) | (std::move(rt) << constant(16))
+                        ];
                         break;
+                    }
                     case I_BLEZ: {
                         auto &taken = delayslotCallback(AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction))[
                             jump(imm(1))
@@ -606,10 +606,10 @@ namespace nc {
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
                     case I_MADD:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                        _[hilo ^= signed_(hilo) + sign_extend(gpr(0), 64) * sign_extend(gpr(1), 64)];
                         break;
                     case I_MADDU:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                        _[hilo ^= unsigned_(hilo) + zero_extend(gpr(0), 64) * zero_extend(gpr(1), 64)];
                         break;
                     case I_MFC0:
                         _(std::make_unique<core::ir::InlineAssembly>());
@@ -618,13 +618,15 @@ namespace nc {
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
                     case I_MFHI:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= truncate(unsigned_(hilo) >> constant(32), 32)];
                         break;
                     case I_MFIC:
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
                     case I_MFLO:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= truncate(hilo, 32)];
                         break;
                     case I_MOVN: {
                         auto move = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
@@ -649,10 +651,10 @@ namespace nc {
                         return move.basicBlock();
                     }
                     case I_MSUB:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                        _[hilo ^= signed_(hilo) - sign_extend(gpr(0), 64) * sign_extend(gpr(1), 64)];
                         break;
                     case I_MSUBU:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                        _[hilo ^= unsigned_(hilo) - zero_extend(gpr(0), 64) * zero_extend(gpr(1), 64)];
                         break;
                     case I_MTC0:
                         _(std::make_unique<core::ir::InlineAssembly>());
@@ -667,16 +669,18 @@ namespace nc {
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
                     case I_MTHI:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                        if (operand[0].reg != R_ZERO)
+                            _[hilo ^= truncate(hilo, 32) | (zero_extend(gpr(0), 64) << constant(32))];
                         break;
                     case I_MTLO:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                        if (operand[0].reg != R_ZERO)
+                            _[hilo ^= unsigned_(hilo) >> constant(32) | (zero_extend(gpr(0), 64))];
                         break;
                     case I_MULT:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                        _[hilo ^= sign_extend(gpr(0), 64) * sign_extend(gpr(1), 64)];
                         break;
                     case I_MULTU:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                        _[hilo ^= zero_extend(gpr(0), 64) * zero_extend(gpr(1), 64)];
                         break;
                     case I_NOR: {
                         if (operand[0].reg != R_ZERO)
