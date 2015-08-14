@@ -1038,7 +1038,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeConstant(const Term 
     if (!type->pointee() || type->pointee()->size() <= 1) {
         auto isAscii = [](const QString &string) -> bool {
             foreach (QChar c, string) {
-                if (c >= 0x80 || (c <= 0x20 && c != '\r' && c != '\n' && c != '\t')) {
+                if (c >= 0x80 || (c < 0x20 && c != '\r' && c != '\n' && c != '\t')) {
                     return false;
                 }
             }
