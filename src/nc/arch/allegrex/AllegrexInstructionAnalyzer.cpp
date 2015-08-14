@@ -669,12 +669,10 @@ namespace nc {
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
                     case I_MTHI:
-                        if (operand[0].reg != R_ZERO)
-                            _[hilo ^= truncate(hilo, 32) | (zero_extend(gpr(0), 64) << constant(32))];
+                        _[hilo ^= truncate(hilo, 32) | (zero_extend(gpr(0), 64) << constant(32))];
                         break;
                     case I_MTLO:
-                        if (operand[0].reg != R_ZERO)
-                            _[hilo ^= unsigned_(hilo) >> constant(32) | (zero_extend(gpr(0), 64))];
+                        _[hilo ^= unsigned_(hilo) >> constant(32) | (zero_extend(gpr(0), 64))];
                         break;
                     case I_MULT:
                         _[hilo ^= sign_extend(gpr(0), 64) * sign_extend(gpr(1), 64)];
