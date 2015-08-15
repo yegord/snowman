@@ -90,7 +90,7 @@ REG(f29,	F29,	1,	29 * 32,	32, "Float point register")
 REG(f30,	F30,	1,	30 * 32,	32, "Float point register")
 REG(f31,	F31,	1,	31 * 32,	32, "Float point register")
 
-REG(hilo,   HILO, 	2,  0  * 64,	64, "Pair of 32-bits == 64 bits")
+//REG(hilo,   HILO, 	2,  0  * 64,	64, "Pair of 32-bits == 64 bits")
 REG(lo,     LO, 	2,  0  * 32,	32, "Low half result")
 REG(hi,     HI, 	2,  1  * 32,	32, "High half result")
 
@@ -223,6 +223,7 @@ REG(s713,	S713,	3,	125 * 32,	32, "Scalar float point register")
 REG(s723,	S723,	3,	126 * 32,	32, "Scalar float point register")
 REG(s733,	S733,	3,	127 * 32,	32, "Scalar float point register")
 
-REG(tmp,    TMP, 	4,  1 * 32,	32, "Temporary register")
+REG(tmp64,  TMP64, 	4,  0 * 32,	64, "Temporary 64-bit register")
+REG(tmp32,  TMP32, 	4,  2 * 32,	32, "Temporary 32-bit register")
 
 /* vim:set et sts=4 sw=4: */

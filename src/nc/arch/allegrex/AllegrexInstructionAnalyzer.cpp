@@ -42,8 +42,11 @@ namespace nc {
                 NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, sp);
                 NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, gp);
                 NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, ra);
-                NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, hilo);
-                NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, tmp);
+                NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, hi);
+                NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, lo);
+
+                NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, tmp64);
+                NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, tmp32);
 
             } // anonymous namespace
 
@@ -513,12 +516,24 @@ namespace nc {
                     case I_DBREAK:
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
-                    case I_DIV:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                    case I_DIV: {
+                        auto rs = signed_(sign_extend(gpr(0), 64));
+                        auto rt = signed_(sign_extend(gpr(1), 64));
+                        _[
+                            lo ^= truncate((std::move(rs) / std::move(rt)), 32),
+                            hi ^= truncate((std::move(rs) % std::move(rt)), 32)
+                        ];
                         break;
-                    case I_DIVU:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                    }
+                    case I_DIVU: {
+                        auto rs = unsigned_(zero_extend(gpr(0), 64));
+                        auto rt = unsigned_(zero_extend(gpr(1), 64));
+                        _[
+                            lo ^= truncate((std::move(rs) / std::move(rt)), 32),
+                            hi ^= truncate((std::move(rs) % std::move(rt)), 32)
+                        ];
                         break;
+                    }
                     case I_DRET:
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
@@ -605,29 +620,47 @@ namespace nc {
                     case I_LWR:
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
-                    case I_MADD:
-                        _[hilo ^= signed_(hilo) + sign_extend(gpr(0), 64) * sign_extend(gpr(1), 64)];
+                    case I_MADD: {
+                        auto rs = sign_extend(gpr(0), 64);
+                        auto rt = sign_extend(gpr(0), 64);
+                        _[
+                            tmp64 ^= sign_extend(hi, 64) << constant(32) + zero_extend(lo, 64) + std::move(rs) * std::move(rt),
+
+                            lo ^= truncate(tmp64, 32),
+                            hi ^= truncate(signed_(tmp64) >> constant(32), 32)
+                        ];
                         break;
-                    case I_MADDU:
-                        _[hilo ^= unsigned_(hilo) + zero_extend(gpr(0), 64) * zero_extend(gpr(1), 64)];
+                    }
+                    case I_MADDU: {
+                        auto rs = zero_extend(gpr(0), 64);
+                        auto rt = zero_extend(gpr(0), 64);
+                        _[
+                            tmp64 ^= zero_extend(hi, 64) << constant(32) + zero_extend(lo, 64) + std::move(rs) * std::move(rt),
+
+                            lo ^= truncate(tmp64, 32),
+                            hi ^= truncate(unsigned_(tmp64) >> constant(32), 32)
+                        ];
                         break;
+                    }
                     case I_MFC0:
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
                     case I_MFDR:
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
-                    case I_MFHI:
+                    case I_MFHI: {
                         if (operand[0].reg != R_ZERO)
-                            _[gpr(0) ^= truncate(unsigned_(hilo) >> constant(32), 32)];
+                            _[gpr(0) ^= hi];
                         break;
+                    }
                     case I_MFIC:
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
-                    case I_MFLO:
+                    case I_MFLO: {
                         if (operand[0].reg != R_ZERO)
-                            _[gpr(0) ^= truncate(hilo, 32)];
+                            _[gpr(0) ^= lo];
                         break;
+                    }
                     case I_MOVN: {
                         auto move = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
                             gpr(0) ^= gpr(1)
@@ -650,12 +683,27 @@ namespace nc {
                         ];
                         return move.basicBlock();
                     }
-                    case I_MSUB:
-                        _[hilo ^= signed_(hilo) - sign_extend(gpr(0), 64) * sign_extend(gpr(1), 64)];
+                    case I_MSUB: {
+                        auto rs = sign_extend(gpr(0), 64);
+                        auto rt = sign_extend(gpr(0), 64);
+                        _[
+                            tmp64 ^= sign_extend(hi, 64) << constant(32) + zero_extend(lo, 64) - std::move(rs) * std::move(rt),
+
+                            lo ^= truncate(tmp64, 32),
+                            hi ^= truncate(signed_(tmp64) >> constant(32), 32)
+                        ];
+                    }
+                    case I_MSUBU: {
+                        auto rs = zero_extend(gpr(0), 64);
+                        auto rt = zero_extend(gpr(0), 64);
+                        _[
+                            tmp64 ^= zero_extend(hi, 64) << constant(32) + zero_extend(lo, 64) - std::move(rs) * std::move(rt),
+
+                            lo ^= truncate(tmp64, 32),
+                            hi ^= truncate(unsigned_(tmp64) >> constant(32), 32)
+                        ];
                         break;
-                    case I_MSUBU:
-                        _[hilo ^= unsigned_(hilo) - zero_extend(gpr(0), 64) * zero_extend(gpr(1), 64)];
-                        break;
+                    }
                     case I_MTC0:
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
@@ -668,18 +716,36 @@ namespace nc {
                     case I_HALT:
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
-                    case I_MTHI:
-                        _[hilo ^= truncate(hilo, 32) | (zero_extend(gpr(0), 64) << constant(32))];
+                    case I_MTHI: {
+                        _[hi ^= gpr(0)];
                         break;
-                    case I_MTLO:
-                        _[hilo ^= unsigned_(hilo) >> constant(32) | (zero_extend(gpr(0), 64))];
+                    }
+                    case I_MTLO: {
+                        _[lo ^= gpr(0)];
                         break;
-                    case I_MULT:
-                        _[hilo ^= sign_extend(gpr(0), 64) * sign_extend(gpr(1), 64)];
+                    }
+                    case I_MULT: {
+                        auto rs = sign_extend(gpr(0), 64);
+                        auto rt = sign_extend(gpr(0), 64);
+                        _[
+                            tmp64 ^= std::move(rs) * std::move(rt),
+
+                                lo ^= truncate(tmp64, 32),
+                                hi ^= truncate(signed_(tmp64) >> constant(32), 32)
+                        ];
                         break;
-                    case I_MULTU:
-                        _[hilo ^= zero_extend(gpr(0), 64) * zero_extend(gpr(1), 64)];
+                    }
+                    case I_MULTU: {
+                        auto rs = zero_extend(gpr(0), 64);
+                        auto rt = zero_extend(gpr(0), 64);
+                        _[
+                            tmp64 ^= std::move(rs) * std::move(rt),
+
+                            lo ^= truncate(tmp64, 32),
+                            hi ^= truncate(unsigned_(tmp64) >> constant(32), 32)
+                        ];
                         break;
+                    }
                     case I_NOR: {
                         if (operand[0].reg != R_ZERO)
                             _[gpr(0) ^= ~(gpr(1) | gpr(2))];
