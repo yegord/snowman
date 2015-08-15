@@ -68,6 +68,7 @@ class BinaryOperator: public Expression {
         GT,
         GEQ,
         COMMA,
+        ARRAY_SUBSCRIPT,
         USER_OPERATOR = 1000    ///< Base value for user-defined operators.
     };
 
@@ -145,7 +146,7 @@ class BinaryOperator: public Expression {
     Expression *rewrite() override;
 
 protected:
-    virtual const Type *getType(const Type *leftType, const Type *rightType) const;
+    const Type *getType(int operatorKind, const Expression *left, const Expression *right) const;
 
     void doCallOnChildren(const std::function<void(TreeNode *)> &fun) override;
     void doPrint(PrintContext &context) const override;

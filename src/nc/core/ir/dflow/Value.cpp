@@ -25,6 +25,7 @@
 #include "Value.h"
 
 #include <nc/common/BitTwiddling.h>
+#include <nc/common/Unused.h>
 
 namespace nc {
 namespace core {
@@ -34,7 +35,7 @@ namespace dflow {
 #ifndef NDEBUG
 namespace {
 
-bool test() {
+bool testBitTwiddling() {
     {
         int value = 0xf;
         assert(signExtend(value, 4) == -1);
@@ -68,7 +69,7 @@ bool test() {
     return true;
 }
 
-bool success = test();
+bool bitTwiddlingWorks = (NC_UNUSED(bitTwiddlingWorks), testBitTwiddling());
 
 } // anonymous namespace
 #endif

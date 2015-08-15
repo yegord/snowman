@@ -72,7 +72,6 @@ public:
     const IntegerType *type() const { return type_; }
 
     const Type *getType() const override { return type(); }
-    bool isZero() const override { return value().value() == 0; }
 
 protected:
     void doPrint(PrintContext &context) const override;

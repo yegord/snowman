@@ -1,7 +1,7 @@
 Snowman
 =======
 
-http://derevenets.com/[Snowman] is a native code to C/C++ decompiler, supporting x86, AMD64, and ARM (experimental) architectures.
+http://derevenets.com/[Snowman] is a native code to C/C++ decompiler, supporting x86, AMD64, and ARM architectures.
 You can use it as a standalone GUI application, command-line tool, IDA plug-in, or a library.
 Snowman is link:doc/licenses.asciidoc[free software].
 

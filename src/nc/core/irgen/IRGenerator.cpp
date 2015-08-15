@@ -84,7 +84,7 @@ void IRGenerator::generate() {
 
 #ifndef NDEBUG
     /*
-     * Check statements are shorted by their instructions' addresses.
+     * Check statements are sorted by their instructions' addresses.
      * ir::Program::createBasicBlock(ByteAddr) relies on this while splitting basic blocks.
      */
     foreach (auto basicBlock, program_->basicBlocks()) {

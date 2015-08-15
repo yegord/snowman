@@ -227,9 +227,11 @@ void TypeAnalyzer::analyze(const UnaryOperator *unary) {
             break;
         case UnaryOperator::SIGN_EXTEND:
             operandType->makeSigned();
+            type->makeSigned();
             break;
         case UnaryOperator::ZERO_EXTEND:
             operandType->makeUnsigned();
+            type->makeUnsigned();
             break;
         case UnaryOperator::TRUNCATE:
             break;
