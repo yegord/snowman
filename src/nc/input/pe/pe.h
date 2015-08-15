@@ -368,4 +368,19 @@ typedef struct _IMAGE_IMPORT_BY_NAME {
   BYTE Name[1];
 } IMAGE_IMPORT_BY_NAME,*PIMAGE_IMPORT_BY_NAME;
 
+typedef struct _IMAGE_EXPORT_DIRECTORY {
+  DWORD   Characteristics;
+  DWORD   TimeDataStamp;
+  WORD    MajorVersion;
+  WORD    MinorVersion;
+  DWORD   Name;
+  DWORD   Base;
+  DWORD   NumberOfFunctions;
+  DWORD   NumberOfNames;
+  DWORD   AddressOfFunctions;
+  DWORD   AddressOfNames;
+  DWORD   AddressOfNameOrdinal;
+} IMAGE_EXPORT_DIRECTORY;
+typedef IMAGE_EXPORT_DIRECTORY *PIMAGE_EXPORT_DIRECTORY;
+
 /* vim:set et sts=4 sw=4: */
