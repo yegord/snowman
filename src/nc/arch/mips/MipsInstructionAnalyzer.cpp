@@ -71,7 +71,7 @@ public:
         instructions_ = instructions;
     }
 
-    void createStatements(MipsExpressionFactoryCallback & _, const MipsInstruction *instruction, core::ir::Program *program) {
+    void createStatements(MipsExpressionFactoryCallback & _, const MipsInstruction *instruction, core::ir::Program *program, const MipsInstruction *delayslotOwner) {
 
         auto instr = disassemble(instruction);
         if (instr == nullptr)
@@ -94,11 +94,11 @@ public:
             return cachedDirectSuccessorButOne;
         };
 
-        auto delayslot = [&](MipsExpressionFactoryCallback & callback) -> MipsExpressionFactoryCallback & {
+        auto delayslot = [&](MipsExpressionFactoryCallback &callback) -> MipsExpressionFactoryCallback & {
             auto detail = detail_;
             auto delayslot = checked_cast<const MipsInstruction *>(instructions_->get(instruction->endAddr()).get());
             if (delayslot) {
-                createStatements(callback, delayslot, program);
+                createStatements(callback, delayslot, program, instruction);
             }
             else {
                 throw core::irgen::InvalidInstructionException(tr("Cannot find a delay slot at 0x%1.").arg(instruction->endAddr(), 0, 16));
@@ -144,7 +144,7 @@ public:
                 break;
             }
             case MIPS_INS_ADD: /* Fall-through */
-            case MIPS_INS_ADDU: {
+            case MIPS_INS_ADDI: {
                 _[operand(0) ^= (operand(1) + operand(2))];
                 break;
             }
@@ -178,9 +178,10 @@ public:
                 _[operand(0) ^= ~(operand(1))];
                 break;
             }
-            case MIPS_INS_ADDI: /* Fall-through */
+            case MIPS_INS_ADDU: /* Fall-through */
             case MIPS_INS_ADDIU: {
-                _[operand(0) ^= (operand(1) + signed_(operand(2)))];
+                /*_[operand(0) ^= (operand(1) + signed_(operand(2)))];*/
+                _[operand(0) ^= (operand(1) + operand(2))];
                 break;
             }
             case MIPS_INS_ANDI: {
@@ -204,7 +205,7 @@ public:
                 break;
             }
             case MIPS_INS_MOVN: {
-                MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
                 _[
                     jump(~(operand(2) == constant(0)),
                          (then[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock(),
@@ -213,7 +214,7 @@ public:
                 break;
             }
             case MIPS_INS_MOVZ: {
-                MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), instruction);
+                MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
                 _[
                     jump(operand(2) == constant(0),
                          (then[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock(),
@@ -680,13 +681,6 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
             /* Kudos to hlide  */
             case MIPS_INS_BITREV: {
             	auto operand0 = operand(0);
-				/*
-				_[
-					operand0 ^= ((unsigned_(operand(1) & constant(0x00ff00ff)) << constant(8)) | (unsigned_(operand(1) & constant(0xff00ff00)) >> constant(8))),
-					operand0 ^= ((unsigned_(operand0) >> constant(16)) | (operand0 << (constant(32) - constant(16)))),
-					operand0 ^= (((operand0 & constant(0x01010101)) << constant(7)) | ((operand0 & constant(0x02020202)) << constant(6)) | ((operand0 & constant(0x04040404)) << constant(5)) | ((operand0 & constant(0x08080808)) << constant(4)) | (unsigned_(operand0 & constant(0x10101010)) >> constant(4)) | (unsigned_(operand0 & constant(0x20202020)) >> constant(5)) | (unsigned_(operand0 & constant(0x40404040)) >> constant(6)) | (unsigned_(operand0 & constant(0x80808080)) >> constant(7)))
-            	];
-            	*/
 				_[
 					operand0 ^= (((unsigned_(operand(1)) >> constant(1)) & constant(0x55555555)) | ((operand(1) & constant(0x55555555)) << constant(1))),
 					operand0 ^= (((unsigned_(operand0) >> constant(2)) & constant(0x33333333)) | ((operand0 & constant(0x33333333)) << constant(2))),
@@ -1043,7 +1037,7 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
         MipsExpressionFactory factory(architecture_);
         MipsExpressionFactoryCallback _(factory, program->getBasicBlockForInstruction(instruction), instruction);
 
-        createStatements(_, instruction, program);
+        createStatements(_, instruction, program, nullptr);
     }
 
 private:
