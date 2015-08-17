@@ -128,6 +128,7 @@ public:
             case MIPS_INS_CACHE: /* Fall-through */
             case MIPS_INS_BREAK:
             case MIPS_INS_PREF:
+            case MIPS_INS_SDBBP:
             case MIPS_INS_SYNC:
             case MIPS_INS_SSNOP:
             case MIPS_INS_NOP: {
@@ -155,7 +156,7 @@ public:
             }
             case MIPS_INS_NEG: /* Fall-through */
             case MIPS_INS_NEGU: {
-                _[operand(0) ^=  -(operand(1))];
+                _[operand(0) ^=  signed_(constant(0)-operand(1))];
                 break;
             }
             case MIPS_INS_AND: {
@@ -250,21 +251,15 @@ public:
                 _[operand(0) ^= (operand(1) == signed_(operand(2)))];
                 break;
             }
-            case MIPS_INS_SLT: {
+			case MIPS_INS_SLT: /* Fall-through */
+            case MIPS_INS_SLTI: {
 				_[operand(0) ^= zero_extend(signed_(operand(1)) < signed_(operand(2)))];
                 break;
             }
-            case MIPS_INS_SLTI: {
-				_[operand(0) ^= zero_extend(signed_(operand(1)) < sign_extend(operand(2, 16)))];
-                break;
-            }
-            case MIPS_INS_SLTU: {
+	        case MIPS_INS_SLTU: /* Fall-through */
+            case MIPS_INS_SLTIU: {
    				_[operand(0) ^= zero_extend(unsigned_(operand(1)) < unsigned_(operand(2)))];
                 break;
-            }
-            case MIPS_INS_SLTIU: {
-            	_[operand(0) ^= zero_extend(unsigned_(operand(1)) < unsigned_(sign_extend(operand(2, 16))))];
-               break;
             }
             case MIPS_INS_ROTR:	 /* Fall-through */
             case MIPS_INS_ROTRV: {
@@ -274,33 +269,32 @@ public:
                 break;
             }
             case MIPS_INS_SLL: /* Fall-through */
-            case MIPS_INS_SLLI:
-            case MIPS_INS_SLLV: {
-                if (getOperandType(2) == MIPS_OP_REG)
-                    _[operand(0) ^= (operand(1) << zero_extend(operand(2, 16)))];
-                else
-                    _[operand(0) ^= (operand(1) << operand(2))];
+            case MIPS_INS_SLLI: {
+                 _[operand(0) ^= (operand(1) << operand(2))];
                 break;
             }
-            case MIPS_INS_SRA: /* Fall-through */
-            case MIPS_INS_SRAI:
+            case MIPS_INS_SLLV: {
+                 _[operand(0) ^= (signed_(operand(1)) << (signed_(operand(2)) % constant(32)))];
+                break;
+            }
+          	case MIPS_INS_SRA: /* Fall-through */
+            case MIPS_INS_SRAI: {
+                _[operand(0) ^= (signed_(operand(1)) >> operand(2))];
+                break;
+            }
             case MIPS_INS_SRAV: {
-                if (getOperandType(2) == MIPS_OP_REG)
-                    _[operand(0) ^= (signed_(operand(1)) >> zero_extend(operand(2, 16)))];
-                else
-                    _[operand(0) ^= (signed_(operand(1)) >> operand(2))];
+                _[operand(0) ^= (signed_(operand(1)) >> (signed_(operand(2)) % constant(32)))];
                 break;
             }
             case MIPS_INS_SRL: /* Fall-through */
-            case MIPS_INS_SRLI:
-            case MIPS_INS_SRLV: {
-                if (getOperandType(2) == MIPS_OP_REG)
-                    _[operand(0) ^= (unsigned_(operand(1)) >> zero_extend(operand(2, 16)))];
-                else
-                    _[operand(0) ^= (unsigned_(operand(1)) >> operand(2))];
+            case MIPS_INS_SRLI: {
+            	 _[operand(0) ^= (unsigned_(operand(1)) >> operand(2))];
                 break;
             }
-
+            case MIPS_INS_SRLV: {
+            	 _[operand(0) ^= (unsigned_(operand(1)) >> (signed_(operand(2)) % constant(32)))];
+                break;
+            }
             case MIPS_INS_LB: {
                 _[operand(0) ^= sign_extend(operand(1, 8))];
                 break;
