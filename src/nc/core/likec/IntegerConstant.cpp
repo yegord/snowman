@@ -40,6 +40,11 @@ IntegerConstant::IntegerConstant(Tree &tree, ConstantValue value, const IntegerT
     Expression(tree, INTEGER_CONSTANT), value_(SizedValue(type->size(), value)), type_(type)
 {}
 
+void IntegerConstant::setValue(const SizedValue &value) {
+    assert(value.size() == type_->size());
+    value_ = value;
+}
+
 void IntegerConstant::doPrint(PrintContext &context) const {
     SignedConstantValue val = value().size() > 1 ? value().signedValue() : value().value();
 

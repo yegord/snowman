@@ -454,6 +454,37 @@ Expression *BinaryOperator::rewrite() {
     }
 
     /*
+     * a + -1 -> a - 1
+     * a - -1 -> a + 1
+     */
+    switch (operatorKind()) {
+        case ADD: {
+            if (auto constant = left()->as<IntegerConstant>()) {
+                if (constant->type()->isSigned() && constant->value().size() > 1 && constant->value().signedValue() < 0) {
+                    setOperatorKind(SUB);
+                    constant->setValue(SizedValue(constant->value().size(), constant->value().absoluteValue()));
+                }
+            }
+            if (auto constant = right()->as<IntegerConstant>()) {
+                if (constant->type()->isSigned() && constant->value().size() > 1 && constant->value().signedValue() < 0) {
+                    setOperatorKind(SUB);
+                    constant->setValue(SizedValue(constant->value().size(), constant->value().absoluteValue()));
+                }
+            }
+            break;
+        }
+        case SUB: {
+            if (auto constant = right()->as<IntegerConstant>()) {
+                if (constant->type()->isSigned() && constant->value().size() > 1 && constant->value().signedValue() < 0) {
+                    setOperatorKind(ADD);
+                    constant->setValue(SizedValue(constant->value().size(), constant->value().absoluteValue()));
+                }
+            }
+            break;
+        }
+    }
+
+    /*
      * Handling increments and decrements.
      *
      * x = x + 1; -> ++x;

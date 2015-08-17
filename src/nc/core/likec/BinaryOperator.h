@@ -68,8 +68,7 @@ class BinaryOperator: public Expression {
         GT,
         GEQ,
         COMMA,
-        ARRAY_SUBSCRIPT,
-        USER_OPERATOR = 1000    ///< Base value for user-defined operators.
+        ARRAY_SUBSCRIPT
     };
 
     /**
