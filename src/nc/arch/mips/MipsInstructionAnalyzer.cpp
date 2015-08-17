@@ -277,7 +277,7 @@ public:
             case MIPS_INS_SLLI:
             case MIPS_INS_SLLV: {
                 if (getOperandType(2) == MIPS_OP_REG)
-                    _[operand(0) ^= (operand(1) << zero_extend(operand(2, 4)))];
+                    _[operand(0) ^= (operand(1) << zero_extend(operand(2, 16)))];
                 else
                     _[operand(0) ^= (operand(1) << operand(2))];
                 break;
@@ -286,7 +286,7 @@ public:
             case MIPS_INS_SRAI:
             case MIPS_INS_SRAV: {
                 if (getOperandType(2) == MIPS_OP_REG)
-                    _[operand(0) ^= (signed_(operand(1)) >> zero_extend(operand(2, 4)))];
+                    _[operand(0) ^= (signed_(operand(1)) >> zero_extend(operand(2, 16)))];
                 else
                     _[operand(0) ^= (signed_(operand(1)) >> operand(2))];
                 break;
@@ -295,7 +295,7 @@ public:
             case MIPS_INS_SRLI:
             case MIPS_INS_SRLV: {
                 if (getOperandType(2) == MIPS_OP_REG)
-                    _[operand(0) ^= (unsigned_(operand(1)) >> zero_extend(operand(2, 4)))];
+                    _[operand(0) ^= (unsigned_(operand(1)) >> zero_extend(operand(2, 16)))];
                 else
                     _[operand(0) ^= (unsigned_(operand(1)) >> operand(2))];
                 break;
