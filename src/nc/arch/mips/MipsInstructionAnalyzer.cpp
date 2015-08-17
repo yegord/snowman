@@ -56,7 +56,7 @@ class MipsInstructionAnalyzerImpl {
     MipsExpressionFactory factory_;
     core::ir::Program *program_;
     const MipsInstruction *instruction_;
-    //core::arch::CapstoneInstructionPtr instr_;
+    core::arch::CapstoneInstructionPtr instr_;
     const cs_mips *detail_;
     const core::arch::Instructions *instructions_;
 
@@ -73,11 +73,11 @@ public:
 
     void createStatements(MipsExpressionFactoryCallback & _, const MipsInstruction *instruction, core::ir::Program *program, const MipsInstruction *delayslotOwner) {
 
-        auto instr = disassemble(instruction);
-        if (instr == nullptr)
+        instr_ = disassemble(instruction);
+        if (instr_ == nullptr)
             return;
        
-        detail_ = &instr->detail->mips;
+        detail_ = &instr_->detail->mips;
                 
         core::ir::BasicBlock *cachedDirectSuccessor = nullptr;
         core::ir::BasicBlock *cachedDirectSuccessorButOne = nullptr;
@@ -124,7 +124,7 @@ public:
         ];
 
         /* Describing semantics */
-        switch (instr->id) {
+        switch (instr_->id) {
             case MIPS_INS_CACHE: /* Fall-through */
             case MIPS_INS_BREAK:
             case MIPS_INS_PREF:
