@@ -77,7 +77,9 @@ namespace nc {
                     program_ = program;
                     instruction_ = instruction;
 
-                    AllegrexExpressionFactoryCallback _(factory_, program->getBasicBlockForInstruction(instruction), instruction);
+                    AllegrexExpressionFactory factory(architecture_);
+
+                    AllegrexExpressionFactoryCallback _(factory, program->getBasicBlockForInstruction(instruction), instruction);
 
                     createStatements(_, instruction, program, nullptr);
                 }
@@ -396,16 +398,23 @@ namespace nc {
                         break;
                     }
                     case I_BITREV: {
+                        auto rd = unsigned_(gpr(0));
                         auto rt = unsigned_(gpr(1));
-                        auto swap = [&](unsigned shift, unsigned mask) {
+                        auto swapB = [&](unsigned shift, unsigned mask) {
                             return ((std::move(rt) >> constant(shift)) & constant(mask)) | ((std::move(rt) & constant(mask)) << constant(shift));
                         };
+                        auto swapS = [&](unsigned shift, unsigned mask) {
+                            return ((std::move(rd) >> constant(shift)) & constant(mask)) | ((std::move(rd) & constant(mask)) << constant(shift));
+                        };
+                        auto swapE = [&](unsigned shift) {
+                            return (std::move(rd) >> constant(shift)) | (std::move(rd) << constant(shift));
+                        };
                         _[
-                            rt ^= swap(1,  0x55555555),
-                            rt ^= swap(2,  0x33333333),
-                            rt ^= swap(4,  0x0F0F0F0F),
-                            rt ^= swap(8,  0x00FF00FF),
-                            rt ^= (std::move(rt) >> constant(16)) | (std::move(rt) << constant(16))
+                            std::move(rd) ^= swapB(1, 0x55555555),
+                            std::move(rd) ^= swapS(2, 0x33333333),
+                            std::move(rd) ^= swapS(4, 0x0F0F0F0F),
+                            std::move(rd) ^= swapS(8, 0x00FF00FF),
+                            std::move(rd) ^= swapE(16)
                         ];
                         break;
                     }
