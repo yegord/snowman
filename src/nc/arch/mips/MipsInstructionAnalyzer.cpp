@@ -268,33 +268,33 @@ public:
                 _[operand(0) ^= ((unsigned_(operand1) >> operand2) | (operand1 << (constant(32) - operand2)))];
                 break;
             }
-            case MIPS_INS_SLL: /* Fall-through */
-            case MIPS_INS_SLLI: {
-                 _[operand(0) ^= (operand(1) << operand(2))];
-                break;
-            }
-            case MIPS_INS_SLLV: {
-                 _[operand(0) ^= (signed_(operand(1)) << (signed_(operand(2)) % constant(32)))];
-                break;
-            }
-          	case MIPS_INS_SRA: /* Fall-through */
-            case MIPS_INS_SRAI: {
-                _[operand(0) ^= (signed_(operand(1)) >> operand(2))];
-                break;
-            }
+ 	        case MIPS_INS_SLL: /* Fall-through */
+   	 	    case MIPS_INS_SLLI:
+   	        case MIPS_INS_SLLV: {
+          		if (getOperandType(2) == MIPS_OP_REG)
+            	    _[operand(0) ^= (operand(1) << zero_extend(operand(2, 5)))];
+           		else
+            	    _[operand(0) ^= (operand(1) << operand(2))];
+            	break;
+        	}
+       	    case MIPS_INS_SRA: /* Fall-through */
+            case MIPS_INS_SRAI:
             case MIPS_INS_SRAV: {
-                _[operand(0) ^= (signed_(operand(1)) >> (signed_(operand(2)) % constant(32)))];
-                break;
-            }
-            case MIPS_INS_SRL: /* Fall-through */
-            case MIPS_INS_SRLI: {
-            	 _[operand(0) ^= (unsigned_(operand(1)) >> operand(2))];
-                break;
-            }
-            case MIPS_INS_SRLV: {
-            	 _[operand(0) ^= (unsigned_(operand(1)) >> (signed_(operand(2)) % constant(32)))];
-                break;
-            }
+            	if (getOperandType(2) == MIPS_OP_REG)
+                	_[operand(0) ^= (signed_(operand(1)) >> zero_extend(operand(2, 5)))];
+            	else
+                	_[operand(0) ^= (signed_(operand(1)) >> operand(2))];
+            	break;
+        	}
+        	case MIPS_INS_SRL: /* Fall-through */
+        	case MIPS_INS_SRLI:
+        	case MIPS_INS_SRLV: {
+            	if (getOperandType(2) == MIPS_OP_REG)
+                	_[operand(0) ^= (unsigned_(operand(1)) >> zero_extend(operand(2, 5)))];
+            	else
+                	_[operand(0) ^= (unsigned_(operand(1)) >> operand(2))];
+            	break;
+        	}
             case MIPS_INS_LB: {
                 _[operand(0) ^= sign_extend(operand(1, 8))];
                 break;
