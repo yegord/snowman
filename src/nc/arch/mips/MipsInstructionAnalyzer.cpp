@@ -156,7 +156,7 @@ public:
             }
             case MIPS_INS_NEG: /* Fall-through */
             case MIPS_INS_NEGU: {
-                _[operand(0) ^=  signed_(constant(0)-operand(1))];
+                _[operand(0) ^=  signed_(constant(0) - operand(1))];
                 break;
             }
             case MIPS_INS_AND: {
@@ -674,14 +674,17 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
             }
             /* Kudos to hlide  */
             case MIPS_INS_BITREV: {
-            	auto operand0 = operand(0);
-				_[
-					operand0 ^= (((unsigned_(operand(1)) >> constant(1)) & constant(0x55555555)) | ((operand(1) & constant(0x55555555)) << constant(1))),
-					operand0 ^= (((unsigned_(operand0) >> constant(2)) & constant(0x33333333)) | ((operand0 & constant(0x33333333)) << constant(2))),
-					operand0 ^= (((unsigned_(operand0) >> constant(4)) & constant(0x0F0F0F0F)) | ((operand0 & constant(0x0F0F0F0F)) << constant(4))),
-					operand0 ^= (((unsigned_(operand0) >> constant(8)) & constant(0x00FF00FF)) | ((operand0 & constant(0x00FF00FF)) << constant(8))),
-					operand0 ^= (operand0 & constant(0x0000FFFF))
-            	];            	            	
+			    auto rt = unsigned_(operand(1));
+                auto swap = [&](unsigned shift, unsigned mask) {
+                	return ((std::move(rt) >> constant(shift)) & constant(mask)) | ((std::move(rt) & constant(mask)) << constant(shift));
+               	};
+             	_[
+               		rt ^= swap(1, 0x55555555),
+                 	rt ^= swap(2, 0x33333333),
+                  	rt ^= swap(4, 0x0F0F0F0F),
+                  	rt ^= swap(8, 0x00FF00FF),
+                 	operand(0) ^= (std::move(rt) & constant(0x0000FFFF))
+              	];          	            	
             	break;
             }
             case MIPS_INS_DIV: {
