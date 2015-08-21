@@ -37,6 +37,7 @@
 #include <nc/core/image/Relocation.h>
 #include <nc/core/image/Section.h>
 #include <nc/core/input/ParseError.h>
+#include <nc/core/input/Utils.h>
 
 #include "elf32.h"
 #include "elf64.h"
@@ -46,6 +47,9 @@ namespace input {
 namespace elf {
 
 namespace {
+
+using nc::core::input::read;
+using nc::core::input::ParseError;
 
 class Elf32 {
 public:
@@ -98,7 +102,7 @@ public:
 
 template<class Elf>
 class ElfParserImpl {
-    Q_DECLARE_TR_FUNCTIONS(ElfParserPrivate)
+    Q_DECLARE_TR_FUNCTIONS(ElfParserImpl)
 
     QIODevice *source_;
     core::image::Image *image_;
@@ -141,12 +145,12 @@ private:
     void parseElfHeader() {
         source_->seek(0);
 
-        if (source_->read(reinterpret_cast<char *>(&ehdr_), sizeof(ehdr_)) != sizeof(ehdr_)) {
-            throw core::input::ParseError(tr("Could not read ELF header."));
+        if (!read(source_, ehdr_)) {
+            throw ParseError(tr("Could not read ELF header."));
         }
 
         if (ehdr_.e_ident[EI_CLASS] != Elf::elfclass) {
-            throw core::input::ParseError(tr("The instantiation of the parser class does not match the ELF class."));
+            throw ParseError(tr("The instantiation of the parser class does not match the ELF class."));
         }
 
         if (ehdr_.e_ident[EI_DATA] == ELFDATA2LSB) {
@@ -164,20 +168,20 @@ private:
 
         switch (ehdr_.e_machine) {
             case EM_386:
-                image_->setArchitecture(QLatin1String("i386"));
+                image_->platform().setArchitecture(QLatin1String("i386"));
                 break;
             case EM_X86_64:
-                image_->setArchitecture(QLatin1String("x86-64"));
+                image_->platform().setArchitecture(QLatin1String("x86-64"));
                 break;
             case EM_ARM:
                 if (byteOrder_ == ByteOrder::LittleEndian) {
-                    image_->setArchitecture(QLatin1String("arm-le"));
+                    image_->platform().setArchitecture(QLatin1String("arm-le"));
                 } else {
-                    image_->setArchitecture(QLatin1String("arm-be"));
+                    image_->platform().setArchitecture(QLatin1String("arm-be"));
                 }
                 break;
             default:
-                throw core::input::ParseError(tr("Unknown machine id: %1.").arg(ehdr_.e_machine));
+                throw ParseError(tr("Unknown machine id: %1.").arg(ehdr_.e_machine));
         }
     }
 
@@ -188,10 +192,8 @@ private:
          * Read section headers.
          */
         shdrs_.resize(ehdr_.e_shnum);
-        if (source_->read(reinterpret_cast<char *>(&shdrs_[0]), sizeof(typename Elf::Shdr) * shdrs_.size())
-            != static_cast<qint64>(sizeof(typename Elf::Shdr) * shdrs_.size()))
-        {
-            throw core::input::ParseError(tr("Cannot read section headers."));
+        if (!read(source_, *shdrs_.data(), shdrs_.size())) {
+            throw ParseError(tr("Cannot read section headers."));
         }
 
         /*
@@ -371,23 +373,19 @@ private:
 } // anonymous namespace
 
 ElfParser::ElfParser():
-    core::input::Parser("ELF")
+    core::input::Parser(QLatin1String("ELF"))
 {}
 
 bool ElfParser::doCanParse(QIODevice *source) const {
     Elf32_Ehdr ehdr;
-    if (source->read(reinterpret_cast<char *>(&ehdr), sizeof(ehdr)) != sizeof(ehdr)) {
-        return false;
-    }
-    return IS_ELF(ehdr);
+    return read(source, ehdr) && IS_ELF(ehdr);
 }
 
 void ElfParser::doParse(QIODevice *source, core::image::Image *image, const LogToken &log) const {
     Elf32_Ehdr ehdr;
 
-    std::size_t bytesRead = source->read(reinterpret_cast<char *>(&ehdr), sizeof(ehdr));
-    if (bytesRead < sizeof(ehdr.e_ident) || !IS_ELF(ehdr)) {
-        throw core::input::ParseError(tr("ELF signature doesn't match."));
+    if (!read(source, ehdr) || !IS_ELF(ehdr)) {
+        throw ParseError(tr("ELF signature does not match."));
     }
 
     switch (ehdr.e_ident[EI_CLASS]) {
@@ -400,7 +398,7 @@ void ElfParser::doParse(QIODevice *source, core::image::Image *image, const LogT
             break;
         }
         default: {
-            throw core::input::ParseError(tr("Unknown ELF class: %1.").arg(ehdr.e_ident[EI_CLASS]));
+            throw ParseError(tr("Unknown ELF class: %1.").arg(ehdr.e_ident[EI_CLASS]));
         }
     }
 }

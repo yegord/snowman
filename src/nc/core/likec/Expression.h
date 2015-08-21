@@ -99,11 +99,6 @@ public:
      */
     virtual const Type *getType() const = 0;
 
-    /**
-     * \return True, if the expression is a constant integer zero.
-     */
-    virtual bool isZero() const { return false; }
-
     Expression *rewrite() override { return this; }
 
     /**

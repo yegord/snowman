@@ -53,7 +53,7 @@ public:
      * \param type Message type.
      * \param msg Message text.
      */
-    void log(QtMsgType type, const char *msg);
+    void log(QtMsgType type, const QString &msg);
 
     /**
      * Propagates given log message via the message() signal.

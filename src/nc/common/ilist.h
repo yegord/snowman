@@ -585,7 +585,7 @@ public:
      */
     const_iterator get_iterator(const_pointer element) const noexcept {
         assert(element != nullptr);
-        return const_iterator(this, element);
+        return const_iterator(this, const_cast<pointer>(element));
     }
 
     /**

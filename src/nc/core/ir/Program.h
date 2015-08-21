@@ -93,14 +93,14 @@ public:
     /**
      * \param address       Address.
      *
-     * \return Pointer to the basic block starting at given address. Can be nullptr.
+     * \return Pointer to the basic block starting at the given address. Can be nullptr.
      */
     BasicBlock *getBasicBlockStartingAt(ByteAddr address) const;
 
     /**
      * \param address       Address.
      *
-     * \return Pointer to the basic block covering given address. Can be nullptr.
+     * \return Pointer to the basic block covering the given address. Can be nullptr.
      */
     BasicBlock *getBasicBlockCovering(ByteAddr address) const;
 
@@ -112,12 +112,13 @@ public:
     /**
      * \param[in] address Start address of the basic block.
      *
-     * \return Valid pointer to a memory-bound basic block starting at given address.
-     *         When block with given starting already exists, it is returned.
-     *         When given address is in the middle of existing basic block, the latter
-     *         is split into two basic blocks, and the second one is returned.
-     *         When given address is not covered by any existing block, a new
-     *         empty memory-bound block is created and returned.
+     * \return Valid pointer to a memory-bound basic block starting at the given
+     *         address. If a basic block with the given starting address already
+     *         exists, it is returned. When the given address is in the middle
+     *         of an existing basic block, the latter is split into two basic
+     *         blocks, and the one with the higher address is returned. If the
+     *         given address is not covered by any existing block, a new empty
+     *         memory-bound block is created and returned.
      */
     BasicBlock *createBasicBlock(ByteAddr address);
 

@@ -10,7 +10,7 @@ endif()
 
 if (NOT ${IDA_PLUGIN_ENABLED})
     install(TARGETS snowman RUNTIME DESTINATION bin)
-    if(WIN32)
+    if(WIN32 AND NOT ${NC_QT5})
         install_qt4_executable("bin/snowman.exe")
     endif()
 endif()

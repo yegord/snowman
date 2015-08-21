@@ -108,9 +108,9 @@ void Hooks::instrument(Function *function, const dflow::Dataflow *dataflow) {
             } else if (auto jump = statement->as<Jump>()) {
                 jump2callback_[jump] = basicBlock->insertBefore(jump, std::make_unique<Callback>([=](){
                     if (dflow::isReturn(jump, *dataflow)) {
-                        instrumentJump(jump);
+                        instrumentReturn(jump);
                     } else {
-                        deinstrumentJump(jump);
+                        deinstrumentReturn(jump);
                     }
                 }));
             }
@@ -137,7 +137,7 @@ void Hooks::deinstrument(Function *function) {
                 }
             } else if (auto jump = statement->as<Jump>()) {
                 if (auto callback = nc::find(jump2callback_, jump)) {
-                    deinstrumentJump(jump);
+                    deinstrumentReturn(jump);
                     callback->basicBlock()->erase(callback);
                     jump2callback_.erase(jump);
                 }
@@ -212,7 +212,7 @@ void Hooks::deinstrumentCall(Call *call) {
     }
 }
 
-void Hooks::instrumentJump(Jump *jump) {
+void Hooks::instrumentReturn(Jump *jump) {
     auto function = jump->basicBlock()->function();
     auto convention = getConvention(getCalleeId(function));
     auto signature = signatures_.getSignature(function).get();
@@ -236,7 +236,7 @@ void Hooks::instrumentJump(Jump *jump) {
     }
 }
 
-void Hooks::deinstrumentJump(Jump *jump) {
+void Hooks::deinstrumentReturn(Jump *jump) {
     auto &lastReturnHook = lastReturnHooks_[jump];
 
     if (lastReturnHook) {

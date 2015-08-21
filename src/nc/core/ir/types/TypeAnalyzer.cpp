@@ -227,11 +227,11 @@ void TypeAnalyzer::analyze(const UnaryOperator *unary) {
             break;
         case UnaryOperator::SIGN_EXTEND:
             operandType->makeSigned();
+            type->makeSigned();
             break;
         case UnaryOperator::ZERO_EXTEND:
-            if (operandType->isSigned()) {
-                type->makeUnsigned();
-            }
+            operandType->makeUnsigned();
+            type->makeUnsigned();
             break;
         case UnaryOperator::TRUNCATE:
             break;
@@ -373,6 +373,19 @@ void TypeAnalyzer::analyze(const BinaryOperator *binary) {
                 }
             }
 
+            if (leftType->isPointer() && rightValue->isProduct()) {
+                type->makePointer(leftType->pointee());
+            }
+            if (rightType->isPointer() && leftValue->isProduct()) {
+                type->makePointer(rightType->pointee());
+            }
+            if (type->isPointer() && rightValue->isProduct()) {
+                leftType->makePointer(type->pointee());
+            }
+            if (type->isPointer() && leftValue->isProduct()) {
+                rightType->makePointer(type->pointee());
+            }
+
             if (rightValue->abstractValue().isConcrete()) {
                 if (type == leftType) {
                     type->updateFactor(rightValue->abstractValue().asConcrete().absoluteValue());
@@ -394,13 +407,6 @@ void TypeAnalyzer::analyze(const BinaryOperator *binary) {
                     }
 #endif
                 }
-            }
-
-            if (leftType->isPointer() && rightValue->isProduct()) {
-                type->makePointer(leftType->pointee());
-            }
-            if (rightType->isPointer() && leftValue->isProduct()) {
-                type->makePointer(rightType->pointee());
             }
             break;
 
@@ -435,6 +441,13 @@ void TypeAnalyzer::analyze(const BinaryOperator *binary) {
                 }
             }
 
+            if (leftType->isPointer() && rightValue->isProduct()) {
+                type->makePointer(leftType->pointee());
+            }
+            if (type->isPointer() && rightValue->isProduct()) {
+                leftType->makePointer(type->pointee());
+            }
+
             if (rightValue->abstractValue().isConcrete()) {
                 if (type == leftType) {
                     type->updateFactor(rightValue->abstractValue().asConcrete().absoluteValue());
@@ -445,10 +458,6 @@ void TypeAnalyzer::analyze(const BinaryOperator *binary) {
                     }
 #endif
                 }
-            }
-
-            if (leftType->isPointer() && rightValue->isProduct()) {
-                type->makePointer(leftType->pointee());
             }
             break;
 

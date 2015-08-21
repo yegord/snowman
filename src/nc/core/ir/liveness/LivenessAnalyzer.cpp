@@ -52,26 +52,46 @@ namespace core {
 namespace ir {
 namespace liveness {
 
+LivenessAnalyzer::LivenessAnalyzer(Liveness &liveness, const Function *function,
+    const dflow::Dataflow &dataflow, const arch::Architecture *architecture,
+    const cflow::Graph *regionGraph, const calling::Hooks &hooks,
+    const calling::Signatures *signatures, const LogToken &log
+):
+    liveness_(liveness), function_(function), dataflow_(dataflow),
+    architecture_(architecture), regionGraph_(regionGraph), hooks_(hooks),
+    signatures_(signatures), log_(log)
+{}
+
 void LivenessAnalyzer::analyze() {
-    deadJumps_.clear();
-
-    foreach (auto node, regionGraph_.nodes()) {
-        if (auto region = node->as<cflow::Region>()) {
-            if (auto witch = region->as<cflow::Switch>()) {
-                if (witch->boundsCheckNode()) {
-                    deadJumps_.push_back(witch->boundsCheckNode()->basicBlock()->getJump());
-                }
-            }
-        }
-    }
-
-    std::sort(deadJumps_.begin(), deadJumps_.end());
+    computeInvisibleJumps();
 
     foreach (const BasicBlock *basicBlock, function_->basicBlocks()) {
         foreach (const Statement *statement, basicBlock->statements()) {
             computeLiveness(statement);
         }
     }
+}
+
+void LivenessAnalyzer::computeInvisibleJumps() {
+    if (!regionGraph_) {
+        return;
+    }
+
+    invisibleJumps_.clear();
+
+    foreach (auto node, regionGraph_->nodes()) {
+        if (auto region = node->as<cflow::Region>()) {
+            if (auto witch = region->as<cflow::Switch>()) {
+                if (witch->boundsCheckNode()) {
+                    invisibleJumps_.push_back(witch->boundsCheckNode()->basicBlock()->getJump());
+                }
+                invisibleJumps_.push_back(witch->switchNode()->basicBlock()->getJump());
+                makeLive(witch->switchTerm());
+            }
+        }
+    }
+
+    std::sort(invisibleJumps_.begin(), invisibleJumps_.end());
 }
 
 void LivenessAnalyzer::computeLiveness(const Statement *statement) {
@@ -90,24 +110,24 @@ void LivenessAnalyzer::computeLiveness(const Statement *statement) {
         case Statement::JUMP: {
             const Jump *jump = statement->asJump();
 
-            if (!std::binary_search(deadJumps_.begin(), deadJumps_.end(), jump)) {
-                if (dflow::isReturn(jump, dataflow_)) {
-                    if (auto signature = signatures_.getSignature(function_)) {
+            if (!std::binary_search(invisibleJumps_.begin(), invisibleJumps_.end(), jump)) {
+                if (jump->condition()) {
+                    makeLive(jump->condition());
+                }
+                if (jump->thenTarget().address() && !dflow::isReturnAddress(jump->thenTarget(), dataflow_)) {
+                    makeLive(jump->thenTarget().address());
+                }
+                if (jump->elseTarget().address() && !dflow::isReturnAddress(jump->elseTarget(), dataflow_)) {
+                    makeLive(jump->elseTarget().address());
+                }
+
+                if (signatures_ && dflow::isReturn(jump, dataflow_)) {
+                    if (auto signature = signatures_->getSignature(function_)) {
                         if (signature->returnValue()) {
                             if (auto returnHook = hooks_.getReturnHook(jump)) {
                                 makeLive(returnHook->getReturnValueTerm(signature->returnValue().get()));
                             }
                         }
-                    }
-                } else {
-                    if (jump->condition()) {
-                        makeLive(jump->condition());
-                    }
-                    if (jump->thenTarget().address()) {
-                        makeLive(jump->thenTarget().address());
-                    }
-                    if (jump->elseTarget().address()) {
-                        makeLive(jump->elseTarget().address());
                     }
                 }
             }
@@ -118,10 +138,12 @@ void LivenessAnalyzer::computeLiveness(const Statement *statement) {
 
             makeLive(call->target());
 
-            if (auto signature = signatures_.getSignature(call)) {
-                if (auto callHook = hooks_.getCallHook(call)) {
-                    foreach (const auto &argument, signature->arguments()) {
-                        makeLive(callHook->getArgumentTerm(argument.get()));
+            if (signatures_) {
+                if (auto signature = signatures_->getSignature(call)) {
+                    if (auto callHook = hooks_.getCallHook(call)) {
+                        foreach (const auto &argument, signature->arguments()) {
+                            makeLive(callHook->getArgumentTerm(argument.get()));
+                        }
                     }
                 }
             }

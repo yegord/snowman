@@ -20,6 +20,7 @@
 #include <nc/core/ir/dflow/Uses.h>
 #include <nc/core/ir/dflow/Value.h>
 #include <nc/core/ir/dflow/Utils.h>
+#include <nc/core/ir/liveness/Livenesses.h>
 
 #include "CallHook.h"
 #include "Convention.h"
@@ -35,9 +36,11 @@ namespace ir {
 namespace calling {
 
 SignatureAnalyzer::SignatureAnalyzer(Signatures &signatures, const dflow::Dataflows &dataflows, const Hooks &hooks,
-                                     const CancellationToken &canceled, const LogToken &log)
-    : signatures_(signatures), dataflows_(dataflows), hooks_(hooks), canceled_(canceled), log_(log)
-{}
+                                     const liveness::Livenesses &livenesses, const CancellationToken &canceled,
+                                     const LogToken &log)
+    : signatures_(signatures), dataflows_(dataflows), hooks_(hooks), livenesses_(livenesses), canceled_(canceled),
+      log_(log) {
+}
 
 SignatureAnalyzer::~SignatureAnalyzer() {}
 
@@ -443,6 +446,7 @@ std::vector<MemoryLocation> SignatureAnalyzer::getUnusedReturnValueLocations(con
     auto function = jump->basicBlock()->function();
     auto &dataflow = *dataflows_.at(function);
     auto &uses = *function2uses_.at(function);
+    auto &liveness = *livenesses_.at(function);
 
     foreach (const auto &locationAndTerm, returnHook->speculativeReturnValueTerms()) {
         MemoryLocation unusedPart;
@@ -451,14 +455,14 @@ std::vector<MemoryLocation> SignatureAnalyzer::getUnusedReturnValueLocations(con
             foreach (const Term *definition, chunk.definitions()) {
                 if (auto intersection = intersect(definition, chunk.location())) {
                     bool used = false;
-
                     foreach (const auto &use, uses.getUses(definition)) {
-                        if (use.term() != locationAndTerm.second && intersect(use.term(), use.location())) {
+                        if (use.term() != locationAndTerm.second && intersect(use.term(), use.location()) &&
+                            liveness.isLive(use.term()))
+                        {
                             used = true;
                             break;
                         }
                     }
-
                     if (!used) {
                         unusedPart.merge(intersection);
                     }

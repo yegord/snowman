@@ -62,9 +62,16 @@ public:
     IntegerConstant(Tree &tree, ConstantValue value, const IntegerType *type);
 
     /**
-     * \return Value of the constant.
+     * \return The value of the constant.
      */
     const SizedValue &value() const { return value_; }
+
+    /**
+     * Sets the value of the constant.
+     *
+     * \param[in] value The new value.
+     */
+    void setValue(const SizedValue &value);
 
     /**
      * \return Type of the constant.
@@ -72,7 +79,6 @@ public:
     const IntegerType *type() const { return type_; }
 
     const Type *getType() const override { return type(); }
-    bool isZero() const override { return value().value() == 0; }
 
 protected:
     void doPrint(PrintContext &context) const override;

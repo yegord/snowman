@@ -70,20 +70,21 @@ class Liveness;
  * may be live in the classic definition sense, it may be not used for
  * generating actual code and therefore be dead in our sense. For example,
  * stack pointer updates do not appear in the generated code, as long as
- * offsets from the frame base can be inferred.
+ * offsets from the frame base can be inferred. So, they are not used,
+ * although they are live in the classical sense.
  */
 class LivenessAnalyzer {
     Q_DECLARE_TR_FUNCTIONS(LivenessAnalyzer)
 
-    Liveness &liveness_; ///< Liveness information.
-    const Function *function_; ///< Function to be analyzed.
-    const dflow::Dataflow &dataflow_; ///< Dataflow information.
-    const arch::Architecture *architecture_; ///< Architecture.
-    const cflow::Graph &regionGraph_; ///< Reduced control-flow graph.
-    const calling::Hooks &hooks_; ///< Hooks manager.
-    const calling::Signatures &signatures_; ///< Signatures of functions.
-    const LogToken &log_; ///< Log token.
-    std::vector<const Jump *> deadJumps_; ///< Useless jumps.
+    Liveness &liveness_;
+    const Function *function_;
+    const dflow::Dataflow &dataflow_;
+    const arch::Architecture *architecture_;
+    const cflow::Graph *regionGraph_;
+    const calling::Hooks &hooks_;
+    const calling::Signatures *signatures_;
+    const LogToken &log_;
+    std::vector<const Jump *> invisibleJumps_;
 
 public:
     /**
@@ -93,20 +94,15 @@ public:
      * \param[in]  function     Valid pointer to a function to be analyzed.
      * \param[in]  dataflow     Dataflow information.
      * \param[in]  architecture Valid pointer to the architecture.
-     * \param[in]  regionGraph  Reduced control-flow graph.
+     * \param[in]  regionGraph  Pointed to the reduced control-flow graph. Can be NULL.
      * \param[in]  hooks        Hooks manager.
      * \param[in]  log          Log token.
-     * \param[in]  signatures   Signatures of functions.
+     * \param[in]  signatures   Pointer to the function signatures. Can be NULL.
      */
     LivenessAnalyzer(Liveness &liveness, const Function *function,
         const dflow::Dataflow &dataflow, const arch::Architecture *architecture, 
-        const cflow::Graph &regionGraph, const calling::Hooks &hooks,
-        const calling::Signatures &signatures, const LogToken &log
-    ):
-        liveness_(liveness), function_(function), dataflow_(dataflow),
-        architecture_(architecture), regionGraph_(regionGraph),
-        hooks_(hooks), signatures_(signatures), log_(log)
-    {}
+        const cflow::Graph *regionGraph, const calling::Hooks &hooks,
+        const calling::Signatures *signatures, const LogToken &log);
 
     /**
      * Computes the set of used terms.
@@ -114,6 +110,11 @@ public:
     void analyze();
 
 private:
+    /**
+     * Computes the jumps that will not be visible in the generated code.
+     */
+    void computeInvisibleJumps();
+
     /**
      * Computes liveness of statement's terms based on the statement's kind.
      *

@@ -43,6 +43,8 @@ typedef std::unique_ptr<cs_insn, CapstoneDeleter> CapstoneInstructionPtr;
  */
 class Capstone {
     csh handle_;
+    cs_arch arch_;
+    int mode_;
 
 public:
     /**
@@ -51,8 +53,8 @@ public:
      * \param arch Architecture.
      * \param mode Mode.
      */
-    Capstone(cs_arch arch, int mode) {
-        auto result = cs_open(arch, static_cast<cs_mode>(mode), &handle_);
+    Capstone(cs_arch arch, int mode): arch_(arch), mode_(mode) {
+        auto result = cs_open(arch_, static_cast<cs_mode>(mode_), &handle_);
         if (result != CS_ERR_OK) {
             throw nc::Exception(cs_strerror(result));
         }
@@ -108,9 +110,12 @@ public:
      * \param mode New mode.
      */
     void setMode(int mode) {
-        auto result = cs_option(handle_, CS_OPT_MODE, mode);
-        if (result != CS_ERR_OK) {
-            throw nc::Exception(cs_strerror(result));
+        if (mode != mode_) {
+            /*
+             * We do not use cs_option(), because it cannot
+             * change endianness.
+             */
+            *this = Capstone(arch_, mode);
         }
     }
 

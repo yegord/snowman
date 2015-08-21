@@ -24,8 +24,10 @@
 
 #include "IRGenerator.h"
 
+#include <cassert>
 #include <queue>
 
+#include <boost/range/algorithm_ext/is_sorted.hpp>
 #include <boost/unordered_set.hpp>
 
 #include <nc/common/Foreach.h>
@@ -43,7 +45,6 @@
 #include <nc/core/ir/Statements.h>
 #include <nc/core/ir/dflow/Dataflow.h>
 #include <nc/core/ir/dflow/DataflowAnalyzer.h>
-#include <nc/core/ir/dflow/ExecutionContext.h>
 #include <nc/core/ir/dflow/Value.h>
 #include <nc/core/ir/misc/ArrayAccess.h>
 #include <nc/core/ir/misc/PatternRecognition.h>
@@ -67,7 +68,7 @@ IRGenerator::IRGenerator(const image::Image *image, const arch::Instructions *in
 IRGenerator::~IRGenerator() {}
 
 void IRGenerator::generate() {
-    auto instructionAnalyzer = image_->architecture()->createInstructionAnalyzer();
+    auto instructionAnalyzer = image_->platform().architecture()->createInstructionAnalyzer();
 
     /* Generate statements. */
     foreach (const auto &instr, instructions_->all()) {
@@ -80,11 +81,36 @@ void IRGenerator::generate() {
         canceled_.poll();
     }
 
+#ifndef NDEBUG
+    /*
+     * Check statements are sorted by their instructions' addresses.
+     * ir::Program::createBasicBlock(ByteAddr) relies on this while splitting basic blocks.
+     */
+    foreach (auto basicBlock, program_->basicBlocks()) {
+        assert((boost::is_sorted(basicBlock->statements(), [](const ir::Statement *a, const ir::Statement *b) -> bool {
+            return a->instruction()->addr() < b->instruction()->addr();
+        })));
+    }
+#endif
+
     /* Compute jump targets. */
     foreach (auto basicBlock, program_->basicBlocks()) {
         computeJumpTargets(basicBlock);
         canceled_.poll();
     }
+
+#ifndef NDEBUG
+    /*
+     * Check that a terminator statement is always the last statement in the basic block.
+     */
+    foreach (auto basicBlock, program_->basicBlocks()) {
+        foreach (auto statement, basicBlock->statements()) {
+            if (statement->isTerminator()) {
+                assert(statement == basicBlock->statements().back());
+            }
+        }
+    }
+#endif
 
     /* Add jumps to direct successors where necessary. */
     foreach (auto basicBlock, program_->basicBlocks()) {
@@ -98,11 +124,11 @@ void IRGenerator::computeJumpTargets(ir::BasicBlock *basicBlock) {
 
     /* Prepare context for quick and dirty dataflow analysis. */
     ir::dflow::Dataflow dataflow;
-    ir::dflow::DataflowAnalyzer analyzer(dataflow, image_->architecture(), canceled_, log_);
-    ir::dflow::ExecutionContext context(analyzer);
+    ir::dflow::DataflowAnalyzer analyzer(dataflow, image_->platform().architecture(), canceled_, log_);
+    ir::dflow::ReachingDefinitions definitions;
 
     foreach (auto statement, basicBlock->statements()) {
-        analyzer.execute(statement, context);
+        analyzer.execute(statement, definitions);
 
         switch (statement->kind()) {
             case ir::Statement::INLINE_ASSEMBLY: {
@@ -110,7 +136,7 @@ void IRGenerator::computeJumpTargets(ir::BasicBlock *basicBlock) {
                  * Inline assembly can do unpredictable things.
                  * Therefore, clear the reaching definitions.
                  */
-                context.definitions().clear();
+                definitions.clear();
                 break;
             }
             case ir::Statement::CALL: {
@@ -134,7 +160,7 @@ void IRGenerator::computeJumpTargets(ir::BasicBlock *basicBlock) {
                  * A call can do unpredictable things.
                  * Therefore, clear the reaching definitions.
                  */
-                context.definitions().clear();
+                definitions.clear();
                 break;
             }
             case ir::Statement::JUMP: {
@@ -189,7 +215,7 @@ std::vector<ByteAddr> IRGenerator::getJumpTableEntries(const ir::Term *target, c
 
     image::Reader reader(image_);
 
-    auto byteOrder = image_->architecture()->getByteOrder(ir::MemoryDomain::MEMORY);
+    auto byteOrder = image_->platform().architecture()->getByteOrder(ir::MemoryDomain::MEMORY);
 
     ByteAddr address = arrayAccess.base();
     while (auto entry = reader.readInt<ByteAddr>(address, entrySize, byteOrder)) {
@@ -219,7 +245,7 @@ bool IRGenerator::isInstructionAddress(ByteAddr address) {
     }
 
     if (!disassembler_) {
-        disassembler_ = image_->architecture()->createDisassembler();
+        disassembler_ = image_->platform().architecture()->createDisassembler();
     }
 
     return disassembler_->disassembleSingleInstruction(address, section) != nullptr;
@@ -243,8 +269,8 @@ std::unique_ptr<arch::Instructions> IRGenerator::explore(const image::Image *ima
     auto instructions = std::make_unique<arch::Instructions>();
     ir::Program program;
 
-    auto disassembler = image->architecture()->createDisassembler();
-    auto instructionAnalyzer = image->architecture()->createInstructionAnalyzer();
+    auto disassembler = image->platform().architecture()->createDisassembler();
+    auto instructionAnalyzer = image->platform().architecture()->createInstructionAnalyzer();
 
     auto exploreAddress = [&](ByteAddr address){
         if (instructions->get(address)) {

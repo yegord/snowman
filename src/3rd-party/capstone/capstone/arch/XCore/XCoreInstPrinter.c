@@ -182,9 +182,9 @@ static void set_mem_access(MCInst *MI, bool status, int reg)
 	} else {
 		if (reg) {
 			MI->flat_insn->detail->xcore.operands[MI->flat_insn->detail->xcore.op_count].mem.index = reg;
+			// done, create the next operand slot
+			MI->flat_insn->detail->xcore.op_count++;
 		}
-		// done, create the next operand slot
-		MI->flat_insn->detail->xcore.op_count++;
 	}
 }
 
@@ -257,6 +257,7 @@ static void printInlineJT32(MCInst *MI, int OpNum, SStream *O)
 void XCore_printInst(MCInst *MI, SStream *O, void *Info)
 {
 	printInstruction(MI, O, Info);
+	set_mem_access(MI, false, 0);
 }
 
 #endif

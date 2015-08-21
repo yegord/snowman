@@ -25,6 +25,7 @@
 #include "DefinitionGenerator.h"
 
 #include <nc/common/Foreach.h>
+#include <nc/common/Memoization.h>
 #include <nc/common/Range.h>
 #include <nc/common/Unreachable.h>
 #include <nc/common/make_unique.h>
@@ -149,7 +150,6 @@ std::unique_ptr<likec::FunctionDefinition> DefinitionGenerator::createDefinition
     }
 
     computeInvisibleStatements();
-    computeSubstitutions();
 
     SwitchContext switchContext;
     makeStatements(graph_.root(), definition()->block(), nullptr, nullptr, nullptr, switchContext);
@@ -637,7 +637,7 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
                 return nullptr;
             }
 
-            if (nc::contains(intermediateTerms_, assignment->left())) {
+            if (isSubstitutableWrite(assignment->left())) {
                 return nullptr;
             }
 
@@ -654,18 +654,9 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
         case Statement::JUMP: {
             const Jump *jump = statement->asJump();
 
-            if (dflow::isReturn(jump, dataflow_)) {
-                if (signature()->returnValue()) {
-                    if (auto returnHook = parent().hooks().getReturnHook(jump)) {
-                        return std::make_unique<likec::Return>(
-                            tree(),
-                            makeExpression(returnHook->getReturnValueTerm(signature()->returnValue().get())));
-                    }
-                }
-                return std::make_unique<likec::Return>(tree());
-            } else if (jump->isConditional()) {
-                auto thenJump = makeJump(jump->thenTarget(), nextBB, breakBB, continueBB);
-                auto elseJump = makeJump(jump->elseTarget(), nextBB, breakBB, continueBB);
+            if (jump->isConditional()) {
+                auto thenJump = makeJump(jump, jump->thenTarget(), nextBB, breakBB, continueBB);
+                auto elseJump = makeJump(jump, jump->elseTarget(), nextBB, breakBB, continueBB);
                 auto condition = makeExpression(jump->condition());
 
                 if (thenJump == nullptr) {
@@ -678,7 +669,7 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
                 }
                 return std::make_unique<likec::If>(tree(), std::move(condition), std::move(thenJump), std::move(elseJump));
             } else {
-                return makeJump(jump->thenTarget(), nextBB, breakBB, continueBB);
+                return makeJump(jump, jump->thenTarget(), nextBB, breakBB, continueBB);
             }
         }
         case Statement::CALL: {
@@ -709,13 +700,15 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
                     if (callSignature->returnValue()) {
                         const Term *returnValueTerm = callHook->getReturnValueTerm(callSignature->returnValue().get());
 
-                        return std::make_unique<likec::ExpressionStatement>(tree(),
-                            std::make_unique<likec::BinaryOperator>(tree(),
-                                likec::BinaryOperator::ASSIGN,
-                                makeExpression(returnValueTerm),
-                                std::make_unique<likec::Typecast>(tree(),
-                                    parent().makeType(parent().types().getType(returnValueTerm)),
-                                    std::move(callOperator))));
+                        if (liveness_.isLive(returnValueTerm)) {
+                            return std::make_unique<likec::ExpressionStatement>(tree(),
+                                std::make_unique<likec::BinaryOperator>(tree(),
+                                    likec::BinaryOperator::ASSIGN,
+                                    makeExpression(returnValueTerm),
+                                    std::make_unique<likec::Typecast>(tree(),
+                                        parent().makeType(parent().types().getType(returnValueTerm)),
+                                        std::move(callOperator))));
+                        }
                     }
                 }
             }
@@ -737,7 +730,9 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
     return nullptr;
 }
 
-std::unique_ptr<likec::Statement> DefinitionGenerator::makeJump(const BasicBlock *target, const BasicBlock *nextBB, const BasicBlock *breakBB, const BasicBlock *continueBB) {
+std::unique_ptr<likec::Statement> DefinitionGenerator::makeJump(const BasicBlock *target, const BasicBlock *nextBB,
+                                                                const BasicBlock *breakBB,
+                                                                const BasicBlock *continueBB) {
     if (target == nextBB) {
         return nullptr;
     } else if (target == breakBB) {
@@ -750,10 +745,24 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::makeJump(const BasicBlock
     }
 }
 
-std::unique_ptr<likec::Statement> DefinitionGenerator::makeJump(const JumpTarget &target, const BasicBlock *nextBB, const BasicBlock *breakBB, const BasicBlock *continueBB) {
+std::unique_ptr<likec::Statement> DefinitionGenerator::makeJump(const Jump *jump, const JumpTarget &target,
+                                                                const BasicBlock *nextBB, const BasicBlock *breakBB,
+                                                                const BasicBlock *continueBB) {
+    assert(jump != nullptr);
+
     if (target.basicBlock()) {
         return makeJump(target.basicBlock(), nextBB, breakBB, continueBB);
     } else if (target.address()) {
+        if (dflow::isReturnAddress(target.address(), dataflow_)) {
+            if (signature()->returnValue()) {
+                if (auto returnHook = parent().hooks().getReturnHook(jump)) {
+                    return std::make_unique<likec::Return>(
+                        tree(),
+                        makeExpression(returnHook->getReturnValueTerm(signature()->returnValue().get())));
+                }
+            }
+            return std::make_unique<likec::Return>(tree());
+        }
         return std::make_unique<likec::Goto>(tree(), makeExpression(target.address()));
     } else {
         return std::make_unique<likec::Goto>(tree(), std::make_unique<likec::String>(tree(), QLatin1String("???")));
@@ -774,7 +783,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeExpression(const Ter
             assert(term != nullptr);
         }
 
-        virtual void operator()(likec::TreeNode *node) {
+        void operator()(likec::TreeNode *node) {
             if (auto expression = node->as<likec::Expression>()) {
                 if (expression->term() == nullptr) {
                     expression->setTerm(term_);
@@ -802,8 +811,8 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::doMakeExpression(const T
 #endif
 
     if (parent().variables().getVariable(term)) {
-        if (auto substitution = nc::find(term2substitution_, term)) {
-            return makeExpression(substitution);
+        if (term->isRead() && isSubstitutableRead(term)) {
+            return makeExpression(getTheOnlyDefinition(term)->source());
         } else {
             return makeVariableAccess(term);
         }
@@ -1015,8 +1024,12 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeConstant(const Term 
     const types::Type *type = parent().types().getType(term);
 
 #ifdef NC_PREFER_FUNCTIONS_TO_CONSTANTS
-    if (auto functionDeclaration = parent().makeFunctionDeclaration(value.value())) {
-        return std::make_unique<likec::FunctionIdentifier>(tree(), functionDeclaration);
+    if (auto section = parent().image().getSectionContainingAddress(value.value())) {
+        if (section->isCode()) {
+            if (auto functionDeclaration = parent().makeFunctionDeclaration(value.value())) {
+                return std::make_unique<likec::FunctionIdentifier>(tree(), functionDeclaration);
+            }
+        }
     }
 #endif
 
@@ -1024,7 +1037,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeConstant(const Term 
     if (!type->pointee() || type->pointee()->size() <= 1) {
         auto isAscii = [](const QString &string) -> bool {
             foreach (QChar c, string) {
-                if (c >= 0x80) {
+                if (c >= 0x80 || (c < 0x20 && c != '\r' && c != '\n' && c != '\t')) {
                     return false;
                 }
             }
@@ -1033,7 +1046,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeConstant(const Term 
 
         QString string = image::Reader(&parent().image()).readAsciizString(value.value(), 1024);
 
-        if (!string.isNull() && isAscii(string)) {
+        if (!string.isEmpty() && isAscii(string)) {
             return std::make_unique<likec::String>(tree(), string);
         }
     }
@@ -1104,73 +1117,6 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeVariableAccess(const
     }
 }
 
-bool DefinitionGenerator::isDominating(const Term *write, const Term *read) const {
-    assert(write != nullptr);
-    assert(write->isWrite());
-    assert(read != nullptr);
-    assert(read->isRead());
-
-    if (write->statement()->basicBlock() == read->statement()->basicBlock()) {
-        if (write->statement()->instruction() && read->statement()->instruction() &&
-            write->statement()->instruction() != read->statement()->instruction())
-        {
-            return write->statement()->instruction()->addr() < read->statement()->instruction()->addr();
-        } else {
-            const auto &statements = read->statement()->basicBlock()->statements();
-            assert(nc::contains(statements, write->statement()));
-            assert(nc::contains(statements, read->statement()));
-            return std::find(
-                std::find(statements.begin(), statements.end(), write->statement()),
-                statements.end(),
-                read->statement()) != statements.end();
-        }
-    } else {
-        return dominators_->isDominating(write->statement()->basicBlock(), read->statement()->basicBlock());
-    }
-}
-
-void DefinitionGenerator::computeSubstitutions() {
-    foreach (const auto &termAndLocation, dataflow_.term2location()) {
-        if (termAndLocation.second &&
-            termAndLocation.first->isWrite() &&
-            liveness_.isLive(termAndLocation.first) &&
-            termAndLocation.first->source() != nullptr &&
-            !nc::contains(invisibleStatements_, termAndLocation.first->statement()) &&
-            parent().variables().getVariable(termAndLocation.first)->isLocal())
-        {
-            const Term *onlyUse = nullptr;
-            const auto &uses = uses_->getUses(termAndLocation.first);
-            foreach (const auto &use, uses) {
-                if (liveness_.isLive(use.term())) {
-                    if (onlyUse == nullptr) {
-                        onlyUse = use.term();
-                    } else {
-                        onlyUse = nullptr;
-                        break;
-                    }
-                }
-            }
-
-            if (onlyUse && dataflow_.getMemoryLocation(onlyUse) == termAndLocation.second) {
-                const auto &definitions = dataflow_.getDefinitions(onlyUse);
-                if (definitions.chunks().size() == 1 &&
-                    definitions.chunks().front().location() == termAndLocation.second &&
-                    definitions.chunks().front().definitions().size() == 1)
-                {
-                    assert(definitions.chunks().front().definitions().front() == termAndLocation.first);
-
-                    // TODO: check that the substituted expression does not
-                    // change its value on the way.
-                    if (isDominating(termAndLocation.first, onlyUse)) {
-                        term2substitution_[onlyUse] = termAndLocation.first->source();
-                        intermediateTerms_.insert(termAndLocation.first);
-                    }
-                }
-            }
-        }
-    }
-}
-
 void DefinitionGenerator::computeInvisibleStatements() {
     if (auto hook = parent().hooks().getEntryHook(function_)) {
         foreach (const auto &termAndClone, hook->argumentTerms()) {
@@ -1199,6 +1145,197 @@ void DefinitionGenerator::computeInvisibleStatements() {
                 }
             }
         }
+    }
+}
+
+bool DefinitionGenerator::isSubstitutableWrite(const Term *write) const {
+    assert(write != nullptr);
+    assert(write->isWrite());
+    assert(liveness_.isLive(write) && "We should not care about dead writes.");
+
+    return nc::memoize(write2isSubstitutable_, write, [&]() -> bool {
+        auto source = write->source();
+        if (!source) {
+            return false;
+        }
+
+        if (nc::contains(invisibleStatements_, write->statement())) {
+            return false;
+        }
+
+        const auto &memoryLocation = dataflow_.getMemoryLocation(write);
+        if (!memoryLocation) {
+            return false;
+        }
+
+        if (!parent().variables().getVariable(write)->isLocal()) {
+            return false;
+        }
+
+        std::size_t nuses = 0;
+
+        foreach (const auto &use, uses_->getUses(write)) {
+            auto destination = use.term();
+
+            if (liveness_.isLive(destination)) {
+                if (dataflow_.getMemoryLocation(destination) != memoryLocation) {
+                    return false;
+                }
+
+                auto theOnlyDefinition = getTheOnlyDefinition(destination);
+                if (!theOnlyDefinition) {
+                    return false;
+                }
+                assert(theOnlyDefinition == write);
+
+                if (!isDominating(write, destination)) {
+                    return false;
+                }
+
+                if (!canBeMoved(source, destination)) {
+                    return false;
+                }
+
+                ++nuses;
+            }
+        }
+
+        assert(nuses >= 1 && "Live write must have at least one live read.");
+
+        if (nuses > 1 && (source->kind() == Term::UNARY_OPERATOR || source->kind() == Term::BINARY_OPERATOR)) {
+            /* We do not want to substitute complex expressions multiple times. */
+            return false;
+        }
+
+        return true;
+    });
+}
+
+bool DefinitionGenerator::canBeMoved(const Term *source, const Term *destination) const {
+    assert(source != nullptr);
+    assert(source->isRead());
+    assert(liveness_.isLive(source) && "We should not care about dead reads.");
+    assert(destination != nullptr);
+    assert(destination->isRead());
+    assert(liveness_.isLive(destination) && "We should not care about dead reads.");
+
+#ifdef NC_PREFER_CONSTANTS_TO_EXPRESSIONS
+    if (dataflow_.getValue(source)->abstractValue().isConcrete()) {
+        return true;
+    }
+#endif
+
+    switch (source->kind()) {
+        case Term::INT_CONST:
+        case Term::INTRINSIC: {
+            return true;
+        }
+        case Term::MEMORY_LOCATION_ACCESS:
+        case Term::DEREFERENCE: {
+            /* This must be a local variable. */
+            auto variable = parent().variables().getVariable(source);
+            if (!variable || !variable->isLocal()) {
+                return false;
+            }
+
+            if (source->statement()->basicBlock() == destination->statement()->basicBlock()) {
+                /* There must be no writes to source's variable in between. */
+
+                auto begin = source->statement()->basicBlock()->statements().get_iterator(source->statement());
+                auto end = destination->statement()->basicBlock()->statements().get_iterator(destination->statement());
+
+                return std::find_if(begin, end, [&](const Statement *statement) -> bool {
+                    if (auto assignment = statement->asAssignment()) {
+                        return parent().variables().getVariable(assignment->left()) == variable;
+                    } else if (auto touch = statement->asTouch()) {
+                        return touch->term()->isWrite() && parent().variables().getVariable(touch->term()) == variable;
+                    }
+                    return false;
+                }) == end;
+            } else {
+                /* All definitions must dominate all uses. */
+                foreach (const auto &def, variable->termsAndLocations()) {
+                    if (def.term->isWrite()) {
+                        foreach (const auto &use, variable->termsAndLocations()) {
+                            if (use.term->isRead()) {
+                                if (!isDominating(def.term, use.term)) {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+        case Term::UNARY_OPERATOR: {
+            auto unary = source->asUnaryOperator();
+            return canBeMoved(unary->operand(), destination);
+        }
+        case Term::BINARY_OPERATOR: {
+            auto binary = source->asBinaryOperator();
+            return canBeMoved(binary->left(), destination) && canBeMoved(binary->right(), destination);
+        }
+        case Term::CHOICE: {
+            auto choice = source->asChoice();
+            if (!dataflow_.getDefinitions(choice->preferredTerm()).empty()) {
+                return canBeMoved(choice->preferredTerm(), destination);
+            } else {
+                return canBeMoved(choice->defaultTerm(), destination);
+            }
+        }
+        default: {
+            unreachable();
+        }
+    }
+}
+
+bool DefinitionGenerator::isSubstitutableRead(const Term *read) const {
+    assert(read != nullptr);
+    assert(read->isRead());
+    assert(liveness_.isLive(read) && "We should not care about dead reads.");
+
+    auto write = getTheOnlyDefinition(read);
+    return write && isSubstitutableWrite(write);
+}
+
+const Term *DefinitionGenerator::getTheOnlyDefinition(const Term *read) const {
+    assert(read != nullptr);
+    assert(read->isRead());
+
+    const auto &definitions = dataflow_.getDefinitions(read);
+
+    if (definitions.chunks().size() == 1 &&
+        definitions.chunks().front().definitions().size() == 1)
+    {
+        return definitions.chunks().front().definitions().front();
+    }
+    return nullptr;
+}
+
+bool DefinitionGenerator::isDominating(const Term *write, const Term *read) const {
+    assert(write != nullptr);
+    assert(write->isWrite());
+    assert(read != nullptr);
+    assert(read->isRead());
+
+    if (write->statement()->basicBlock() == read->statement()->basicBlock()) {
+        if (write->statement()->instruction() && read->statement()->instruction() &&
+            write->statement()->instruction() != read->statement()->instruction())
+        {
+            return write->statement()->instruction()->addr() < read->statement()->instruction()->addr();
+        } else {
+            const auto &statements = read->statement()->basicBlock()->statements();
+            assert(nc::contains(statements, write->statement()));
+            assert(nc::contains(statements, read->statement()));
+            return std::find(
+                std::find(statements.begin(), statements.end(), write->statement()),
+                statements.end(),
+                read->statement()) != statements.end();
+        }
+    } else {
+        return dominators_->isDominating(write->statement()->basicBlock(), read->statement()->basicBlock());
     }
 }
 

@@ -117,7 +117,7 @@ void printSymbols(nc::core::Context &context, QTextStream &out) {
 }
 
 void printRegionGraphs(nc::core::Context &context, QTextStream &out) {
-    out << "digraph Functions" << " { compound=true; " << endl;
+    out << "digraph Functions { compound=true; " << endl;
     foreach (const auto *function, context.functions()->list()) {
         context.graphs()->at(function)->print(out);
     }

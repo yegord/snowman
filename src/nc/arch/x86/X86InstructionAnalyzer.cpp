@@ -223,6 +223,12 @@ public:
                 ];
                 break;
             }
+            case UD_Icqo: {
+                _[
+                    regizter(X86Registers::rdx()) ^= signed_(regizter(X86Registers::rax())) >> constant(63)
+                ];
+                break;
+            }
             case UD_Icld: {
                 _[
                     df ^= constant(0)
@@ -1355,21 +1361,24 @@ private:
 
         std::unique_ptr<core::ir::Term> result = createRegisterAccess(operand.base);
 
-        if (operand.scale != 0) {
-            if (auto index = createRegisterAccess(operand.index)) {
-                if (operand.scale != 1) {
-                    index = std::make_unique<core::ir::BinaryOperator>(
-                        core::ir::BinaryOperator::MUL,
-                        std::move(index),
-                        std::make_unique<core::ir::Constant>(SizedValue(ud_obj_.adr_mode, operand.scale)),
-                        ud_obj_.adr_mode);
-                }
-                if (result) {
-                    result = std::make_unique<core::ir::BinaryOperator>(
-                        core::ir::BinaryOperator::ADD, std::move(result), std::move(index), ud_obj_.adr_mode);
-                } else {
-                    result = std::move(index);
-                }
+        if (auto index = createRegisterAccess(operand.index)) {
+            /* Scale can be 1, 2, 4, 8, or 0 (which means 1). */
+
+            assert(operand.scale == 1 || operand.scale == 2 ||
+                operand.scale == 4 || operand.scale == 8 || operand.scale == 0);
+
+            if (operand.scale > 1) {
+                index = std::make_unique<core::ir::BinaryOperator>(
+                    core::ir::BinaryOperator::MUL,
+                    std::move(index),
+                    std::make_unique<core::ir::Constant>(SizedValue(ud_obj_.adr_mode, operand.scale)),
+                    ud_obj_.adr_mode);
+            }
+            if (result) {
+                result = std::make_unique<core::ir::BinaryOperator>(
+                    core::ir::BinaryOperator::ADD, std::move(result), std::move(index), ud_obj_.adr_mode);
+            } else {
+                result = std::move(index);
             }
         }
 

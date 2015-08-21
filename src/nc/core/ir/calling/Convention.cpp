@@ -26,6 +26,7 @@
 
 #include <nc/common/Foreach.h>
 #include <nc/common/Range.h>
+#include <nc/common/Unused.h>
 
 #include <nc/core/ir/Statement.h>
 #include <nc/core/ir/Term.h>
@@ -103,7 +104,7 @@ bool testRounding() {
     return true;
 }
 
-const bool roundingWorks = testRounding();
+const bool roundingWorks = (NC_UNUSED(roundingWorks), testRounding());
 #endif
 
 } // anonymous namespace

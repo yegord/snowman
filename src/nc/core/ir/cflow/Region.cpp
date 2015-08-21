@@ -54,14 +54,14 @@ void Region::print(QTextStream &out) const {
         case BLOCK:
             out << "BLOCK";
             break;
+        case COMPOUND_CONDITION:
+            out << "COMPOUND_CONDITION";
+            break;
         case IF_THEN:
             out << "IF_THEN";
             break;
         case IF_THEN_ELSE:
             out << "IF_THEN_ELSE";
-            break;
-        case COMPOUND_CONDITION:
-            out << "COMPOUND_CONDITION";
             break;
         case LOOP:
             out << "LOOP";
@@ -71,6 +71,9 @@ void Region::print(QTextStream &out) const {
             break;
         case WHILE:
             out << "WHILE";
+            break;
+        case SWITCH:
+            out << "SWITCH";
             break;
         default:
             unreachable();

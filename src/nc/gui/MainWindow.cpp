@@ -657,8 +657,9 @@ void MainWindow::about() {
         "<li>Intel x86-64.</li>"
         "</ul></p>"
         "<p>%1 supports the following input file formats:<ul>"
-        "<li>ELF (32 and 64-bit),</li>"
-        "<li>PE (32 and 64-bit).</li>"
+        "<li>ELF,</li>"
+        "<li>Mach-O,</li>"
+        "<li>PE.</li>"
         "</ul></p>"
         "<p>Report bugs to <a href=\"mailto:%3\">%3</a>.</p>"
         "<p>The software is distributed under the terms of <a href=\"%5\">%4</a>.</p>")

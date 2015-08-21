@@ -25,6 +25,8 @@ set(SOURCES
     image/ByteSource.h
     image/Image.cpp
     image/Image.h
+    image/Platform.h
+    image/Platform.cpp
     image/Reader.cpp
     image/Reader.h
     image/Relocation.h
@@ -38,6 +40,7 @@ set(SOURCES
     input/Parser.h
     input/ParserRepository.cpp
     input/ParserRepository.h
+    input/Utils.h
     ir/BasicBlock.cpp
     ir/BasicBlock.h
     ir/CFG.cpp
@@ -115,7 +118,6 @@ set(SOURCES
     ir/dflow/Dataflow.h
     ir/dflow/DataflowAnalyzer.cpp
     ir/dflow/DataflowAnalyzer.h
-    ir/dflow/ExecutionContext.h
     ir/dflow/ReachingDefinitions.cpp
     ir/dflow/ReachingDefinitions.h
     ir/dflow/Uses.cpp
@@ -241,7 +243,7 @@ set(SOURCES
 qt4_wrap_cpp(SOURCES ${MOC_HEADERS} OPTIONS -DQ_MOC_RUN)
 
 add_library(nc-core ${SOURCES})
-target_link_libraries(nc-core nc-common nc-arch-arm nc-arch-x86 nc-input-elf nc-input-pe
+target_link_libraries(nc-core nc-common nc-arch-arm nc-arch-x86 nc-input-elf nc-input-mach-o nc-input-pe
     ${Boost_LIBRARIES} ${QT_LIBRARIES} iberty undname)
 
 # vim:set et sts=4 sw=4 nospell:

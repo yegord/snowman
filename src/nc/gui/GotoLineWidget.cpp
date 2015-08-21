@@ -25,6 +25,7 @@
 #include "GotoLineWidget.h"
 
 #include <QCompleter>
+#include <QIntValidator>
 #include <QLabel>
 #include <QLineEdit>
 #include <QHBoxLayout>

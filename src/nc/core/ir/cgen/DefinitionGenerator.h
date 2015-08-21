@@ -48,6 +48,7 @@ namespace ir {
 class BinaryOperator;
 class BasicBlock;
 class Dominators;
+class Jump;
 class JumpTarget;
 class Statement;
 class UnaryOperator;
@@ -91,8 +92,7 @@ class DefinitionGenerator: public DeclarationGenerator {
     boost::unordered_map<const ir::vars::Variable *, likec::VariableDeclaration *> variableDeclarations_; ///< Local variables of current function definition.
     boost::unordered_map<const BasicBlock *, likec::LabelDeclaration *> labels_; ///< Labels inside the function.
     boost::unordered_set<const Statement *> invisibleStatements_; ///< Statements that must be generate no code.
-    boost::unordered_set<const Term *> intermediateTerms_;
-    boost::unordered_map<const Term *, const Term *> term2substitution_;
+    mutable boost::unordered_map<const Term *, bool> write2isSubstitutable_;
 
 public:
     /**
@@ -238,17 +238,18 @@ private:
     std::unique_ptr<likec::Statement> makeJump(const BasicBlock *target, const BasicBlock *nextBB, const BasicBlock *breakBB, const BasicBlock *continueBB);
 
     /**
-     * Creates a goto statement to given target.
+     * Creates an appropriate LikeC statement for a jump to the given target.
      *
-     * \param[in] target   Valid pointer to the target basic block.
+     * \param[in] jump          Valid pointer to a jump statement.
+     * \param[in] target        Target of that jump to generate LikeC statement for.
      * \param[in] nextBB        Pointer to the basic block, whose code will textually
      *                          follow the basic block of the created statement. Can be nullptr.
      * \param[in] breakBB       Pointer to the basic block getting control by break statement. Can be nullptr.
      * \param[in] continueBB    Pointer to the basic block getting control by continue statement. Can be nullptr.
      *
-     * \return Pointer to the created goto, break, or continue statement, or nullptr if the target is equal to nextBB.
+     * \return Pointer to the created return, goto, break, or continue statement, or nullptr if the target is equal to nextBB.
      */
-    std::unique_ptr<likec::Statement> makeJump(const JumpTarget &target, const BasicBlock *nextBB, const BasicBlock *breakBB, const BasicBlock *continueBB);
+    std::unique_ptr<likec::Statement> makeJump(const Jump *jump, const JumpTarget &target, const BasicBlock *nextBB, const BasicBlock *breakBB, const BasicBlock *continueBB);
 
     /**
      * Creates a LikeC expression for given term and sets the pointer to source IR term
@@ -304,11 +305,49 @@ private:
 
     /**
      * \param[in] write Valid pointer to a write term.
+     *
+     * \return True iff the write->source() can be safely put
+     *         in all the places where the value written by
+     *         the write term is used.
+     */
+    bool isSubstitutableWrite(const Term *write) const;
+
+    /**
+     * \param[in] source Valid pointer to a read term.
+     * \param[in] destination Valid pointer to a read term.
+     *
+     * \return True iff the code generated for the source term
+     *         can be put in place of the code for the destination
+     *         term without changing the semantics of the program.
+     */
+    bool canBeMoved(const Term *source, const Term *destination) const;
+
+    /**
+     * \param[in] read Valid pointer to a read term.
+     *
+     * \return True iff instead of the expression for the read term
+     *         one can safely generate the expression for the definition
+     *         of the value read by this term.
+     */
+    bool isSubstitutableRead(const Term *read) const;
+
+    /**
+     * \param[in] write Valid pointer to a write term.
      * \param[in] read Valid pointer to a read term.
      *
      * \return True if the write dominates the read, false otherwise.
      */
     bool isDominating(const Term *write, const Term *read) const;
+
+    /**
+     * \param[in] read Valid pointer to a read term.
+     *
+     * \return A valid pointer to the term being the only term
+     *         defining what the read term reads. If there is
+     *         more than one such term or no such term, returns
+     *         nullptr.
+     */
+    const Term *getTheOnlyDefinition(const Term *read) const;
 
     /**
      * Computes the statements for which no code must be generated.

@@ -33,6 +33,7 @@
 #include <QString>
 
 #include "ByteSource.h"
+#include "Platform.h"
 #include "Symbol.h"
 
 namespace nc { namespace core {
@@ -54,7 +55,7 @@ class Relocation;
  * An executable image.
  */
 class Image: public ByteSource {
-    const arch::Architecture *architecture_; ///< Architecture.
+    Platform platform_;
     std::vector<std::unique_ptr<Section>> sections_; ///< The list of sections.
     std::vector<std::unique_ptr<Symbol>> symbols_; ///< The list of symbols.
     boost::unordered_map<ConstantValue, Symbol *> value2symbol_; ///< Mapping from value to the symbol with this value.
@@ -74,25 +75,14 @@ public:
     ~Image();
 
     /**
-     * \return Pointer to the architecture. Can be nullptr.
+     * \return The platform of the image.
      */
-    const arch::Architecture *architecture() const { return architecture_; }
+    Platform &platform() { return platform_; }
 
     /**
-     * Sets the architecture of this executable image.
-     * The architecture must not have been set before.
-     *
-     * \param architecture Valid pointer to the architecture.
+     * \return The platform of the image.
      */
-    void setArchitecture(const arch::Architecture *architecture);
-
-    /**
-     * Sets the architecture of this executable image.
-     * The architecture must not have been set before.
-     *
-     * \param name Name of the architecture.
-     */
-    void setArchitecture(const QString &name);
+    const Platform &platform() const { return platform_; }
 
     /**
      * Adds a new section.
@@ -189,13 +179,6 @@ public:
      * \param demangler Valid pointer to the new demangler.
      */
     void setDemangler(std::unique_ptr<mangling::Demangler> demangler);
-
-    /**
-     * Sets the demangler.
-     *
-     * \param name Name of the demangler.
-     */
-    void setDemangler(const QString &name);
 };
 
 }}} // namespace nc::core::image

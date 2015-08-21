@@ -39,6 +39,7 @@
 #include <nc/core/image/Relocation.h>
 #include <nc/core/image/Section.h>
 #include <nc/core/input/ParseError.h>
+#include <nc/core/input/Utils.h>
 
 #include "pe.h"
 
@@ -48,12 +49,16 @@ namespace pe {
 
 namespace {
 
+using nc::core::input::read;
+using nc::core::input::getAsciizString;
+using nc::core::input::ParseError;
+
 const ByteOrder peByteOrder = ByteOrder::LittleEndian;
 
 bool seekFileHeader(QIODevice *source) {
     IMAGE_DOS_HEADER dosHeader;
 
-    if (source->read(reinterpret_cast<char *>(&dosHeader), sizeof(dosHeader)) != sizeof(dosHeader)) {
+    if (!read(source, dosHeader)) {
         return false;
     }
 
@@ -69,7 +74,7 @@ bool seekFileHeader(QIODevice *source) {
     }
 
     uint32_t signature;
-    if (source->read(reinterpret_cast<char *>(&signature), sizeof(signature)) != sizeof(signature)) {
+    if (!read(source, signature)) {
         return false;
     }
     peByteOrder.convertFrom(signature);
@@ -102,7 +107,7 @@ static_assert(sizeof(IMPORT_LOOKUP_TABLE_ENTRY64) == sizeof(uint64_t), "");
 
 template<class IMAGE_OPTIONAL_HEADER, class IMPORT_LOOKUP_TABLE_ENTRY>
 class PeParserImpl {
-    Q_DECLARE_TR_FUNCTIONS(PeParserPrivate)
+    Q_DECLARE_TR_FUNCTIONS(PeParserImpl)
 
     QIODevice *source_;
     core::image::Image *image_;
@@ -125,6 +130,7 @@ public:
         parseSections();
         parseSymbols();
         parseImports();
+        parseExports();
     }
 
 private:
@@ -143,11 +149,11 @@ private:
 
     void parseOptionalHeader() {
         if (!source_->seek(optionalHeaderOffset_)) {
-            throw core::input::ParseError(tr("Cannot seek to the optional header."));
+            throw ParseError(tr("Cannot seek to the optional header."));
         }
 
-        if (source_->read(reinterpret_cast<char *>(&optionalHeader_), sizeof(optionalHeader_)) != sizeof(optionalHeader_)) {
-            throw core::input::ParseError(tr("Cannot read the optional header."));
+        if (!read(source_, optionalHeader_)) {
+            throw ParseError(tr("Cannot read the optional header."));
         }
 
         peByteOrder.convertFrom(optionalHeader_.ImageBase);
@@ -166,7 +172,7 @@ private:
 
         for (std::size_t i = 0; i < fileHeader_.NumberOfSections; ++i) {
             IMAGE_SECTION_HEADER sectionHeader;
-            if (source_->read(reinterpret_cast<char *>(&sectionHeader), sizeof(sectionHeader)) != sizeof(sectionHeader)) {
+            if (!read(source_, sectionHeader)) {
                 log_.warning(tr("Cannot read the section header number %1.").arg(i));
                 return;
             }
@@ -178,8 +184,8 @@ private:
             peByteOrder.convertFrom(sectionHeader.SizeOfRawData);
 
             auto section = std::make_unique<core::image::Section>(
-                getString(sectionHeader.Name), sectionHeader.VirtualAddress + optionalHeader_.ImageBase, sectionHeader.SizeOfRawData
-            );
+                getAsciizString(sectionHeader.Name), sectionHeader.VirtualAddress + optionalHeader_.ImageBase,
+                sectionHeader.SizeOfRawData);
 
             section->setAllocated((sectionHeader.Characteristics & IMAGE_SCN_MEM_DISCARDABLE) == 0);
             section->setReadable(sectionHeader.Characteristics & IMAGE_SCN_MEM_READ);
@@ -234,34 +240,23 @@ private:
          */
         std::vector<IMAGE_SYMBOL> symbols(fileHeader_.NumberOfSymbols);
 
-        if (source_->read(reinterpret_cast<char *>(&symbols[0]), sizeof(IMAGE_SYMBOL) * fileHeader_.NumberOfSymbols) !=
-            static_cast<qint64>(sizeof(IMAGE_SYMBOL) * fileHeader_.NumberOfSymbols))
-        {
+        if (!read(source_, *symbols.data(), fileHeader_.NumberOfSymbols)) {
             log_.warning(tr("Cannot read the symbol table."));
             return;
         }
 
         uint32_t stringTableSize;
-        if (source_->read(reinterpret_cast<char *>(&stringTableSize), sizeof(stringTableSize)) != sizeof(stringTableSize)) {
+        if (!read(source_, stringTableSize)) {
             log_.warning(tr("Cannot read the size of the string table."));
             return;
         }
 
-        std::unique_ptr<char[]> stringTable(new char[stringTableSize]);
-        memset(stringTable.get(), 0, 4);
-        if (source_->read(stringTable.get() + 4, stringTableSize - 4) != stringTableSize - 4) {
+        QByteArray stringTable(4, 0);
+        stringTable.resize(stringTableSize);
+        if (!read(source_, stringTable.data()[4], stringTableSize - 4)) {
             log_.warning(tr("Cannot read the string table."));
             return;
         }
-
-        auto getStringFromTable = [&](uint32_t offset) -> QString {
-            if (offset < stringTableSize) {
-                return QString::fromLatin1(
-                    stringTable.get() + offset, qstrnlen(stringTable.get() + offset, stringTableSize - offset));
-            } else {
-                return QString();
-            }
-        };
 
         foreach (IMAGE_SYMBOL &symbol, symbols) {
             peByteOrder.convertFrom(symbol.Type);
@@ -284,9 +279,9 @@ private:
 
             QString name;
             if (symbol.N.Name.Short) {
-                name = getString(symbol.N.ShortName);
+                name = getAsciizString(symbol.N.ShortName);
             } else {
-                name = getStringFromTable(symbol.N.Name.Long);
+                name = getAsciizString(stringTable, symbol.N.Name.Long);
             }
 
             auto value = symbol.Value;
@@ -304,18 +299,13 @@ private:
         foreach (auto section, image_->sections()) {
             if (section->name().startsWith('/')) {
                 if (auto offset = stringToInt<uint32_t>(section->name().mid(1))) {
-                    QString newName = getStringFromTable(*offset);
+                    QString newName = getAsciizString(stringTable, *offset);
                     if (!newName.isEmpty()) {
                         section->setName(newName);
                     }
                 }
             }
         }
-    }
-
-    template<std::size_t size>
-    QString getString(const char (&buffer)[size]) const {
-        return QString::fromLatin1(buffer, qstrnlen(buffer, size));
     }
 
     void parseImports() {
@@ -378,12 +368,73 @@ private:
             }
         }
     }
+    void parseExports() {
+        if (optionalHeader_.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress == 0) {
+            return;
+        }
+
+        auto reader = core::image::Reader(image_);
+
+        IMAGE_EXPORT_DIRECTORY directory;
+        auto directoryAddress =
+            optionalHeader_.ImageBase + optionalHeader_.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+
+        if (image_->readBytes(directoryAddress, reinterpret_cast<char *>(&directory), sizeof(directory)) != sizeof(directory)) {
+            log_.warning(tr("Cannot read the image export directory."));
+            return;
+        }
+
+        peByteOrder.convertFrom(directory.Characteristics);
+        peByteOrder.convertFrom(directory.Name);
+        peByteOrder.convertFrom(directory.NumberOfFunctions);
+        peByteOrder.convertFrom(directory.NumberOfNames);
+        peByteOrder.convertFrom(directory.AddressOfFunctions);
+        peByteOrder.convertFrom(directory.AddressOfNames);
+        peByteOrder.convertFrom(directory.AddressOfNameOrdinal);
+
+        for (DWORD i = 0; i < directory.NumberOfNames; i++) {
+            WORD ordinal;
+            DWORD nameRVA;
+            if (image_->readBytes(optionalHeader_.ImageBase + directory.AddressOfNames + i * sizeof(nameRVA),
+                                  reinterpret_cast<char *>(&nameRVA), sizeof(nameRVA)) != sizeof(nameRVA)) {
+                log_.warning(tr("Cannot read the address value of the export directory item number %1.").arg(i));
+                return;
+            }
+            if (image_->readBytes(optionalHeader_.ImageBase + directory.AddressOfNameOrdinal + i * sizeof(ordinal),
+                                  reinterpret_cast<char *>(&ordinal), sizeof(ordinal)) != sizeof(ordinal)) {
+                log_.warning(tr("Cannot read the ordinal value of the export directory item number %1.").arg(i));
+                return;
+            }
+            peByteOrder.convertFrom(nameRVA);
+            peByteOrder.convertFrom(ordinal);
+
+            DWORD entry;
+            if (image_->readBytes(optionalHeader_.ImageBase + directory.AddressOfFunctions + ordinal * sizeof(entry),
+                                  reinterpret_cast<char *>(&entry), sizeof(entry)) != sizeof(entry)) {
+                log_.warning(
+                    tr("Cannot read the function address value of the export directory item number %1.").arg(i));
+                return;
+            }
+
+            peByteOrder.convertFrom(entry);
+
+            if (entry >= directoryAddress &&
+                entry < directoryAddress + optionalHeader_.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size) {
+                // entries with the export section are forwarded to another dll
+                continue;
+            }
+
+            auto name = reader.readAsciizString(optionalHeader_.ImageBase + nameRVA, 1024);
+            image_->addSymbol(std::make_unique<core::image::Symbol>(core::image::SymbolType::FUNCTION, std::move(name),
+                                                                    optionalHeader_.ImageBase + entry));
+        }
+    }
 };
 
 } // anonymous namespace
 
 PeParser::PeParser():
-    core::input::Parser("PE")
+    core::input::Parser(QLatin1String("PE"))
 {}
 
 bool PeParser::doCanParse(QIODevice *source) const {
@@ -392,33 +443,36 @@ bool PeParser::doCanParse(QIODevice *source) const {
 
 void PeParser::doParse(QIODevice *source, core::image::Image *image, const LogToken &log) const {
     if (!seekFileHeader(source)) {
-        throw core::input::ParseError(tr("PE signature doesn't match."));
+        throw ParseError(tr("PE signature doesn't match."));
     }
 
     IMAGE_FILE_HEADER fileHeader;
-    if (source->read(reinterpret_cast<char *>(&fileHeader), sizeof(fileHeader)) != sizeof(fileHeader)) {
-        throw core::input::ParseError(tr("Cannot read the file header."));
+    if (!read(source, fileHeader)) {
+        throw ParseError(tr("Cannot read the file header."));
     }
 
     peByteOrder.convertFrom(fileHeader.Machine);
     switch (fileHeader.Machine) {
         case IMAGE_FILE_MACHINE_I386:
-            image->setArchitecture(QLatin1String("i386"));
+            image->platform().setArchitecture(QLatin1String("i386"));
             break;
         case IMAGE_FILE_MACHINE_AMD64:
-            image->setArchitecture(QLatin1String("x86-64"));
+            image->platform().setArchitecture(QLatin1String("x86-64"));
             break;
         case IMAGE_FILE_MACHINE_ARM: /* FALLTHROUGH */
         case IMAGE_FILE_MACHINE_THUMB:
-            image->setArchitecture(QLatin1String("arm-le"));
+            image->platform().setArchitecture(QLatin1String("arm-le"));
             break;
         default:
-            throw core::input::ParseError(tr("Unknown machine id: 0x%1.").arg(fileHeader.Machine, 0, 16));
+            throw ParseError(tr("Unknown machine id: 0x%1.").arg(fileHeader.Machine, 0, 16));
     }
 
+    /* Just a guess. */
+    image->platform().setOperatingSystem(core::image::Platform::Windows);
+
     WORD optionalHeaderMagic;
-    if (source->read(reinterpret_cast<char *>(&optionalHeaderMagic), sizeof(optionalHeaderMagic)) != sizeof(optionalHeaderMagic)) {
-        throw core::input::ParseError(tr("Cannot read magic of the optional header."));
+    if (!read(source, optionalHeaderMagic)) {
+        throw ParseError(tr("Cannot read magic of the optional header."));
     }
 
     peByteOrder.convertFrom(optionalHeaderMagic);
@@ -432,10 +486,8 @@ void PeParser::doParse(QIODevice *source, core::image::Image *image, const LogTo
             PeParserImpl<IMAGE_OPTIONAL_HEADER64, IMPORT_LOOKUP_TABLE_ENTRY64>(source, image, log, fileHeader).parse();
             break;
         default:
-            throw core::input::ParseError(tr("Unknown optional header magic: 0x%1").arg(optionalHeaderMagic, 0, 16));
+            throw ParseError(tr("Unknown optional header magic: 0x%1").arg(optionalHeaderMagic, 0, 16));
     }
-
-    image->setDemangler("msvc");
 }
 
 } // namespace pe

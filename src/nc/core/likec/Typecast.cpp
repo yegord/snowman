@@ -128,13 +128,21 @@ Expression *Typecast::rewrite() {
 }
 
 void Typecast::doPrint(PrintContext &context) const {
+    int precedence = this->precedence();
+    int operandPrecedence = operand()->precedence();
+
+    int absPrecedence = abs(precedence);
+    int absOperandPrecedence = abs(operandPrecedence);
+
+    bool operandInBraces = absOperandPrecedence > absPrecedence;
+
     context.out() << '(' << *type() << ')';
-    bool braces = operand()->is<BinaryOperator>();
-    if (braces) {
+
+    if (operandInBraces) {
         context.out() << '(';
     }
     operand()->print(context);
-    if (braces) {
+    if (operandInBraces) {
         context.out() << ')';
     }
 }

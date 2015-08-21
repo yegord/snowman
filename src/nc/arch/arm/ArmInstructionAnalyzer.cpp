@@ -209,6 +209,19 @@ private:
             _[call(operand(0))];
             break;
         }
+        case ARM_INS_CMN: {
+            _[
+                n ^= intrinsic(),
+                c ^= unsigned_(operand(0)) < -operand(1),
+                z ^= operand(0) == -operand(1),
+                v ^= intrinsic(),
+
+                less             ^= signed_(operand(0)) < -operand(1),
+                less_or_equal    ^= signed_(operand(0)) <= -operand(1),
+                below_or_equal   ^= unsigned_(operand(0)) <= -operand(1)
+            ];
+            break;
+        }
         case ARM_INS_CMP: {
             _[
                 n ^= intrinsic(),
@@ -220,6 +233,19 @@ private:
                 less_or_equal    ^= signed_(operand(0)) <= operand(1),
                 below_or_equal   ^= unsigned_(operand(0)) <= operand(1)
             ];
+            break;
+        }
+        case ARM_INS_EOR: {
+            _[operand(0) ^= operand(1) ^ operand(2)];
+            if (!handleWriteToPC(bodyBasicBlock)) {
+                if (detail_->update_flags) {
+                    _[
+                        n ^= signed_(operand(0)) < constant(0),
+                        z ^= operand(0) == constant(0),
+                        c ^= intrinsic()
+                    ];
+                }
+            }
             break;
         }
         case ARM_INS_LDM: {
@@ -297,6 +323,52 @@ private:
             auto location = reg->memoryLocation().resized(16);
             _[MemoryLocationExpression(location) ^= operand(1, 16)];
             handleWriteToPC(bodyBasicBlock);
+            break;
+        }
+        case ARM_INS_MUL: {
+            _[operand(0) ^= operand(1) * operand(2)];
+            if (detail_->update_flags) {
+                _[
+                    n ^= signed_(operand(0)) < constant(0),
+                    z ^= operand(0) == constant(0),
+                    c ^= intrinsic()
+                ];
+            }
+            break;
+        }
+        case ARM_INS_MLA: {
+            _[operand(0) ^= operand(1) * operand(2) + operand(3)];
+            if (detail_->update_flags) {
+                _[
+                    n ^= signed_(operand(0)) < constant(0),
+                    z ^= operand(0) == constant(0),
+                    c ^= intrinsic()
+                ];
+            }
+            break;
+        }
+        case ARM_INS_MLS: {
+            _[operand(0) ^= operand(1) * operand(2) - operand(3)];
+            if (detail_->update_flags) {
+                _[
+                    n ^= signed_(operand(0)) < constant(0),
+                    z ^= operand(0) == constant(0),
+                    c ^= intrinsic()
+                ];
+            }
+            break;
+        }
+        case ARM_INS_MVN: {
+            _[operand(0) ^= ~operand(1)];
+            if (!handleWriteToPC(bodyBasicBlock)) {
+                if (detail_->update_flags) {
+                    _[
+                        n ^= signed_(operand(0)) < constant(0),
+                        z ^= operand(0) == constant(0),
+                        c ^= intrinsic()
+                    ];
+                }
+            }
             break;
         }
         case ARM_INS_ORR: {
@@ -407,6 +479,22 @@ private:
             ];
             break;
         }
+        case ARM_INS_UXTAB: {
+            _[operand(0) ^= zero_extend(operand(1, 8)) + operand(2)];
+            break;
+        }
+        case ARM_INS_UXTB: {
+            _[operand(0) ^= zero_extend(operand(1, 8))];
+            break;
+        }
+        case ARM_INS_UXTAH: {
+            _[operand(0) ^= zero_extend(operand(1, 16)) + operand(2)];
+            break;
+        }
+        case ARM_INS_UXTH: {
+            _[operand(0) ^= zero_extend(operand(1, 16))];
+            break;
+        }
         default: {
             _(std::make_unique<core::ir::InlineAssembly>());
             break;
@@ -447,10 +535,69 @@ private:
         if (getOperandRegister(modifiedOperandIndex) == ARM_REG_PC) {
             using namespace core::irgen::expressions;
             ArmExpressionFactoryCallback _(factory_, bodyBasicBlock, instruction_);
-            _[jump(pc)];
+
+            /*
+             * Generate a call instead of a jump for the following code:
+             *
+             * mov lr, pc
+             * ldr pc, [r3]
+             *
+             * https://github.com/yegord/snowman/issues/22
+             */
+            if (isReturnAddressSaved(bodyBasicBlock)) {
+                _[call(pc)];
+            } else {
+                _[jump(pc)];
+            }
             return true;
         }
         return false;
+    }
+
+    /*
+     * \param bodyBasicBlock Valid pointer to a basic block.
+     *
+     * \return True iff the last instruction added before the current one
+     *         to the basic block is an assignment lr = pc.
+     */
+    bool isReturnAddressSaved(const core::ir::BasicBlock *bodyBasicBlock) const {
+        assert(bodyBasicBlock != nullptr);
+
+        auto begin = bodyBasicBlock->statements().crbegin();
+        auto end = bodyBasicBlock->statements().crend();
+
+        while (begin != end && (*begin)->instruction() == instruction_) {
+            ++begin;
+        }
+
+        if (begin == end) {
+            return false;
+        }
+
+        auto assignment = (*begin)->asAssignment();
+        if (!assignment) {
+            return false;
+        }
+
+        auto leftAccess = assignment->left()->asMemoryLocationAccess();
+        if (!leftAccess) {
+            return false;
+        }
+
+        if (leftAccess->memoryLocation() != ArmRegisters::lr()->memoryLocation()) {
+            return false;
+        }
+
+        auto rightAccess = assignment->right()->asMemoryLocationAccess();
+        if (!rightAccess) {
+            return false;
+        }
+
+        if (rightAccess->memoryLocation() != ArmRegisters::pc()->memoryLocation()) {
+            return false;
+        }
+
+        return true;
     }
 
     unsigned int getOperandRegister(std::size_t index) const {
