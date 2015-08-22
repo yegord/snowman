@@ -42,8 +42,11 @@ namespace nc {
                 NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, sp);
                 NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, gp);
                 NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, ra);
-                NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, hilo);
+                NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, hi);
                 NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, lo);
+
+                NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, tmp64);
+                NC_DEFINE_REGISTER_EXPRESSION(AllegrexRegisters, tmp32);
 
             } // anonymous namespace
 
@@ -74,9 +77,11 @@ namespace nc {
                     program_ = program;
                     instruction_ = instruction;
 
-                    AllegrexExpressionFactoryCallback _(factory_, program->getBasicBlockForInstruction(instruction), instruction);
+                    AllegrexExpressionFactory factory(architecture_);
 
-                    createStatements(_, instruction, program);
+                    AllegrexExpressionFactoryCallback _(factory, program->getBasicBlockForInstruction(instruction), instruction);
+
+                    createStatements(_, instruction, program, nullptr);
                 }
 
             private:
@@ -168,7 +173,8 @@ namespace nc {
 
                 core::ir::BasicBlock *createStatements(AllegrexExpressionFactoryCallback & _,
                                                        const AllegrexInstruction *instruction,
-                                                       core::ir::Program *program) {
+                                                       core::ir::Program *program,
+                                                       const AllegrexInstruction *delayslotOwner) {
                     using namespace core::irgen::expressions;
 
                     allegrex_operand operand[8];
@@ -180,7 +186,7 @@ namespace nc {
 
                     auto delayslotCallback = [&](AllegrexExpressionFactoryCallback &callback) -> AllegrexExpressionFactoryCallback & {
                         if (auto delayslotInstruction = getDelayslotInstruction(instruction)) {
-                            callback.setBasicBlock(createStatements(callback, delayslotInstruction, program));
+                            callback.setBasicBlock(createStatements(callback, delayslotInstruction, program, instruction));
                         }
                         return callback;
                     };
@@ -296,7 +302,8 @@ namespace nc {
                         break;
                     }
                     case I_BEQ:  {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(2))
                         ];
                         _[
@@ -307,7 +314,8 @@ namespace nc {
                         break;
                     }
                     case I_BEQL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(2))
                         ];
                         _[
@@ -318,7 +326,8 @@ namespace nc {
                         break;
                     }
                     case I_BGEZ: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(1))
                         ];
                         _[
@@ -329,7 +338,8 @@ namespace nc {
                         break;
                     }
                     case I_BGEZAL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             call(imm(1)), jump(directSuccessorButOne())
                         ];
                         _[
@@ -340,7 +350,8 @@ namespace nc {
                         break;
                     }
                     case I_BGEZALL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             call(imm(1)), jump(directSuccessorButOne())
                         ];
                         _[
@@ -351,7 +362,8 @@ namespace nc {
                         break;
                     }
                     case I_BGEZL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(1))
                         ];
                         _[
@@ -362,7 +374,8 @@ namespace nc {
                         break;
                     }
                     case I_BGTZ: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(1))
                         ];
                         _[
@@ -373,7 +386,8 @@ namespace nc {
                         break;
                     }
                     case I_BGTZL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(1))
                         ];
                         _[
@@ -383,11 +397,30 @@ namespace nc {
                         ];
                         break;
                     }
-                    case I_BITREV:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                    case I_BITREV: {
+                        auto rd = unsigned_(gpr(0));
+                        auto rt = unsigned_(gpr(1));
+                        auto swapB = [&](unsigned shift, unsigned mask) {
+                            return ((std::move(rt) >> constant(shift)) & constant(mask)) | ((std::move(rt) & constant(mask)) << constant(shift));
+                        };
+                        auto swapS = [&](unsigned shift, unsigned mask) {
+                            return ((std::move(rd) >> constant(shift)) & constant(mask)) | ((std::move(rd) & constant(mask)) << constant(shift));
+                        };
+                        auto swapE = [&](unsigned shift) {
+                            return (std::move(rd) >> constant(shift)) | (std::move(rd) << constant(shift));
+                        };
+                        _[
+                            std::move(rd) ^= swapB(1, 0x55555555),
+                            std::move(rd) ^= swapS(2, 0x33333333),
+                            std::move(rd) ^= swapS(4, 0x0F0F0F0F),
+                            std::move(rd) ^= swapS(8, 0x00FF00FF),
+                            std::move(rd) ^= swapE(16)
+                        ];
                         break;
+                    }
                     case I_BLEZ: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(1))
                         ];
                         _[
@@ -398,7 +431,8 @@ namespace nc {
                         break;
                     }
                     case I_BLEZL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(1))
                         ];
                         _[
@@ -409,7 +443,8 @@ namespace nc {
                         break;
                     }
                     case I_BLTZ: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(1))
                         ];
                         _[
@@ -420,7 +455,8 @@ namespace nc {
                         break;
                     }
                     case I_BLTZL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(1))
                         ];
                         _[
@@ -431,7 +467,8 @@ namespace nc {
                         break;
                     }
                     case I_BLTZAL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             call(imm(1)), jump(directSuccessorButOne())
                         ];
                         _[
@@ -442,7 +479,8 @@ namespace nc {
                         break;
                     }
                     case I_BLTZALL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             call(imm(1)), jump(directSuccessorButOne())
                         ];
                         _[
@@ -453,7 +491,8 @@ namespace nc {
                         break;
                     }
                     case I_BNE: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(2))
                         ];
                         _[
@@ -464,7 +503,8 @@ namespace nc {
                         break;
                     }
                     case I_BNEL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(2))
                         ];
                         _[
@@ -501,12 +541,24 @@ namespace nc {
                     case I_DBREAK:
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
-                    case I_DIV:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                    case I_DIV: {
+                        auto rs = signed_(sign_extend(gpr(0), 64));
+                        auto rt = signed_(sign_extend(gpr(1), 64));
+                        _[
+                            lo ^= truncate((std::move(rs) / std::move(rt)), 32),
+                            hi ^= truncate((std::move(rs) % std::move(rt)), 32)
+                        ];
                         break;
-                    case I_DIVU:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                    }
+                    case I_DIVU: {
+                        auto rs = unsigned_(zero_extend(gpr(0), 64));
+                        auto rt = unsigned_(zero_extend(gpr(1), 64));
+                        _[
+                            lo ^= truncate((std::move(rs) / std::move(rt)), 32),
+                            hi ^= truncate((std::move(rs) % std::move(rt)), 32)
+                        ];
                         break;
+                    }
                     case I_DRET:
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
@@ -520,34 +572,38 @@ namespace nc {
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;                   
                     case I_J: {
-                        auto trampoline = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(0))
                         ];
-                        _[jump(trampoline.basicBlock())];
+                        _[jump(taken.basicBlock())];
                         break;
                     }
                     case I_JR: {
-                        auto trampoline = delayslotCallback(_);
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block);
                         if (operand[0].reg == R_RA) {
-                            trampoline[jump(return_address())];
+                            taken[jump(return_address())];
                         } else {
-                            trampoline[jump(gpr(0))];
+                            taken[jump(gpr(0))];
                         }
-                        _[jump(trampoline.basicBlock())];
+                        _[jump(taken.basicBlock())];
                         break;
                     }
                     case I_JALR: {
-                        auto trampoline = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             call(gpr(0)), jump(directSuccessorButOne())
                         ];
-                        _[jump(trampoline.basicBlock())];
+                        _[jump(taken.basicBlock())];
                         break;
                     }
                     case I_JAL: {
-                        auto trampoline = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             call(imm(0)), jump(directSuccessorButOne())
                         ];
-                        _[jump(trampoline.basicBlock())];
+                        _[jump(taken.basicBlock())];
                         break;
                     }
                     case I_LB:
@@ -593,29 +649,49 @@ namespace nc {
                     case I_LWR:
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
-                    case I_MADD:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                    case I_MADD: {
+                        auto rs = sign_extend(gpr(0), 64);
+                        auto rt = sign_extend(gpr(0), 64);
+                        _[
+                            tmp64 ^= sign_extend(hi, 64) << constant(32) + zero_extend(lo, 64) + std::move(rs) * std::move(rt),
+
+                            lo ^= truncate(tmp64, 32),
+                            hi ^= truncate(signed_(tmp64) >> constant(32), 32)
+                        ];
                         break;
-                    case I_MADDU:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                    }
+                    case I_MADDU: {
+                        auto rs = zero_extend(gpr(0), 64);
+                        auto rt = zero_extend(gpr(0), 64);
+                        _[
+                            tmp64 ^= zero_extend(hi, 64) << constant(32) + zero_extend(lo, 64) + std::move(rs) * std::move(rt),
+
+                            lo ^= truncate(tmp64, 32),
+                            hi ^= truncate(unsigned_(tmp64) >> constant(32), 32)
+                        ];
                         break;
+                    }
                     case I_MFC0:
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
                     case I_MFDR:
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
-                    case I_MFHI:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                    case I_MFHI: {
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= hi];
                         break;
+                    }
                     case I_MFIC:
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
-                    case I_MFLO:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                    case I_MFLO: {
+                        if (operand[0].reg != R_ZERO)
+                            _[gpr(0) ^= lo];
                         break;
+                    }
                     case I_MOVN: {
-                        auto move = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction)[
+                        auto move = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
                             gpr(0) ^= gpr(1)
                         ];
                         _[
@@ -626,7 +702,7 @@ namespace nc {
                         return move.basicBlock();
                     }
                     case I_MOVZ:{
-                        auto move = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction)[
+                        auto move = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
                             gpr(0) ^= gpr(1)
                         ];
                         _[
@@ -636,12 +712,27 @@ namespace nc {
                         ];
                         return move.basicBlock();
                     }
-                    case I_MSUB:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                    case I_MSUB: {
+                        auto rs = sign_extend(gpr(0), 64);
+                        auto rt = sign_extend(gpr(0), 64);
+                        _[
+                            tmp64 ^= sign_extend(hi, 64) << constant(32) + zero_extend(lo, 64) - std::move(rs) * std::move(rt),
+
+                            lo ^= truncate(tmp64, 32),
+                            hi ^= truncate(signed_(tmp64) >> constant(32), 32)
+                        ];
+                    }
+                    case I_MSUBU: {
+                        auto rs = zero_extend(gpr(0), 64);
+                        auto rt = zero_extend(gpr(0), 64);
+                        _[
+                            tmp64 ^= zero_extend(hi, 64) << constant(32) + zero_extend(lo, 64) - std::move(rs) * std::move(rt),
+
+                            lo ^= truncate(tmp64, 32),
+                            hi ^= truncate(unsigned_(tmp64) >> constant(32), 32)
+                        ];
                         break;
-                    case I_MSUBU:
-                        _(std::make_unique<core::ir::InlineAssembly>());
-                        break;
+                    }
                     case I_MTC0:
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
@@ -654,18 +745,36 @@ namespace nc {
                     case I_HALT:
                         _(std::make_unique<core::ir::InlineAssembly>());
                         break;
-                    case I_MTHI:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                    case I_MTHI: {
+                        _[hi ^= gpr(0)];
                         break;
-                    case I_MTLO:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                    }
+                    case I_MTLO: {
+                        _[lo ^= gpr(0)];
                         break;
-                    case I_MULT:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                    }
+                    case I_MULT: {
+                        auto rs = sign_extend(gpr(0), 64);
+                        auto rt = sign_extend(gpr(0), 64);
+                        _[
+                            tmp64 ^= std::move(rs) * std::move(rt),
+
+                                lo ^= truncate(tmp64, 32),
+                                hi ^= truncate(signed_(tmp64) >> constant(32), 32)
+                        ];
                         break;
-                    case I_MULTU:
-                        _(std::make_unique<core::ir::InlineAssembly>());
+                    }
+                    case I_MULTU: {
+                        auto rs = zero_extend(gpr(0), 64);
+                        auto rt = zero_extend(gpr(0), 64);
+                        _[
+                            tmp64 ^= std::move(rs) * std::move(rt),
+
+                            lo ^= truncate(tmp64, 32),
+                            hi ^= truncate(unsigned_(tmp64) >> constant(32), 32)
+                        ];
                         break;
+                    }
                     case I_NOR: {
                         if (operand[0].reg != R_ZERO)
                             _[gpr(0) ^= ~(gpr(1) | gpr(2))];
