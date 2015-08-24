@@ -207,6 +207,8 @@ set(SOURCES
     likec/PrintContext.h
     likec/Return.cpp
     likec/Return.h
+    likec/Simplify.cpp
+    likec/Simplify.h
     likec/Statement.cpp
     likec/Statement.h
     likec/String.cpp

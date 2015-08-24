@@ -28,6 +28,7 @@
 
 #include "Block.h"
 #include "PrintContext.h"
+#include "Simplify.h"
 #include "UnaryOperator.h"
 
 namespace nc {
@@ -66,7 +67,8 @@ If *If::rewrite() {
             }
         }
     }
-    rewriteChild(condition_);
+
+    condition_ = simplifyBooleanExpression(std::move(condition_));
 
     return this;
 }

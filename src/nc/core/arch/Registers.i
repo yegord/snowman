@@ -4,7 +4,7 @@
  * \file
  *
  * This file is to be used to generate register enumeration and accessors 
- * from register table. For example usage, see <tt>IntelRegisters.h</tt>.
+ * from register table. For example usage, see <tt>X86Registers.h</tt>.
  */
 
 #ifndef REGISTER_TABLE
