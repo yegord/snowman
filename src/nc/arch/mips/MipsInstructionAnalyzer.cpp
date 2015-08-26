@@ -30,10 +30,10 @@ namespace mips {
 namespace {
 
 class MipsExpressionFactory: public core::irgen::expressions::ExpressionFactory<MipsExpressionFactory> {
-public:
+  public:
     MipsExpressionFactory(const core::arch::Architecture *architecture):
-        core::irgen::expressions::ExpressionFactory<MipsExpressionFactory>(architecture)
-    {}
+        core::irgen::expressions::ExpressionFactory<MipsExpressionFactory>(architecture) {
+    }
 };
 
 typedef core::irgen::expressions::ExpressionFactoryCallback<MipsExpressionFactory> MipsExpressionFactoryCallback;
@@ -60,10 +60,9 @@ class MipsInstructionAnalyzerImpl {
     const cs_mips *detail_;
     const core::arch::Instructions *instructions_;
 
-public:
+  public:
     MipsInstructionAnalyzerImpl(const MipsArchitecture *architecture):
-        architecture_(architecture), capstone_(CS_ARCH_MIPS, CS_MODE_MIPS32), factory_(architecture)
-    {
+        architecture_(architecture), capstone_(CS_ARCH_MIPS, CS_MODE_MIPS32), factory_(architecture) {
         assert(architecture_ != nullptr);
     }
 
@@ -76,9 +75,9 @@ public:
         instr_ = disassemble(instruction);
         if (instr_ == nullptr)
             return;
-       
+
         detail_ = &instr_->detail->mips;
-                
+
         core::ir::BasicBlock *cachedDirectSuccessor = nullptr;
         core::ir::BasicBlock *cachedDirectSuccessorButOne = nullptr;
         auto directSuccessor = [&]() -> core::ir::BasicBlock * {
@@ -99,8 +98,7 @@ public:
             auto delayslot = checked_cast<const MipsInstruction *>(instructions_->get(instruction->endAddr()).get());
             if (delayslot) {
                 createStatements(callback, delayslot, program, instruction);
-            }
-            else {
+            } else {
                 throw core::irgen::InvalidInstructionException(tr("Cannot find a delay slot at 0x%1.").arg(instruction->endAddr(), 0, 16));
             }
             detail_ = detail;
@@ -125,902 +123,922 @@ public:
 
         /* Describing semantics */
         switch (instr_->id) {
-            case MIPS_INS_CACHE: /* Fall-through */
-            case MIPS_INS_BREAK:
-            case MIPS_INS_PREF:
-            case MIPS_INS_SDBBP:
-            case MIPS_INS_SYNC:
-            case MIPS_INS_SSNOP:
-            case MIPS_INS_NOP: {
-                break;
-            }
-            case MIPS_INS_ABS: {
-				MipsExpressionFactoryCallback negative(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback positive(factory, program->createBasicBlock(), instruction);
-				_[	
-                    jump((signed_(operand(1)) < signed_(constant(0))),
-                         (negative[operand(0) ^= -(operand(1)), jump(directSuccessor())]).basicBlock(),
-                         (positive[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock())
-                ];
-                break;
-            }
-            case MIPS_INS_ADD: /* Fall-through */
-            case MIPS_INS_ADDI: {
-                _[operand(0) ^= (operand(1) + operand(2))];
-                break;
-            }
-            case MIPS_INS_SUB: /* Fall-through */
-            case MIPS_INS_SUBU: {
-                _[operand(0) ^= (operand(1) - operand(2))];
-                break;
-            }
-            case MIPS_INS_NEG: /* Fall-through */
-            case MIPS_INS_NEGU: {
-                _[operand(0) ^=  signed_(constant(0) - operand(1))];
-                break;
-            }
-            case MIPS_INS_AND: {
-                _[operand(0) ^= (operand(1) & operand(2))];
-                break;
-            }
-            case MIPS_INS_OR: {
-                _[operand(0) ^= (operand(1) | operand(2))];
-                break;
-            }
-            case MIPS_INS_XOR: {
-                _[operand(0) ^= (operand(1) ^ operand(2))];
-                break;
-            }
-            case MIPS_INS_NOR: {
-                _[operand(0) ^= ~(operand(1) | operand(2))];
-                break;
-            }
-            case MIPS_INS_NOT: {
-                _[operand(0) ^= ~(operand(1))];
-                break;
-            }
-            case MIPS_INS_ADDU: /* Fall-through */
-            case MIPS_INS_ADDIU: {
-                /*_[operand(0) ^= (operand(1) + signed_(operand(2)))];*/
-                _[operand(0) ^= (operand(1) + operand(2))];
-                break;
-            }
-            case MIPS_INS_ANDI: {
-                _[operand(0) ^= (operand(1) & unsigned_(operand(2)))];
-                break;
-            }
-            case MIPS_INS_ORI: {
-                _[operand(0) ^= (operand(1) | unsigned_(operand(2)))];
-                break;
-            }
-            case MIPS_INS_XORI: {
-                _[operand(0) ^= (operand(1) ^ unsigned_(operand(2)))];
-                break;
-            }
-            case MIPS_INS_LUI: {
-                _[operand(0) ^= (operand(1) << constant(16))];
-                break;
-            }
-            case MIPS_INS_MOVE: {
-                _[operand(0) ^= operand(1)];
-                break;
-            }
-            case MIPS_INS_MOVN: {
-                MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-                _[
-                    jump(~(operand(2) == constant(0)),
-                         (then[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock(),
-                         directSuccessor())
-                ];
-                break;
-            }
-            case MIPS_INS_MOVZ: {
-                MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-                _[
-                    jump(operand(2) == constant(0),
-                         (then[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock(),
-                         directSuccessor())
-                ];
-                break;
-            }
-            case MIPS_INS_SEB: {
-                _[operand(0) ^= sign_extend(operand(1, 8))];
-                break;
-            }
-            case MIPS_INS_SEH: {
-                _[operand(0) ^= sign_extend(operand(1, 16))];
-                break;
-            }
-            case MIPS_INS_SNE: {
-                /* d = (s != t) ? 1 : 0 */
-                _[operand(0) ^= ~(operand(1) == operand(2))];
-                break;
-            }
-            case MIPS_INS_SNEI: {
-                /* d = (s != t) ? 1 : 0 */
-                _[operand(0) ^= ~(operand(1) == signed_(operand(2)))];
-                break;
-            }
-            case MIPS_INS_SEQ: {
-                /* d = (s == t) ? 1 : 0 */
-                _[operand(0) ^= (operand(1) == operand(2))];
-                break;
-            }
-            case MIPS_INS_SEQI: {
-            	/* d = (s == t) ? 1 : 0 */
-                _[operand(0) ^= (operand(1) == signed_(operand(2)))];
-                break;
-            }
-			case MIPS_INS_SLT: /* Fall-through */
-            case MIPS_INS_SLTI: {
-				_[operand(0) ^= zero_extend(signed_(operand(1)) < signed_(operand(2)))];
-                break;
-            }
-	        case MIPS_INS_SLTU: /* Fall-through */
-            case MIPS_INS_SLTIU: {
-   				_[operand(0) ^= zero_extend(unsigned_(operand(1)) < unsigned_(operand(2)))];
-                break;
-            }
-            case MIPS_INS_ROTR:	 /* Fall-through */
-            case MIPS_INS_ROTRV: {
-                auto operand1 = operand(1);
-                auto operand2 = operand(2);
-                _[operand(0) ^= ((unsigned_(operand1) >> operand2) | (operand1 << (constant(32) - operand2)))];
-                break;
-            }
- 	        case MIPS_INS_SLL: /* Fall-through */
-   	 	    case MIPS_INS_SLLI:
-   	        case MIPS_INS_SLLV: {
-          		if (getOperandType(2) == MIPS_OP_REG)
-            	    _[operand(0) ^= (operand(1) << zero_extend(operand(2, 5)))];
-           		else
-            	    _[operand(0) ^= (operand(1) << operand(2))];
-            	break;
-        	}
-       	    case MIPS_INS_SRA: /* Fall-through */
-            case MIPS_INS_SRAI:
-            case MIPS_INS_SRAV: {
-            	if (getOperandType(2) == MIPS_OP_REG)
-                	_[operand(0) ^= (signed_(operand(1)) >> zero_extend(operand(2, 5)))];
-            	else
-                	_[operand(0) ^= (signed_(operand(1)) >> operand(2))];
-            	break;
-        	}
-        	case MIPS_INS_SRL: /* Fall-through */
-        	case MIPS_INS_SRLI:
-        	case MIPS_INS_SRLV: {
-            	if (getOperandType(2) == MIPS_OP_REG)
-                	_[operand(0) ^= (unsigned_(operand(1)) >> zero_extend(operand(2, 5)))];
-            	else
-                	_[operand(0) ^= (unsigned_(operand(1)) >> operand(2))];
-            	break;
-        	}
-            case MIPS_INS_LB: {
-                _[operand(0) ^= sign_extend(operand(1, 8))];
-                break;
-            }
-            case MIPS_INS_LBU: {
-                _[operand(0) ^= zero_extend(operand(1, 8))];
-                break;
-            }
-            case MIPS_INS_LH: {
-                _[operand(0) ^= sign_extend(operand(1, 16))];
-                break;
-            }
-            case MIPS_INS_LHU: {
-                _[operand(0) ^= zero_extend(operand(1, 16))];
-                break;
-            }
-            case MIPS_INS_LW: {
-                _[operand(0) ^= operand(1)];
-                break;
-            }
-            case MIPS_INS_LWL: {
-            	auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
-				auto rt = operand(0);
-				auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-				auto offset = (ea & constant(3));
-				auto memval = *(ea & constant(-4));
-				
-                MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _then2(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _case2(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _then3(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _case3(factory, program->createBasicBlock(), instruction);
-#if 0
-uint32
-CPU::lwl(uint32 regval, uint32 memval, uint8 offset)
-{
-	if (opt_bigendian) {
-		switch (offset)
-		{
-			case 0: return memval;
-			case 1: return (memval & 0xffffff) << 8 | (regval & 0xff);
-			case 2: return (memval & 0xffff) << 16 | (regval & 0xffff);
-			case 3: return (memval & 0xff) << 24 | (regval & 0xffffff);
-		}
-	} else /* if MIPS target is little endian */ {
-		switch (offset)
-		{
-			case 0: return (memval & 0xff) << 24 | (regval & 0xffffff);
-			case 1: return (memval & 0xffff) << 16 | (regval & 0xffff);
-			case 2: return (memval & 0xffffff) << 8 | (regval & 0xff);
-			case 3: return memval;
-		}
-	}
-	fatal_error("Invalid offset %x passed to lwl\n", offset);
-}
-#endif
-            	if(isBE){
-					_[
-						jump(offset == constant(0),
-						_case0[rt ^= (memval),
-							jump(directSuccessor())].basicBlock(),
-					_then1[
-    					jump(offset == constant(1),
-    					_case1[rt ^= ((memval & constant(0xffffff)) << constant(8) | (rt & constant(0xff))),
-    						jump(directSuccessor())].basicBlock(),
-    				_then2[
-    					jump(offset == constant(2),
-    					_case2[rt ^= ((memval & constant(0xffff)) << constant(16) | (rt & constant(0xffffff00))),
-    						jump(directSuccessor())].basicBlock(),
-    				_then3[
-	    				jump(offset == constant(3),
-	    				_case3[rt ^= ((memval & constant(0xff)) << constant(24) | (rt & constant(0xffffff))),
-	    					jump(directSuccessor())].basicBlock(),
-	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
-    				];
-             	} else /* if MIPS target is little endian */ {
-					_[
-						jump(offset == constant(0),
-						_case0[rt ^= (((memval & constant(0xff)) << constant(24)) | (rt & constant(0xffffff))),
-							jump(directSuccessor())].basicBlock(),
-	   				_then1[
-    					jump(offset == constant(1),
-    					_case1[rt ^= (((memval & constant(0xffff)) << constant(16)) | (rt & constant(0xffffff00))),
-    						jump(directSuccessor())].basicBlock(),
-    				_then2[
-    					jump(offset == constant(2),
-    					_case2[rt ^= (((memval & constant(0xffffff)) << constant(8)) | (rt & constant(0xff))),
-    						jump(directSuccessor())].basicBlock(),
-    				_then3[
-	    				jump(offset == constant(3),
-	    				_case3[rt ^= (memval),
-	    					jump(directSuccessor())].basicBlock(),
-	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
-    				];
-    				//_[rt ^= ((memval & (constant(0xffffff00) << signed_(offset))) | ((unsigned_(rt) >> (constant(8) * offset)) & constant(0xffffffff)) >> (constant(4) - offset)))];
-            	}
-                break;
-            }
-            case MIPS_INS_LWR: {
-            	auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
-				auto rt = operand(0);
-				auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-				auto offset = (ea & constant(3));
-				auto memval = *(ea & constant(-4));
+        case MIPS_INS_CACHE: /* Fall-through */
+        case MIPS_INS_BREAK:
+        case MIPS_INS_PREF:
+        case MIPS_INS_SDBBP:
+        case MIPS_INS_SYNC:
+        case MIPS_INS_SSNOP:
+        case MIPS_INS_NOP: {
+            break;
+        }
+        case MIPS_INS_ABS: {
+            MipsExpressionFactoryCallback negative(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback positive(factory, program->createBasicBlock(), instruction);
+            _[
+                jump((signed_(operand(1)) < signed_(constant(0))),
+                     (negative[operand(0) ^= -(operand(1)), jump(directSuccessor())]).basicBlock(),
+                     (positive[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock())
+            ];
+            break;
+        }
+        case MIPS_INS_ADD: /* Fall-through */
+        case MIPS_INS_ADDI: {
+            _[operand(0) ^= (operand(1) + operand(2))];
+            break;
+        }
+        case MIPS_INS_SUB: /* Fall-through */
+        case MIPS_INS_SUBU: {
+            _[operand(0) ^= (operand(1) - operand(2))];
+            break;
+        }
+        case MIPS_INS_NEG: /* Fall-through */
+        case MIPS_INS_NEGU: {
+            _[operand(0) ^=  signed_(constant(0) - operand(1))];
+            break;
+        }
+        case MIPS_INS_AND: {
+            _[operand(0) ^= (operand(1) & operand(2))];
+            break;
+        }
+        case MIPS_INS_OR: {
+            _[operand(0) ^= (operand(1) | operand(2))];
+            break;
+        }
+        case MIPS_INS_XOR: {
+            _[operand(0) ^= (operand(1) ^ operand(2))];
+            break;
+        }
+        case MIPS_INS_NOR: {
+            _[operand(0) ^= ~(operand(1) | operand(2))];
+            break;
+        }
+        case MIPS_INS_NOT: {
+            _[operand(0) ^= ~(operand(1))];
+            break;
+        }
+        case MIPS_INS_ADDU: /* Fall-through */
+        case MIPS_INS_ADDIU: {
+            /*_[operand(0) ^= (operand(1) + signed_(operand(2)))];*/
+            _[operand(0) ^= (operand(1) + operand(2))];
+            break;
+        }
+        case MIPS_INS_ANDI: {
+            _[operand(0) ^= (operand(1) & unsigned_(operand(2)))];
+            break;
+        }
+        case MIPS_INS_ORI: {
+            _[operand(0) ^= (operand(1) | unsigned_(operand(2)))];
+            break;
+        }
+        case MIPS_INS_XORI: {
+            _[operand(0) ^= (operand(1) ^ unsigned_(operand(2)))];
+            break;
+        }
+        case MIPS_INS_LUI: {
+            _[operand(0) ^= (operand(1) << constant(16))];
+            break;
+        }
+        case MIPS_INS_MOVE: {
+            _[operand(0) ^= operand(1)];
+            break;
+        }
+        case MIPS_INS_MOVN: {
+            MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            _[
+                jump(~(operand(2) == constant(0)),
+                     (then[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock(),
+                     directSuccessor())
+            ];
+            break;
+        }
+        case MIPS_INS_MOVZ: {
+            MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            _[
+                jump(operand(2) == constant(0),
+                     (then[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock(),
+                     directSuccessor())
+            ];
+            break;
+        }
+        case MIPS_INS_SEB: {
+            _[operand(0) ^= sign_extend(operand(1, 8))];
+            break;
+        }
+        case MIPS_INS_SEH: {
+            _[operand(0) ^= sign_extend(operand(1, 16))];
+            break;
+        }
+        case MIPS_INS_SNE: {
+            /* d = (s != t) ? 1 : 0 */
+            _[operand(0) ^= ~(operand(1) == operand(2))];
+            break;
+        }
+        case MIPS_INS_SNEI: {
+            /* d = (s != t) ? 1 : 0 */
+            _[operand(0) ^= ~(operand(1) == signed_(operand(2)))];
+            break;
+        }
+        case MIPS_INS_SEQ: {
+            /* d = (s == t) ? 1 : 0 */
+            _[operand(0) ^= (operand(1) == operand(2))];
+            break;
+        }
+        case MIPS_INS_SEQI: {
+            /* d = (s == t) ? 1 : 0 */
+            _[operand(0) ^= (operand(1) == signed_(operand(2)))];
+            break;
+        }
+        case MIPS_INS_SLT: /* Fall-through */
+        case MIPS_INS_SLTI: {
+            _[operand(0) ^= zero_extend(signed_(operand(1)) < signed_(operand(2)))];
+            break;
+        }
+        case MIPS_INS_SLTU: /* Fall-through */
+        case MIPS_INS_SLTIU: {
+            _[operand(0) ^= zero_extend(unsigned_(operand(1)) < unsigned_(operand(2)))];
+            break;
+        }
+        case MIPS_INS_ROTR:	 /* Fall-through */
+        case MIPS_INS_ROTRV: {
+            auto operand1 = operand(1);
+            auto operand2 = operand(2);
+            _[operand(0) ^= ((unsigned_(operand1) >> operand2) | (operand1 << (constant(32) - operand2)))];
+            break;
+        }
+        case MIPS_INS_SLL: /* Fall-through */
+        case MIPS_INS_SLLI:
+        case MIPS_INS_SLLV: {
+            if (getOperandType(2) == MIPS_OP_REG)
+                _[operand(0) ^= (operand(1) << zero_extend(operand(2, 5)))];
+            else
+                _[operand(0) ^= (operand(1) << operand(2))];
+            break;
+        }
+        case MIPS_INS_SRA: /* Fall-through */
+        case MIPS_INS_SRAI:
+        case MIPS_INS_SRAV: {
+            if (getOperandType(2) == MIPS_OP_REG)
+                _[operand(0) ^= (signed_(operand(1)) >> zero_extend(operand(2, 5)))];
+            else
+                _[operand(0) ^= (signed_(operand(1)) >> operand(2))];
+            break;
+        }
+        case MIPS_INS_SRL: /* Fall-through */
+        case MIPS_INS_SRLI:
+        case MIPS_INS_SRLV: {
+            if (getOperandType(2) == MIPS_OP_REG)
+                _[operand(0) ^= (unsigned_(operand(1)) >> zero_extend(operand(2, 5)))];
+            else
+                _[operand(0) ^= (unsigned_(operand(1)) >> operand(2))];
+            break;
+        }
+        case MIPS_INS_LB: {
+            _[operand(0) ^= sign_extend(operand(1, 8))];
+            break;
+        }
+        case MIPS_INS_LBU: {
+            _[operand(0) ^= zero_extend(operand(1, 8))];
+            break;
+        }
+        case MIPS_INS_LH: {
+            _[operand(0) ^= sign_extend(operand(1, 16))];
+            break;
+        }
+        case MIPS_INS_LHU: {
+            _[operand(0) ^= zero_extend(operand(1, 16))];
+            break;
+        }
+        case MIPS_INS_LW: {
+            _[operand(0) ^= operand(1)];
+            break;
+        }
+        case MIPS_INS_LWL: {
+            auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
+            auto rt = operand(0);
+            auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+            auto offset = (ea & constant(3));
+            auto memval = *(ea & constant(-4));
 
-                MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _then2(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _case2(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _then3(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _case3(factory, program->createBasicBlock(), instruction);
-
+            MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then2(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case2(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then3(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case3(factory, program->createBasicBlock(), instruction);
 #if 0
-uint32
-CPU::lwr(uint32 regval, uint32 memval, uint8 offset)
-{
-	if (opt_bigendian) {
-		switch (offset)
-		{
-			case 0: return (regval & 0xffffff00) | ((unsigned)(memval & 0xff000000) >> 24);
-			case 1: return (regval & 0xffff0000) | ((unsigned)(memval & 0xffff0000) >> 16);
-			case 2: return (regval & 0xff000000) | ((unsigned)(memval & 0xffffff00) >> 8);
-			case 3: return memval;
-		}
-	} else /* if MIPS target is little endian */ {
-		switch (offset)
-		{
-			/* The SPIM source claims that "The description of the
-			 * little-endian case in Kane is totally wrong." The fact
-			 * that I ripped off the LWR algorithm from them could be
-			 * viewed as a sort of passive assumption that their claim
-			 * is correct.
-			 */
-			case 0: /* 3 in book */
-				return memval;
-			case 1: /* 0 in book */
-				return (regval & 0xff000000) | ((memval & 0xffffff00) >> 8);
-			case 2: /* 1 in book */
-				return (regval & 0xffff0000) | ((memval & 0xffff0000) >> 16);
-			case 3: /* 2 in book */
-				return (regval & 0xffffff00) | ((memval & 0xff000000) >> 24);
-		}
-	}
-	fatal_error("Invalid offset %x passed to lwr\n", offset);
-}
-#endif
-            	if(isBE){
-					_[
-						jump(offset == constant(0),
-						_case0[rt ^= ((unsigned_(memval & constant(0xff000000)) >> constant(24)) | (rt & constant(0xffffff00))),
-							jump(directSuccessor())].basicBlock(),
-					_then1[
-    					jump(offset == constant(1),
-    					_case1[rt ^= ((unsigned_(memval & constant(0xffff0000)) >> constant(16)) | (rt  & constant(0xffff0000))),
-    						jump(directSuccessor())].basicBlock(),
-    				_then2[
-    					jump(offset == constant(2),
-    					_case2[rt ^= ((unsigned_(memval & constant(0xffffff00)) >> constant(8)) | (rt & constant(0xff000000))),
-    						jump(directSuccessor())].basicBlock(),
-    				_then3[
-	    				jump(offset == constant(3),
-	    				_case3[rt ^= (memval),
-	    					jump(directSuccessor())].basicBlock(), 
-	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
-    				];
-             	} else /* if MIPS target is little endian */ {
-					_[
-						jump(offset == constant(0),
-						_case0[rt ^= (memval),
-							jump(directSuccessor())].basicBlock(),
-					_then1[
-    					jump(offset == constant(1),
-    					_case1[rt ^= ((unsigned_(memval & constant(0xffffff00)) >> constant(8)) | (rt & constant(0xff000000))),
-    						jump(directSuccessor())].basicBlock(),
-    				_then2[
-    					jump(offset == constant(2),
-    					_case2[rt ^= ((unsigned_(memval & constant(0xffff0000)) >> constant(16)) | (rt  & constant(0xffff0000))),
-    						jump(directSuccessor())].basicBlock(),
-     				_then3[
-	    				jump(offset == constant(3),
-	    					_case3[rt ^= ((unsigned_(memval & constant(0xff000000)) >> constant(24)) | (rt & constant(0xffffff00))),
-	    						jump(directSuccessor())].basicBlock(),
-	    							directSuccessor())].basicBlock())].basicBlock())].basicBlock())
-    			];
-            	}
-                break;
-            }
-            case MIPS_INS_SB: {
-                _[operand(0, 8) ^= truncate(operand(1))];
-                break;
-            }
-            case MIPS_INS_SH: {
-                _[operand(0, 16) ^= truncate(operand(1))];
-                break;
-            }
-            case MIPS_INS_SW: {
-		        auto operand0 = operand(0);
-                auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-                _[operand0 ^= operand1];
-                break;
-            }
-            case MIPS_INS_SWL: {
-            	auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
-				auto rt = operand(0);
-				auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-				auto offset = (ea & constant(3));
-				auto memval = *(ea & constant(-4));
-
-                MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _then2(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _case2(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _then3(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _case3(factory, program->createBasicBlock(), instruction);
-#if 0
-uint32
-CPU::swl(uint32 regval, uint32 memval, uint8 offset)
-{
-	if (opt_bigendian) {
-		switch (offset) {
-			case 0: return regval; 
-			case 1: return (memval & 0xff000000) | (regval >> 8 & 0xffffff); 
-			case 2: return (memval & 0xffff0000) | (regval >> 16 & 0xffff); 
-			case 3: return (memval & 0xffffff00) | (regval >> 24 & 0xff); 
-		}
-	} else /* if MIPS target is little endian */ {
-		switch (offset) {
-			case 0: return (memval & 0xffffff00) | (regval >> 24 & 0xff); 
-			case 1: return (memval & 0xffff0000) | (regval >> 16 & 0xffff); 
-			case 2: return (memval & 0xff000000) | (regval >> 8 & 0xffffff); 
-			case 3: return regval; 
-		}
-	}
-	fatal_error("Invalid offset %x passed to swl\n", offset);
-}
-#endif				
-            	if(isBE){
-					_[
-						jump(offset == constant(0),
-						_case0[rt ^= (memval),
-							jump(directSuccessor())].basicBlock(),
-					_then1[
-    					jump(offset == constant(1),
-    					_case1[rt ^= ((memval & constant(0xff000000)) | ((unsigned_(rt) >> constant(8)) & constant(0xffffff))),
-    						jump(directSuccessor())].basicBlock(),
-    				_then2[
-    					jump(offset == constant(2),
-    					_case2[rt ^= ((memval & constant(0xffff0000)) | ((unsigned_(rt) >> constant(16)) & constant(0xffff))),
-    						jump(directSuccessor())].basicBlock(),
-    				_then3[
-	    				jump(offset == constant(3),
-	    				_case3[rt ^= ((memval & constant(0xffffff00)) | ((unsigned_(rt) >> constant(24)) & constant(0xff))),
-	    					jump(directSuccessor())].basicBlock(),
-	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
-    				];
-             	} else /* if MIPS target is little endian */ {
-					_[
-						jump(offset == constant(0),
-						_case0[rt ^= ((memval & constant(0xffffff00)) | ((unsigned_(rt) >> constant(24)) & constant(0xff))),
-							jump(directSuccessor())].basicBlock(),
-	 				_then1[
-    					jump(offset == constant(1),
-    					_case1[rt ^= ((memval & constant(0xffff0000)) | ((unsigned_(rt) >> constant(16)) & constant(0xffff))),
-    						jump(directSuccessor())].basicBlock(),
-     				_then2[
-    					jump(offset == constant(2),
-    					_case2[rt ^= ((memval & constant(0xff000000)) | ((unsigned_(rt) >> constant(8)) & constant(0xffffff))),
-    						jump(directSuccessor())].basicBlock(),
-    				_then3[
-	    				jump(offset == constant(3),
-	    				_case3[rt ^= (memval),
-	    					jump(directSuccessor())].basicBlock(), 
-	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
-    				];
-            	}
-                break;
-            }
-            case MIPS_INS_SWR: {
-            	auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
-				auto rt = operand(0);
-				auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-				auto offset = (ea & constant(3));
-				auto memval = *(ea & constant(-4));
-
-                MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _then2(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _case2(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _then3(factory, program->createBasicBlock(), instruction);
-                MipsExpressionFactoryCallback _case3(factory, program->createBasicBlock(), instruction);
-
-#if 0
-uint32
-CPU::swr(uint32 regval, uint32 memval, uint8 offset)
-{
-	if (opt_bigendian) {
-		switch (offset) {
-			case 0: return ((regval << 24) & 0xff000000) | (memval & 0xffffff); 
-			case 1: return ((regval << 16) & 0xffff0000) | (memval & 0xffff); 
-			case 2: return ((regval << 8) & 0xffffff00) | (memval & 0xff); 
-			case 3: return regval; 
-		}
-	} else /* if MIPS target is little endian */ {
-		switch (offset) {
-			case 0: return regval; 
-			case 1: return ((regval << 8) & 0xffffff00) | (memval & 0xff); 
-			case 2: return ((regval << 16) & 0xffff0000) | (memval & 0xffff); 
-			case 3: return ((regval << 24) & 0xff000000) | (memval & 0xffffff); 
-		}
-	}
-	fatal_error("Invalid offset %x passed to swr\n", offset);
-}
-#endif
-            	if(isBE){
-					_[
-						jump(offset == constant(0),
-						_case0[rt ^= ((memval & constant(0xffffff)) | ((rt << constant(24)) & constant(0xff000000))),
-							jump(directSuccessor())].basicBlock(),
-					_then1[
-    					jump(offset == constant(1),
-    					_case1[rt ^= ((memval & constant(0xffff)) | ((rt << constant(16)) & constant(0xffff0000))),
-    						jump(directSuccessor())].basicBlock(),
-    				_then2[
-    					jump(offset == constant(2),
-    					_case2[rt ^= ((memval & constant(0xff)) | ((rt << constant(8)) & constant(0xffffff00))),
-    						jump(directSuccessor())].basicBlock(),
-    				_then3[
-	    				jump(offset == constant(3),
-	    				_case3[rt ^= (memval),
-	    					jump(directSuccessor())].basicBlock(),
-	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
-    				];
-             	} else /* if MIPS target is little endian */ {
-					_[
-						jump(offset == constant(0),
-						_case0[rt ^= (memval),
-							jump(directSuccessor())].basicBlock(),
-					_then1[
-    					jump(offset == constant(1),
-    					_case1[rt ^= ((memval & constant(0xff)) | ((rt << constant(8)) & constant(0xffffff00))),
-    						jump(directSuccessor())].basicBlock(),
- 	   				_then2[
-    					jump(offset == constant(2),
-    					_case2[rt ^= ((memval & constant(0xffff)) | ((rt << constant(16)) & constant(0xffff0000))),
-    						jump(directSuccessor())].basicBlock(),
-    				_then3[
-	    				jump(offset == constant(3),
-	    				_case3[rt ^= ((memval & constant(0xffffffff)) | ((rt << constant(24)) & constant(0xff000000))),
-	    					jump(directSuccessor())].basicBlock(),
-	    						directSuccessor())].basicBlock())].basicBlock())].basicBlock())
-    				];
-            	}
-                break;
-            }
-#if 0
-            /* Kudos to hlide  */
-            case MIPS_INS_WSBW: {
-            	auto operand0 = operand(0);
-				_[
-					operand0 ^= ((unsigned_(operand(1) & constant(0x00ff00ff)) << constant(8)) | (unsigned_(operand(1) & constant(0xff00ff00)) >> constant(8))),
-					operand0 ^= ((unsigned_(operand0) >> constant(16)) | (operand0 << (constant(32) - constant(16)))),
-            	];
-            	break;
+            uint32
+            CPU::lwl(uint32 regval, uint32 memval, uint8 offset) {
+                if (opt_bigendian) {
+                    switch (offset) {
+                    case 0:
+                        return memval;
+                    case 1:
+                        return (memval & 0xffffff) << 8 | (regval & 0xff);
+                    case 2:
+                        return (memval & 0xffff) << 16 | (regval & 0xffff);
+                    case 3:
+                        return (memval & 0xff) << 24 | (regval & 0xffffff);
+                    }
+                } else { /* if MIPS target is little endian */
+                    switch (offset) {
+                    case 0:
+                        return (memval & 0xff) << 24 | (regval & 0xffffff);
+                    case 1:
+                        return (memval & 0xffff) << 16 | (regval & 0xffff);
+                    case 2:
+                        return (memval & 0xffffff) << 8 | (regval & 0xff);
+                    case 3:
+                        return memval;
+                    }
+                }
+                fatal_error("Invalid offset %x passed to lwl\n", offset);
             }
 #endif
-            /* Kudos to hlide  */
-            case MIPS_INS_WSBH: {
-				_[
-					operand(0) ^= ((unsigned_(operand(1) & constant(0x00ff00ff)) << constant(8)) | (unsigned_(operand(1) & constant(0xff00ff00)) >> constant(8)))
-            	];
-            	break;
-            }
-            /* Kudos to hlide  */
-            case MIPS_INS_BITREV: {
-			    auto rt = unsigned_(operand(1));
-                auto swap = [&](unsigned shift, unsigned mask) {
-                	return ((std::move(rt) >> constant(shift)) & constant(mask)) | ((std::move(rt) & constant(mask)) << constant(shift));
-               	};
-             	_[
-               		rt ^= swap(1, 0x55555555),
-                 	rt ^= swap(2, 0x33333333),
-                  	rt ^= swap(4, 0x0F0F0F0F),
-                  	rt ^= swap(8, 0x00FF00FF),
-                 	operand(0) ^= (std::move(rt) & constant(0x0000FFFF))
-              	];          	            	
-            	break;
-            }
-            case MIPS_INS_DIV: {
-                if (op_count == 2)
-                    _[
-                        regizter(MipsRegisters::hi()) ^= signed_(operand(0)) % signed_(operand(1)),
-                        regizter(MipsRegisters::lo()) ^= signed_(operand(0)) / signed_(operand(1))
-                    ];
-                else
-                    _[
-                        regizter(MipsRegisters::hi()) ^= signed_(operand(1)) % signed_(operand(2)),
-                        regizter(MipsRegisters::lo()) ^= signed_(operand(1)) / signed_(operand(2)),
-                       	operand(0) ^= regizter(MipsRegisters::lo())
-                    ];
-                break;
-            }
-            case MIPS_INS_DIVU: {
-                if (op_count == 2)
-                    _[
-                        regizter(MipsRegisters::hi()) ^= unsigned_(operand(0)) % unsigned_(operand(1)),
-                        regizter(MipsRegisters::lo()) ^= unsigned_(operand(0)) / unsigned_(operand(1))
-                    ];
-                else
-                    _[
-                        regizter(MipsRegisters::hi()) ^= unsigned_(operand(1)) % unsigned_(operand(2)),
-                        regizter(MipsRegisters::lo()) ^= unsigned_(operand(1)) / unsigned_(operand(2)),
-                       	operand(0) ^= regizter(MipsRegisters::lo())
-                    ];
-                break;
-            }
-            case MIPS_INS_MFHI: {
-                auto operand0 = operand(0);
+            if(isBE) {
                 _[
-                    std::move(operand0) ^= regizter(MipsRegisters::hi())
+                    jump(offset == constant(0),
+                         _case0[rt ^= (memval),
+                                jump(directSuccessor())].basicBlock(),
+                         _then1[
+                             jump(offset == constant(1),
+                                  _case1[rt ^= ((memval & constant(0xffffff)) << constant(8) | (rt & constant(0xff))),
+                                         jump(directSuccessor())].basicBlock(),
+                                  _then2[
+                                      jump(offset == constant(2),
+                                           _case2[rt ^= ((memval & constant(0xffff)) << constant(16) | (rt & constant(0xffffff00))),
+                                                  jump(directSuccessor())].basicBlock(),
+                                           _then3[
+                                               jump(offset == constant(3),
+                                                    _case3[rt ^= ((memval & constant(0xff)) << constant(24) | (rt & constant(0xffffff))),
+                                                            jump(directSuccessor())].basicBlock(),
+                                                    directSuccessor())].basicBlock())].basicBlock())].basicBlock())
                 ];
-                break;
-            }
-            case MIPS_INS_MTHI: {
-                auto operand0 = operand(0);
+            } else { /* if MIPS target is little endian */
                 _[
-                    regizter(MipsRegisters::hi()) ^= std::move(operand0)
+                    jump(offset == constant(0),
+                         _case0[rt ^= (((memval & constant(0xff)) << constant(24)) | (rt & constant(0xffffff))),
+                                jump(directSuccessor())].basicBlock(),
+                         _then1[
+                             jump(offset == constant(1),
+                                  _case1[rt ^= (((memval & constant(0xffff)) << constant(16)) | (rt & constant(0xffffff00))),
+                                         jump(directSuccessor())].basicBlock(),
+                                  _then2[
+                                      jump(offset == constant(2),
+                                           _case2[rt ^= (((memval & constant(0xffffff)) << constant(8)) | (rt & constant(0xff))),
+                                                  jump(directSuccessor())].basicBlock(),
+                                           _then3[
+                                               jump(offset == constant(3),
+                                                    _case3[rt ^= (memval),
+                                                            jump(directSuccessor())].basicBlock(),
+                                                    directSuccessor())].basicBlock())].basicBlock())].basicBlock())
                 ];
-                break;
+                //_[rt ^= ((memval & (constant(0xffffff00) << signed_(offset))) | ((unsigned_(rt) >> (constant(8) * offset)) & constant(0xffffffff)) >> (constant(4) - offset)))];
             }
-            case MIPS_INS_MFLO: {
-                auto operand0 = operand(0);
-                _[
-                    std::move(operand0) ^= regizter(MipsRegisters::lo())
-                ];
-                break;
-            }
-            case MIPS_INS_MTLO: {
-                auto operand0 = operand(0);
-                _[
-                    regizter(MipsRegisters::lo()) ^= std::move(operand0)
-                ];
-                break;
-            }
+            break;
+        }
+        case MIPS_INS_LWR: {
+            auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
+            auto rt = operand(0);
+            auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+            auto offset = (ea & constant(3));
+            auto memval = *(ea & constant(-4));
+
+            MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then2(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case2(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then3(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case3(factory, program->createBasicBlock(), instruction);
+
 #if 0
-            case MIPS_INS_MAD: {
-                auto operand0 = operand(0);
-                auto operand1 = operand(1);
-                _[
-                    regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
-                ];
-                break;
-            }
-            case MIPS_INS_MADU: {
-                auto operand0 = operand(0);
-                auto operand1 = operand(1);
-                _[
-                    regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
-                ];
-                break;
+            uint32
+            CPU::lwr(uint32 regval, uint32 memval, uint8 offset) {
+                if (opt_bigendian) {
+                    switch (offset) {
+                    case 0:
+                        return (regval & 0xffffff00) | ((unsigned)(memval & 0xff000000) >> 24);
+                    case 1:
+                        return (regval & 0xffff0000) | ((unsigned)(memval & 0xffff0000) >> 16);
+                    case 2:
+                        return (regval & 0xff000000) | ((unsigned)(memval & 0xffffff00) >> 8);
+                    case 3:
+                        return memval;
+                    }
+                } else { /* if MIPS target is little endian */
+                    switch (offset) {
+                    /* The SPIM source claims that "The description of the
+                     * little-endian case in Kane is totally wrong." The fact
+                     * that I ripped off the LWR algorithm from them could be
+                     * viewed as a sort of passive assumption that their claim
+                     * is correct.
+                     */
+                    case 0: /* 3 in book */
+                        return memval;
+                    case 1: /* 0 in book */
+                        return (regval & 0xff000000) | ((memval & 0xffffff00) >> 8);
+                    case 2: /* 1 in book */
+                        return (regval & 0xffff0000) | ((memval & 0xffff0000) >> 16);
+                    case 3: /* 2 in book */
+                        return (regval & 0xffffff00) | ((memval & 0xff000000) >> 24);
+                    }
+                }
+                fatal_error("Invalid offset %x passed to lwr\n", offset);
             }
 #endif
-            case MIPS_INS_MADD: {
-                auto operand0 = operand(0);
-                auto operand1 = operand(1);
-                auto operand2 = operand(2);
+            if(isBE) {
                 _[
-                    regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64)),
-                    operand0 ^= regizter(MipsRegisters::lo()) 
+                    jump(offset == constant(0),
+                         _case0[rt ^= ((unsigned_(memval & constant(0xff000000)) >> constant(24)) | (rt & constant(0xffffff00))),
+                                jump(directSuccessor())].basicBlock(),
+                         _then1[
+                             jump(offset == constant(1),
+                                  _case1[rt ^= ((unsigned_(memval & constant(0xffff0000)) >> constant(16)) | (rt  & constant(0xffff0000))),
+                                         jump(directSuccessor())].basicBlock(),
+                                  _then2[
+                                      jump(offset == constant(2),
+                                           _case2[rt ^= ((unsigned_(memval & constant(0xffffff00)) >> constant(8)) | (rt & constant(0xff000000))),
+                                                  jump(directSuccessor())].basicBlock(),
+                                           _then3[
+                                               jump(offset == constant(3),
+                                                    _case3[rt ^= (memval),
+                                                            jump(directSuccessor())].basicBlock(),
+                                                    directSuccessor())].basicBlock())].basicBlock())].basicBlock())
                 ];
-                break;
-            }
-            case MIPS_INS_MADDU: {
-                auto operand0 = operand(0);
-                auto operand1 = operand(1);
-                auto operand2 = operand(2);
+            } else { /* if MIPS target is little endian */
                 _[
-                    regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64)),
-                    operand0 ^= regizter(MipsRegisters::lo())
-                ];
-                break;
-            }
-            case MIPS_INS_MSUB: {
-                auto operand0 = operand(0);
-                auto operand1 = operand(1);
-                _[
-                    regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) - (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
-                ];
-                break;
-            }
-            case MIPS_INS_MSUBU: {
-                auto operand0 = operand(0);
-                auto operand1 = operand(1);
-                _[
-                    regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) - (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
-                ];
-                break;
-            }
-            case MIPS_INS_MUL: {
-                auto operand0 = operand(0);
-                auto operand1 = operand(1);
-                auto operand2 = operand(2);
-                _[
-                    regizter(MipsRegisters::hilo()) ^= (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64)),
-                    operand0 ^= regizter(MipsRegisters::lo())
-                ];
-                break;
-            }
-            case MIPS_INS_MULT: {
-                auto operand0 = operand(0);
-                auto operand1 = operand(1);
-                _[
-                    regizter(MipsRegisters::hilo()) ^= (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
-                ];
-                break;
-            }
-            case MIPS_INS_MULTU: {
-                auto operand0 = operand(0);
-                auto operand1 = operand(1);
-                _[
-                    regizter(MipsRegisters::hilo()) ^= (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
-                ];
-                break;
-            }
-            case MIPS_INS_BEQL: {
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
-                _[
-                    jump(operand(0) == operand(op_count - 2),
-                         (delayslot(taken)[jump(operand(op_count - 1))]).basicBlock(),
-                         directSuccessorButOne())
-                ];
-                break;
-            }
-            case MIPS_INS_BEQ: {
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
-                _[
-                    jump(operand(0) == operand(op_count - 2),
-                         (delayslot(taken)[jump(operand(op_count - 1))]).basicBlock(),
-                         directSuccessor())
-                ];
-                break;
-            }
-            case MIPS_INS_BNEL: {
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
-                _[
-                    jump(~(operand(0) == operand(op_count - 2)),
-                         (delayslot(taken)[jump(operand(op_count - 1))]).basicBlock(),
-                         directSuccessorButOne())
-                ];
-                break;
-            }
-            case MIPS_INS_BNE: {
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
-                _[
-                    jump(~(operand(0) == operand(op_count - 2)),
-                         (delayslot(taken)[jump(operand(op_count - 1))]).basicBlock(),
-                         directSuccessor())
-                ];
-                break;
-            }
-            case MIPS_INS_BGEZL: {
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
-                _[
-                    jump((signed_(operand(0)) >= constant(0)),
-                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
-                         directSuccessorButOne())
-                ];
-                break;
-            }
-            case MIPS_INS_BGEZ: {
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
-                _[
-                    jump((signed_(operand(0)) >= constant(0)),
-                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
-                         directSuccessor())
-                ];
-                break;
-            }
-            case MIPS_INS_BGEZALL: {
-                /* This is a conditional call */
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
-                _[
-                    regizter(MipsRegisters::ra()) ^= constant(directSuccessorButOneAddress),
-                    jump((signed_(operand(0)) >= constant(0)),
-                         (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
-                         directSuccessorButOne())
-                ];
-                break;
-            }
-            case MIPS_INS_BGEZAL: {
-                /* This is a conditional call */
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
-                _[
-                    regizter(MipsRegisters::ra()) ^= constant(directSuccessorButOneAddress),
-                    jump((signed_(operand(0)) >= constant(0)),
-                         (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
-                         directSuccessor())
-                ];
-                break;
-            }
-            case MIPS_INS_BGTZL: {
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
-                _[
-                    jump((signed_(operand(0)) > constant(0)),
-                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
-                         directSuccessorButOne())
-                ];
-                break;
-            }
-            case MIPS_INS_BGTZ: {
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
-                _[
-                    jump((signed_(operand(0)) > constant(0)),
-                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
-                         directSuccessor())
-                ];
-                break;
-            }
-            case MIPS_INS_BLTZL: {
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
-                _[
-                    jump((signed_(operand(0)) < constant(0)),
-                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
-                         directSuccessorButOne())
+                    jump(offset == constant(0),
+                         _case0[rt ^= (memval),
+                                jump(directSuccessor())].basicBlock(),
+                         _then1[
+                             jump(offset == constant(1),
+                                  _case1[rt ^= ((unsigned_(memval & constant(0xffffff00)) >> constant(8)) | (rt & constant(0xff000000))),
+                                         jump(directSuccessor())].basicBlock(),
+                                  _then2[
+                                      jump(offset == constant(2),
+                                           _case2[rt ^= ((unsigned_(memval & constant(0xffff0000)) >> constant(16)) | (rt  & constant(0xffff0000))),
+                                                  jump(directSuccessor())].basicBlock(),
+                                           _then3[
+                                               jump(offset == constant(3),
+                                                    _case3[rt ^= ((unsigned_(memval & constant(0xff000000)) >> constant(24)) | (rt & constant(0xffffff00))),
+                                                            jump(directSuccessor())].basicBlock(),
+                                                    directSuccessor())].basicBlock())].basicBlock())].basicBlock())
                 ];
             }
-            case MIPS_INS_BLTZ: {
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
-                _[
-                    jump((signed_(operand(0)) < constant(0)),
-                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
-                         directSuccessor())
-                ];
-                break;
+            break;
+        }
+        case MIPS_INS_SB: {
+            _[operand(0, 8) ^= truncate(operand(1))];
+            break;
+        }
+        case MIPS_INS_SH: {
+            _[operand(0, 16) ^= truncate(operand(1))];
+            break;
+        }
+        case MIPS_INS_SW: {
+            auto operand0 = operand(0);
+            auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+            _[operand0 ^= operand1];
+            break;
+        }
+        case MIPS_INS_SWL: {
+            auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
+            auto rt = operand(0);
+            auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+            auto offset = (ea & constant(3));
+            auto memval = *(ea & constant(-4));
+
+            MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then2(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case2(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then3(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case3(factory, program->createBasicBlock(), instruction);
+#if 0
+            uint32
+            CPU::swl(uint32 regval, uint32 memval, uint8 offset) {
+                if (opt_bigendian) {
+                    switch (offset) {
+                    case 0:
+                        return regval;
+                    case 1:
+                        return (memval & 0xff000000) | (regval >> 8 & 0xffffff);
+                    case 2:
+                        return (memval & 0xffff0000) | (regval >> 16 & 0xffff);
+                    case 3:
+                        return (memval & 0xffffff00) | (regval >> 24 & 0xff);
+                    }
+                } else { /* if MIPS target is little endian */
+                    switch (offset) {
+                    case 0:
+                        return (memval & 0xffffff00) | (regval >> 24 & 0xff);
+                    case 1:
+                        return (memval & 0xffff0000) | (regval >> 16 & 0xffff);
+                    case 2:
+                        return (memval & 0xff000000) | (regval >> 8 & 0xffffff);
+                    case 3:
+                        return regval;
+                    }
+                }
+                fatal_error("Invalid offset %x passed to swl\n", offset);
             }
-            case MIPS_INS_BLTZALL: {
-                /* This is a conditional call */
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+#endif
+            if(isBE) {
                 _[
-                    regizter(MipsRegisters::ra()) ^= constant(directSuccessorButOneAddress),
-                    jump((signed_(operand(0)) < constant(0)),
-                         (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
-                         directSuccessorButOne())
+                    jump(offset == constant(0),
+                         _case0[rt ^= (memval),
+                                jump(directSuccessor())].basicBlock(),
+                         _then1[
+                             jump(offset == constant(1),
+                                  _case1[rt ^= ((memval & constant(0xff000000)) | ((unsigned_(rt) >> constant(8)) & constant(0xffffff))),
+                                         jump(directSuccessor())].basicBlock(),
+                                  _then2[
+                                      jump(offset == constant(2),
+                                           _case2[rt ^= ((memval & constant(0xffff0000)) | ((unsigned_(rt) >> constant(16)) & constant(0xffff))),
+                                                  jump(directSuccessor())].basicBlock(),
+                                           _then3[
+                                               jump(offset == constant(3),
+                                                    _case3[rt ^= ((memval & constant(0xffffff00)) | ((unsigned_(rt) >> constant(24)) & constant(0xff))),
+                                                            jump(directSuccessor())].basicBlock(),
+                                                    directSuccessor())].basicBlock())].basicBlock())].basicBlock())
                 ];
-                break;
-            }
-            case MIPS_INS_BLTZAL: {
-                /* This is a conditional call */
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            } else { /* if MIPS target is little endian */
                 _[
-                    regizter(MipsRegisters::ra()) ^= constant(directSuccessorButOneAddress),
-                    jump((signed_(operand(0)) < constant(0)),
-                         (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
-                         directSuccessor())
+                    jump(offset == constant(0),
+                         _case0[rt ^= ((memval & constant(0xffffff00)) | ((unsigned_(rt) >> constant(24)) & constant(0xff))),
+                                jump(directSuccessor())].basicBlock(),
+                         _then1[
+                             jump(offset == constant(1),
+                                  _case1[rt ^= ((memval & constant(0xffff0000)) | ((unsigned_(rt) >> constant(16)) & constant(0xffff))),
+                                         jump(directSuccessor())].basicBlock(),
+                                  _then2[
+                                      jump(offset == constant(2),
+                                           _case2[rt ^= ((memval & constant(0xff000000)) | ((unsigned_(rt) >> constant(8)) & constant(0xffffff))),
+                                                  jump(directSuccessor())].basicBlock(),
+                                           _then3[
+                                               jump(offset == constant(3),
+                                                    _case3[rt ^= (memval),
+                                                            jump(directSuccessor())].basicBlock(),
+                                                    directSuccessor())].basicBlock())].basicBlock())].basicBlock())
                 ];
-                break;
             }
-            case MIPS_INS_BLEZL: {
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            break;
+        }
+        case MIPS_INS_SWR: {
+            auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
+            auto rt = operand(0);
+            auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+            auto offset = (ea & constant(3));
+            auto memval = *(ea & constant(-4));
+
+            MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then2(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case2(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then3(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case3(factory, program->createBasicBlock(), instruction);
+
+#if 0
+            uint32
+            CPU::swr(uint32 regval, uint32 memval, uint8 offset) {
+                if (opt_bigendian) {
+                    switch (offset) {
+                    case 0:
+                        return ((regval << 24) & 0xff000000) | (memval & 0xffffff);
+                    case 1:
+                        return ((regval << 16) & 0xffff0000) | (memval & 0xffff);
+                    case 2:
+                        return ((regval << 8) & 0xffffff00) | (memval & 0xff);
+                    case 3:
+                        return regval;
+                    }
+                } else { /* if MIPS target is little endian */
+                    switch (offset) {
+                    case 0:
+                        return regval;
+                    case 1:
+                        return ((regval << 8) & 0xffffff00) | (memval & 0xff);
+                    case 2:
+                        return ((regval << 16) & 0xffff0000) | (memval & 0xffff);
+                    case 3:
+                        return ((regval << 24) & 0xff000000) | (memval & 0xffffff);
+                    }
+                }
+                fatal_error("Invalid offset %x passed to swr\n", offset);
+            }
+#endif
+            if(isBE) {
                 _[
-                    jump((signed_(operand(0)) <= constant(0)),
-                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
-                         directSuccessorButOne())
+                    jump(offset == constant(0),
+                         _case0[rt ^= ((memval & constant(0xffffff)) | ((rt << constant(24)) & constant(0xff000000))),
+                                jump(directSuccessor())].basicBlock(),
+                         _then1[
+                             jump(offset == constant(1),
+                                  _case1[rt ^= ((memval & constant(0xffff)) | ((rt << constant(16)) & constant(0xffff0000))),
+                                         jump(directSuccessor())].basicBlock(),
+                                  _then2[
+                                      jump(offset == constant(2),
+                                           _case2[rt ^= ((memval & constant(0xff)) | ((rt << constant(8)) & constant(0xffffff00))),
+                                                  jump(directSuccessor())].basicBlock(),
+                                           _then3[
+                                               jump(offset == constant(3),
+                                                    _case3[rt ^= (memval),
+                                                            jump(directSuccessor())].basicBlock(),
+                                                    directSuccessor())].basicBlock())].basicBlock())].basicBlock())
                 ];
-                break;
-            }
-            case MIPS_INS_BLEZ: {
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            } else { /* if MIPS target is little endian */
                 _[
-                    jump((signed_(operand(0)) <= constant(0)),
-                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
-                         directSuccessor())
+                    jump(offset == constant(0),
+                         _case0[rt ^= (memval),
+                                jump(directSuccessor())].basicBlock(),
+                         _then1[
+                             jump(offset == constant(1),
+                                  _case1[rt ^= ((memval & constant(0xff)) | ((rt << constant(8)) & constant(0xffffff00))),
+                                         jump(directSuccessor())].basicBlock(),
+                                  _then2[
+                                      jump(offset == constant(2),
+                                           _case2[rt ^= ((memval & constant(0xffff)) | ((rt << constant(16)) & constant(0xffff0000))),
+                                                  jump(directSuccessor())].basicBlock(),
+                                           _then3[
+                                               jump(offset == constant(3),
+                                                    _case3[rt ^= ((memval & constant(0xffffffff)) | ((rt << constant(24)) & constant(0xff000000))),
+                                                            jump(directSuccessor())].basicBlock(),
+                                                    directSuccessor())].basicBlock())].basicBlock())].basicBlock())
                 ];
-                break;
             }
-            case MIPS_INS_BEQZ: {
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            break;
+        }
+#if 0
+        /* Kudos to hlide  */
+        case MIPS_INS_WSBW: {
+            auto operand0 = operand(0);
+            _[
+                operand0 ^= ((unsigned_(operand(1) & constant(0x00ff00ff)) << constant(8)) | (unsigned_(operand(1) & constant(0xff00ff00)) >> constant(8))),
+                operand0 ^= ((unsigned_(operand0) >> constant(16)) | (operand0 << (constant(32) - constant(16)))),
+            ];
+            break;
+        }
+#endif
+        /* Kudos to hlide  */
+        case MIPS_INS_WSBH: {
+            _[
+                operand(0) ^= ((unsigned_(operand(1) & constant(0x00ff00ff)) << constant(8)) | (unsigned_(operand(1) & constant(0xff00ff00)) >> constant(8)))
+            ];
+            break;
+        }
+        /* Kudos to hlide  */
+        case MIPS_INS_BITREV: {
+            auto rt = unsigned_(operand(1));
+            auto swap = [&](unsigned shift, unsigned mask) {
+                return ((std::move(rt) >> constant(shift)) & constant(mask)) | ((std::move(rt) & constant(mask)) << constant(shift));
+            };
+            _[
+                rt ^= swap(1, 0x55555555),
+                rt ^= swap(2, 0x33333333),
+                rt ^= swap(4, 0x0F0F0F0F),
+                rt ^= swap(8, 0x00FF00FF),
+                operand(0) ^= (std::move(rt) & constant(0x0000FFFF))
+            ];
+            break;
+        }
+        case MIPS_INS_DIV: {
+            if (op_count == 2)
                 _[
-                    jump((operand(0) == constant(0)),
-                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
-                         directSuccessor())
+                    regizter(MipsRegisters::hi()) ^= signed_(operand(0)) % signed_(operand(1)),
+                    regizter(MipsRegisters::lo()) ^= signed_(operand(0)) / signed_(operand(1))
                 ];
-                break;
-            }
-            case MIPS_INS_BNEZ: {
-                MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            else
                 _[
-                    jump(~(operand(0) == constant(0)),
-                         (delayslot(taken)[jump(operand(1))]).basicBlock(),
-                         directSuccessor())
+                    regizter(MipsRegisters::hi()) ^= signed_(operand(1)) % signed_(operand(2)),
+                    regizter(MipsRegisters::lo()) ^= signed_(operand(1)) / signed_(operand(2)),
+                    operand(0) ^= regizter(MipsRegisters::lo())
                 ];
-                break;
-            }
-            case MIPS_INS_JALR: {
+            break;
+        }
+        case MIPS_INS_DIVU: {
+            if (op_count == 2)
+                _[
+                    regizter(MipsRegisters::hi()) ^= unsigned_(operand(0)) % unsigned_(operand(1)),
+                    regizter(MipsRegisters::lo()) ^= unsigned_(operand(0)) / unsigned_(operand(1))
+                ];
+            else
+                _[
+                    regizter(MipsRegisters::hi()) ^= unsigned_(operand(1)) % unsigned_(operand(2)),
+                    regizter(MipsRegisters::lo()) ^= unsigned_(operand(1)) / unsigned_(operand(2)),
+                    operand(0) ^= regizter(MipsRegisters::lo())
+                ];
+            break;
+        }
+        case MIPS_INS_MFHI: {
+            auto operand0 = operand(0);
+            _[
+                std::move(operand0) ^= regizter(MipsRegisters::hi())
+            ];
+            break;
+        }
+        case MIPS_INS_MTHI: {
+            auto operand0 = operand(0);
+            _[
+                regizter(MipsRegisters::hi()) ^= std::move(operand0)
+            ];
+            break;
+        }
+        case MIPS_INS_MFLO: {
+            auto operand0 = operand(0);
+            _[
+                std::move(operand0) ^= regizter(MipsRegisters::lo())
+            ];
+            break;
+        }
+        case MIPS_INS_MTLO: {
+            auto operand0 = operand(0);
+            _[
+                regizter(MipsRegisters::lo()) ^= std::move(operand0)
+            ];
+            break;
+        }
+#if 0
+        case MIPS_INS_MAD: {
+            auto operand0 = operand(0);
+            auto operand1 = operand(1);
+            _[
+                regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
+            ];
+            break;
+        }
+        case MIPS_INS_MADU: {
+            auto operand0 = operand(0);
+            auto operand1 = operand(1);
+            _[
+                regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
+            ];
+            break;
+        }
+#endif
+        case MIPS_INS_MADD: {
+            auto operand0 = operand(0);
+            auto operand1 = operand(1);
+            auto operand2 = operand(2);
+            _[
+                regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64)),
+                operand0 ^= regizter(MipsRegisters::lo())
+            ];
+            break;
+        }
+        case MIPS_INS_MADDU: {
+            auto operand0 = operand(0);
+            auto operand1 = operand(1);
+            auto operand2 = operand(2);
+            _[
+                regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64)),
+                operand0 ^= regizter(MipsRegisters::lo())
+            ];
+            break;
+        }
+        case MIPS_INS_MSUB: {
+            auto operand0 = operand(0);
+            auto operand1 = operand(1);
+            _[
+                regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) - (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
+            ];
+            break;
+        }
+        case MIPS_INS_MSUBU: {
+            auto operand0 = operand(0);
+            auto operand1 = operand(1);
+            _[
+                regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) - (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
+            ];
+            break;
+        }
+        case MIPS_INS_MUL: {
+            auto operand0 = operand(0);
+            auto operand1 = operand(1);
+            auto operand2 = operand(2);
+            _[
+                regizter(MipsRegisters::hilo()) ^= (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64)),
+                operand0 ^= regizter(MipsRegisters::lo())
+            ];
+            break;
+        }
+        case MIPS_INS_MULT: {
+            auto operand0 = operand(0);
+            auto operand1 = operand(1);
+            _[
+                regizter(MipsRegisters::hilo()) ^= (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
+            ];
+            break;
+        }
+        case MIPS_INS_MULTU: {
+            auto operand0 = operand(0);
+            auto operand1 = operand(1);
+            _[
+                regizter(MipsRegisters::hilo()) ^= (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
+            ];
+            break;
+        }
+        case MIPS_INS_BEQL: {
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                jump(operand(0) == operand(op_count - 2),
+                     (delayslot(taken)[jump(operand(op_count - 1))]).basicBlock(),
+                     directSuccessorButOne())
+            ];
+            break;
+        }
+        case MIPS_INS_BEQ: {
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                jump(operand(0) == operand(op_count - 2),
+                     (delayslot(taken)[jump(operand(op_count - 1))]).basicBlock(),
+                     directSuccessor())
+            ];
+            break;
+        }
+        case MIPS_INS_BNEL: {
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                jump(~(operand(0) == operand(op_count - 2)),
+                     (delayslot(taken)[jump(operand(op_count - 1))]).basicBlock(),
+                     directSuccessorButOne())
+            ];
+            break;
+        }
+        case MIPS_INS_BNE: {
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                jump(~(operand(0) == operand(op_count - 2)),
+                     (delayslot(taken)[jump(operand(op_count - 1))]).basicBlock(),
+                     directSuccessor())
+            ];
+            break;
+        }
+        case MIPS_INS_BGEZL: {
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                jump((signed_(operand(0)) >= constant(0)),
+                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     directSuccessorButOne())
+            ];
+            break;
+        }
+        case MIPS_INS_BGEZ: {
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                jump((signed_(operand(0)) >= constant(0)),
+                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     directSuccessor())
+            ];
+            break;
+        }
+        case MIPS_INS_BGEZALL: {
+            /* This is a conditional call */
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                regizter(MipsRegisters::ra()) ^= constant(directSuccessorButOneAddress),
+                jump((signed_(operand(0)) >= constant(0)),
+                     (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
+                     directSuccessorButOne())
+            ];
+            break;
+        }
+        case MIPS_INS_BGEZAL: {
+            /* This is a conditional call */
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                regizter(MipsRegisters::ra()) ^= constant(directSuccessorButOneAddress),
+                jump((signed_(operand(0)) >= constant(0)),
+                     (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
+                     directSuccessor())
+            ];
+            break;
+        }
+        case MIPS_INS_BGTZL: {
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                jump((signed_(operand(0)) > constant(0)),
+                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     directSuccessorButOne())
+            ];
+            break;
+        }
+        case MIPS_INS_BGTZ: {
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                jump((signed_(operand(0)) > constant(0)),
+                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     directSuccessor())
+            ];
+            break;
+        }
+        case MIPS_INS_BLTZL: {
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                jump((signed_(operand(0)) < constant(0)),
+                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     directSuccessorButOne())
+            ];
+        }
+        case MIPS_INS_BLTZ: {
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                jump((signed_(operand(0)) < constant(0)),
+                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     directSuccessor())
+            ];
+            break;
+        }
+        case MIPS_INS_BLTZALL: {
+            /* This is a conditional call */
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                regizter(MipsRegisters::ra()) ^= constant(directSuccessorButOneAddress),
+                jump((signed_(operand(0)) < constant(0)),
+                     (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
+                     directSuccessorButOne())
+            ];
+            break;
+        }
+        case MIPS_INS_BLTZAL: {
+            /* This is a conditional call */
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                regizter(MipsRegisters::ra()) ^= constant(directSuccessorButOneAddress),
+                jump((signed_(operand(0)) < constant(0)),
+                     (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
+                     directSuccessor())
+            ];
+            break;
+        }
+        case MIPS_INS_BLEZL: {
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                jump((signed_(operand(0)) <= constant(0)),
+                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     directSuccessorButOne())
+            ];
+            break;
+        }
+        case MIPS_INS_BLEZ: {
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                jump((signed_(operand(0)) <= constant(0)),
+                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     directSuccessor())
+            ];
+            break;
+        }
+        case MIPS_INS_BEQZ: {
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                jump((operand(0) == constant(0)),
+                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     directSuccessor())
+            ];
+            break;
+        }
+        case MIPS_INS_BNEZ: {
+            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            _[
+                jump(~(operand(0) == constant(0)),
+                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     directSuccessor())
+            ];
+            break;
+        }
+        case MIPS_INS_JALR: {
+            _[operand(0) ^= constant(directSuccessorButOneAddress)];
+            delayslot(_)[call(operand(op_count - 1)), jump(directSuccessorButOne())];
+            break;
+        }
+        case MIPS_INS_BAL: /* Fall-through */
+        case MIPS_INS_JAL: {
+            if (op_count == 1) {
+                delayslot(_)[call(operand(0)), jump(directSuccessorButOne())];
+            } else {
                 _[operand(0) ^= constant(directSuccessorButOneAddress)];
                 delayslot(_)[call(operand(op_count - 1)), jump(directSuccessorButOne())];
-                break;
             }
-            case MIPS_INS_BAL: /* Fall-through */
-            case MIPS_INS_JAL: {
-            	if (op_count == 1){
-                	delayslot(_)[call(operand(0)), jump(directSuccessorButOne())];
-            	} else {
-                	_[operand(0) ^= constant(directSuccessorButOneAddress)];
-                  	delayslot(_)[call(operand(op_count - 1)), jump(directSuccessorButOne())];
-            	}
-                break;
+            break;
+        }
+        case MIPS_INS_J: /* Fall-through */
+        case MIPS_INS_JR:
+        case MIPS_INS_B: {
+            if(getOperandRegister(0) == MIPS_REG_RA) {
+                delayslot(_)[jump(return_address())];
+            } else {
+                delayslot(_)[jump(operand(0))];
             }
-            case MIPS_INS_J: /* Fall-through */
-            case MIPS_INS_JR:
-            case MIPS_INS_B: {
-            	if(getOperandRegister(0) == MIPS_REG_RA){
-            		delayslot(_)[jump(return_address())];
-            	} else {
-                	delayslot(_)[jump(operand(0))];
-            	}                
-            	break;
-            }
-            default: {
-                _(std::make_unique<core::ir::InlineAssembly>());
-                break;
-            }
+            break;
+        }
+        default: {
+            _(std::make_unique<core::ir::InlineAssembly>());
+            break;
+        }
         } /* switch */
     }
 
@@ -1037,7 +1055,7 @@ CPU::swr(uint32 regval, uint32 memval, uint8 offset)
         createStatements(_, instruction, program, nullptr);
     }
 
-private:
+  private:
     core::arch::CapstoneInstructionPtr disassemble(const MipsInstruction *instruction) {
         capstone_.setMode(instruction->csMode());
         return capstone_.disassemble(instruction->addr(), instruction->bytes(), instruction->size());
@@ -1056,7 +1074,7 @@ private:
             return MIPS_REG_INVALID;
         }
     }
-    
+
     mips_op_type getOperandType(std::size_t index) const {
         if (index >= detail_->op_count) {
             throw core::irgen::InvalidInstructionException(tr("There is no operand %1.").arg(index));
@@ -1074,29 +1092,29 @@ private:
         assert(index < boost::size(detail_->operands));
 
         const auto &operand = detail_->operands[index];
-        
+
         switch (operand.type) {
-            case MIPS_OP_INVALID:
-                throw core::irgen::InvalidInstructionException(tr("The instruction does not have an argument with index %1").arg(index));
-            case MIPS_OP_REG: {
-                return std::make_unique<core::ir::MemoryLocationAccess>(getRegister(operand.reg)->memoryLocation().resized(sizeHint));
-            }
-            case MIPS_OP_IMM: {
-                /* Immediate value. */
-                return std::make_unique<core::ir::Constant>(SizedValue(sizeHint, operand.imm));
-            }
-            case MIPS_OP_MEM: {
-                return std::make_unique<core::ir::Dereference>(createDereferenceAddress(operand), core::ir::MemoryDomain::MEMORY, sizeHint);
-            }
-            default:
-                unreachable();
+        case MIPS_OP_INVALID:
+            throw core::irgen::InvalidInstructionException(tr("The instruction does not have an argument with index %1").arg(index));
+        case MIPS_OP_REG: {
+            return std::make_unique<core::ir::MemoryLocationAccess>(getRegister(operand.reg)->memoryLocation().resized(sizeHint));
+        }
+        case MIPS_OP_IMM: {
+            /* Immediate value. */
+            return std::make_unique<core::ir::Constant>(SizedValue(sizeHint, operand.imm));
+        }
+        case MIPS_OP_MEM: {
+            return std::make_unique<core::ir::Dereference>(createDereferenceAddress(operand), core::ir::MemoryDomain::MEMORY, sizeHint);
+        }
+        default:
+            unreachable();
         }
     }
 
 
-  std::unique_ptr<core::ir::Dereference> createDereference(const cs_mips_op &operand) const {
+    std::unique_ptr<core::ir::Dereference> createDereference(const cs_mips_op &operand) const {
         return std::make_unique<core::ir::Dereference>(
-            createDereferenceAddress(operand), core::ir::MemoryDomain::MEMORY, 32);
+                   createDereferenceAddress(operand), core::ir::MemoryDomain::MEMORY, 32);
     }
 
     std::unique_ptr<core::ir::Term> createDereferenceAddress(const cs_mips_op &operand) const {
@@ -1118,7 +1136,7 @@ private:
                 result = std::move(offset);
             }
         }
-        
+
         return result;
     }
 
@@ -1128,7 +1146,7 @@ private:
 
     static const core::arch::Register *getRegister(int reg) {
         switch (reg) {
-        #define REG(uppercase, lowercase) \
+#define REG(uppercase, lowercase) \
             case MIPS_REG_##uppercase: return MipsRegisters::lowercase();
             REG(ZERO,	zero)
             REG(AT,		at)
@@ -1163,7 +1181,7 @@ private:
             REG(FP,		fp)
             /*REG(S8,	  s8)*/
             REG(RA,		ra)
-            
+
             REG(F0,		f0)
             REG(F1,		f1)
             REG(F2,		f2)
@@ -1201,7 +1219,7 @@ private:
 
             REG(HI,		hi)
             REG(LO,		lo)
-        #undef REG
+#undef REG
 
         default:
             throw core::irgen::InvalidInstructionException(tr("Invalid register number: %1").arg(reg));
@@ -1211,8 +1229,7 @@ private:
 
 
 MipsInstructionAnalyzer::MipsInstructionAnalyzer(const MipsArchitecture *architecture):
-    impl_(std::make_unique<MipsInstructionAnalyzerImpl>(architecture))
-{
+    impl_(std::make_unique<MipsInstructionAnalyzerImpl>(architecture)) {
 }
 
 MipsInstructionAnalyzer::~MipsInstructionAnalyzer() {}
