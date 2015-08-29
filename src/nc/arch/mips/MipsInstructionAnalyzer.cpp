@@ -1011,8 +1011,12 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_JALR: {
-            _[operand(0) ^= constant(directSuccessorButOneAddress)];
-            delayslot(_)[call(operand(op_count - 1)), jump(directSuccessorButOne())];
+            if (op_count == 1) {
+                delayslot(_)[call(operand(0)), jump(directSuccessorButOne())];
+            } else {
+            	_[operand(0) ^= constant(directSuccessorButOneAddress)];
+            	delayslot(_)[call(operand(op_count - 1)), jump(directSuccessorButOne())];
+            }
             break;
         }
         case MIPS_INS_BAL: /* Fall-through */
