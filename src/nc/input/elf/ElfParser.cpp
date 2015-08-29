@@ -262,6 +262,12 @@ private:
 
             for (std::size_t i = 0; i < shdrs_.size(); ++i) {
                 sections_[i]->setName(reader.readAsciizString(shdrs_[i].sh_name, shstrtab->size()));
+                /* Patch away MIPS lazy binding section */
+                if(sections_[i]->name() == QString(QLatin1String(".MIPS.stubs"))){
+                	sections_[i]->setCode(false);
+                	sections_[i]->setAllocated(false);
+                	sections_[i]->setExecutable(false);
+                }
             }
         }
     }
