@@ -1010,16 +1010,8 @@ class MipsInstructionAnalyzerImpl {
             ];
             break;
         }
-        case MIPS_INS_JALR: {
-            if (op_count == 1) {
-                delayslot(_)[call(operand(0)), jump(directSuccessorButOne())];
-            } else {
-            	_[operand(0) ^= constant(directSuccessorButOneAddress)];
-            	delayslot(_)[call(operand(op_count - 1)), jump(directSuccessorButOne())];
-            }
-            break;
-        }
         case MIPS_INS_BAL: /* Fall-through */
+        case MIPS_INS_JALR:
         case MIPS_INS_JAL: {
             if (op_count == 1) {
                 delayslot(_)[call(operand(0)), jump(directSuccessorButOne())];
