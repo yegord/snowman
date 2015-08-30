@@ -78,7 +78,6 @@ class MipsInstructionAnalyzerImpl {
         return delayslotInstruction;
     };
 
-
     void createStatements(const MipsInstruction *instruction, core::ir::Program *program) {
         assert(instruction != nullptr);
         assert(program != nullptr);
@@ -92,13 +91,13 @@ class MipsInstructionAnalyzerImpl {
         createStatements(_, instruction, program, nullptr);
     }
 
+  private:
     core::ir::BasicBlock *createStatements(MipsExpressionFactoryCallback & _, const MipsInstruction *instruction, core::ir::Program *program, const MipsInstruction *delayslotOwner) {
-
+        using namespace core::irgen::expressions;
+        
         instr_ = disassemble(instruction);
         if (instr_ == nullptr)
             return nullptr;
-
-        detail_ = &instr_->detail->mips;
 
         auto delayslotCallback = [&](MipsExpressionFactoryCallback &callback) -> MipsExpressionFactoryCallback & {
             if (auto delayslotInstruction = getDelayslotInstruction(instruction)) {
@@ -123,8 +122,7 @@ class MipsInstructionAnalyzerImpl {
             return cachedDirectSuccessorButOne;
         };
 
-        using namespace core::irgen::expressions;
-
+        detail_ = &instr_->detail->mips;
         auto op_count = detail_->op_count;
 
         /*
@@ -1107,8 +1105,7 @@ class MipsInstructionAnalyzerImpl {
 
         return _.basicBlock();
     }
-
-  private:
+    
     core::arch::CapstoneInstructionPtr disassemble(const MipsInstruction *instruction) {
         capstone_.setMode(instruction->csMode());
         return capstone_.disassemble(instruction->addr(), instruction->bytes(), instruction->size());
