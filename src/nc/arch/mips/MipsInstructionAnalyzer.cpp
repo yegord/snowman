@@ -70,45 +70,44 @@ class MipsInstructionAnalyzerImpl {
         instructions_ = instructions;
     }
 
-    void createStatements(MipsExpressionFactoryCallback & _, const MipsInstruction *instruction, core::ir::Program *program, const MipsInstruction *delayslotOwner) {
+    const MipsInstruction *getDelayslotInstruction(const MipsInstruction *instruction) {
+        auto delayslotInstruction = checked_cast<const MipsInstruction *>(instructions_->get(instruction->endAddr()).get());
+        if (!delayslotInstruction) {
+            throw core::irgen::InvalidInstructionException(tr("Cannot find a delay slot at 0x%1.").arg(delayslotInstruction->endAddr(), 0, 16));
+        }
+        return delayslotInstruction;
+    };
+
+    core::ir::BasicBlock *createStatements(MipsExpressionFactoryCallback & _, const MipsInstruction *instruction, core::ir::Program *program, const MipsInstruction *delayslotOwner) {
 
         instr_ = disassemble(instruction);
         if (instr_ == nullptr)
-            return;
+            return nullptr;
 
         detail_ = &instr_->detail->mips;
 
+        auto delayslotCallback = [&](MipsExpressionFactoryCallback &callback) -> MipsExpressionFactoryCallback & {
+            if (auto delayslotInstruction = getDelayslotInstruction(instruction)) {
+                callback.setBasicBlock(createStatements(callback, delayslotInstruction, program, instruction));
+            }
+            return callback;
+        };
+
         core::ir::BasicBlock *cachedDirectSuccessor = nullptr;
-        core::ir::BasicBlock *cachedDirectSuccessorButOne = nullptr;
         auto directSuccessor = [&]() -> core::ir::BasicBlock * {
             if (!cachedDirectSuccessor) {
                 cachedDirectSuccessor = program->createBasicBlock(instruction->endAddr());
             }
             return cachedDirectSuccessor;
         };
+
+        core::ir::BasicBlock *cachedDirectSuccessorButOne = nullptr;
         auto directSuccessorButOne = [&]() -> core::ir::BasicBlock * {
             if (!cachedDirectSuccessorButOne) {
                 cachedDirectSuccessorButOne = program->createBasicBlock(instruction->endAddr() + instruction->size());
             }
             return cachedDirectSuccessorButOne;
         };
-
-        auto delayslot = [&](MipsExpressionFactoryCallback &callback) -> MipsExpressionFactoryCallback & {
-            auto detail = detail_;
-            auto delayslot = checked_cast<const MipsInstruction *>(instructions_->get(instruction->endAddr()).get());
-            if (delayslot) {
-                createStatements(callback, delayslot, program, instruction);
-            } else {
-                throw core::irgen::InvalidInstructionException(tr("Cannot find a delay slot at 0x%1.").arg(instruction->endAddr(), 0, 16));
-            }
-            detail_ = detail;
-            return callback;
-        };
-
-        auto directSuccessorAddress = instruction->endAddr();
-        auto directSuccessorButOneAddress = directSuccessorAddress + instruction->size();
-
-        MipsExpressionFactory factory(architecture_);
 
         using namespace core::irgen::expressions;
 
@@ -133,8 +132,8 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_ABS: {
-            MipsExpressionFactoryCallback negative(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback positive(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback negative(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback positive(factory_, program->createBasicBlock(), instruction);
             _[
                 jump((signed_(operand(1)) < signed_(constant(0))),
                      (negative[operand(0) ^= -(operand(1)), jump(directSuccessor())]).basicBlock(),
@@ -204,22 +203,26 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_MOVN: {
-            MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            auto move = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
+                            operand(0) ^= operand(1)
+                        ];
             _[
-                jump(~(operand(2) == constant(0)),
-                     (then[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock(),
+                jump(operand(2),
+                     move.basicBlock(),
                      directSuccessor())
             ];
-            break;
+            return move.basicBlock();
         }
         case MIPS_INS_MOVZ: {
-            MipsExpressionFactoryCallback then(factory, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            auto move = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
+                            operand(0) ^= operand(1)
+                        ];
             _[
-                jump(operand(2) == constant(0),
-                     (then[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock(),
-                     directSuccessor())
+                jump(operand(2),
+                     directSuccessor(),
+                     move.basicBlock())
             ];
-            break;
+            return move.basicBlock();
         }
         case MIPS_INS_SEB: {
             _[operand(0) ^= sign_extend(operand(1, 8))];
@@ -320,13 +323,13 @@ class MipsInstructionAnalyzerImpl {
             auto offset = (ea & constant(3));
             auto memval = *(ea & constant(-4));
 
-            MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then2(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case2(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then3(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case3(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), instruction);
 #if 0
             uint32
             CPU::lwl(uint32 regval, uint32 memval, uint8 offset) {
@@ -405,13 +408,13 @@ class MipsInstructionAnalyzerImpl {
             auto offset = (ea & constant(3));
             auto memval = *(ea & constant(-4));
 
-            MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then2(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case2(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then3(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case3(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), instruction);
 
 #if 0
             uint32
@@ -510,13 +513,13 @@ class MipsInstructionAnalyzerImpl {
             auto offset = (ea & constant(3));
             auto memval = *(ea & constant(-4));
 
-            MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then2(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case2(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then3(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case3(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), instruction);
 #if 0
             uint32
             CPU::swl(uint32 regval, uint32 memval, uint8 offset) {
@@ -594,13 +597,13 @@ class MipsInstructionAnalyzerImpl {
             auto offset = (ea & constant(3));
             auto memval = *(ea & constant(-4));
 
-            MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then2(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case2(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then3(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case3(factory, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), instruction);
 
 #if 0
             uint32
@@ -841,171 +844,221 @@ class MipsInstructionAnalyzerImpl {
             ];
             break;
         }
-        case MIPS_INS_BEQL: {
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
-            _[
-                jump(operand(0) == operand(op_count - 2),
-                     (delayslot(taken)[jump(operand(op_count - 1))]).basicBlock(),
-                     directSuccessorButOne())
-            ];
-            break;
-        }
         case MIPS_INS_BEQ: {
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(op_count - 1))
+     		];
             _[
                 jump(operand(0) == operand(op_count - 2),
-                     (delayslot(taken)[jump(operand(op_count - 1))]).basicBlock(),
+                     taken.basicBlock(),
                      directSuccessor())
             ];
             break;
         }
+        case MIPS_INS_BEQL: {
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(op_count - 1))
+     		];
+            _[
+                jump(operand(0) == operand(op_count - 2),
+                     taken.basicBlock(),
+                     directSuccessorButOne())
+            ];
+            break;
+        }
         case MIPS_INS_BNEL: {
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(op_count - 1))
+     		];
             _[
                 jump(~(operand(0) == operand(op_count - 2)),
-                     (delayslot(taken)[jump(operand(op_count - 1))]).basicBlock(),
+                     taken.basicBlock(),
                      directSuccessorButOne())
             ];
             break;
         }
         case MIPS_INS_BNE: {
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(op_count - 1))
+     		];
             _[
                 jump(~(operand(0) == operand(op_count - 2)),
-                     (delayslot(taken)[jump(operand(op_count - 1))]).basicBlock(),
+                     taken.basicBlock(),
                      directSuccessor())
             ];
             break;
         }
         case MIPS_INS_BGEZL: {
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(1))
+     		];
             _[
                 jump((signed_(operand(0)) >= constant(0)),
-                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     taken.basicBlock(),
                      directSuccessorButOne())
             ];
             break;
         }
         case MIPS_INS_BGEZ: {
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(1))
+     		];
             _[
                 jump((signed_(operand(0)) >= constant(0)),
-                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     taken.basicBlock(),
                      directSuccessor())
             ];
             break;
         }
         case MIPS_INS_BGEZALL: {
             /* This is a conditional call */
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             call(operand(1)), jump(directSuccessorButOne())
+     		];
             _[
-                regizter(MipsRegisters::ra()) ^= constant(directSuccessorButOneAddress),
                 jump((signed_(operand(0)) >= constant(0)),
-                     (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
+                     taken.basicBlock(),
                      directSuccessorButOne())
             ];
             break;
         }
         case MIPS_INS_BGEZAL: {
             /* This is a conditional call */
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             call(operand(1)), jump(directSuccessorButOne())
+     		];
             _[
-                regizter(MipsRegisters::ra()) ^= constant(directSuccessorButOneAddress),
                 jump((signed_(operand(0)) >= constant(0)),
-                     (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
+                     taken.basicBlock(),
                      directSuccessor())
             ];
             break;
         }
         case MIPS_INS_BGTZL: {
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(1))
+     		];
             _[
                 jump((signed_(operand(0)) > constant(0)),
-                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     taken.basicBlock(),
                      directSuccessorButOne())
             ];
             break;
         }
         case MIPS_INS_BGTZ: {
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(1))
+     		];
             _[
                 jump((signed_(operand(0)) > constant(0)),
-                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     taken.basicBlock(),
                      directSuccessor())
             ];
             break;
         }
         case MIPS_INS_BLTZL: {
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(1))
+     		];
             _[
                 jump((signed_(operand(0)) < constant(0)),
-                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     taken.basicBlock(),
                      directSuccessorButOne())
             ];
         }
         case MIPS_INS_BLTZ: {
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(1))
+     		];
             _[
                 jump((signed_(operand(0)) < constant(0)),
-                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     taken.basicBlock(),
                      directSuccessor())
             ];
             break;
         }
         case MIPS_INS_BLTZALL: {
             /* This is a conditional call */
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             call(operand(1)), jump(directSuccessorButOne())
+     		];
             _[
-                regizter(MipsRegisters::ra()) ^= constant(directSuccessorButOneAddress),
                 jump((signed_(operand(0)) < constant(0)),
-                     (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
+                     taken.basicBlock(),
                      directSuccessorButOne())
             ];
             break;
         }
         case MIPS_INS_BLTZAL: {
             /* This is a conditional call */
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             call(operand(1)), jump(directSuccessorButOne())
+     		];
             _[
-                regizter(MipsRegisters::ra()) ^= constant(directSuccessorButOneAddress),
                 jump((signed_(operand(0)) < constant(0)),
-                     (delayslot(taken)[call(operand(1)), jump(directSuccessorButOne())]).basicBlock(),
+                     taken.basicBlock(),
                      directSuccessor())
             ];
             break;
         }
         case MIPS_INS_BLEZL: {
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(1))
+     		];
             _[
                 jump((signed_(operand(0)) <= constant(0)),
-                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     taken.basicBlock(),
                      directSuccessorButOne())
             ];
             break;
         }
         case MIPS_INS_BLEZ: {
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(1))
+     		];
             _[
                 jump((signed_(operand(0)) <= constant(0)),
-                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     taken.basicBlock(),
                      directSuccessor())
             ];
             break;
         }
         case MIPS_INS_BEQZ: {
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(1))
+     		];
             _[
                 jump((operand(0) == constant(0)),
-                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     taken.basicBlock(),
                      directSuccessor())
             ];
             break;
         }
         case MIPS_INS_BNEZ: {
-            MipsExpressionFactoryCallback taken(factory, program->createBasicBlock(), instruction);
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(1))
+     		];
             _[
                 jump(~(operand(0) == constant(0)),
-                     (delayslot(taken)[jump(operand(1))]).basicBlock(),
+                     taken.basicBlock(),
                      directSuccessor())
             ];
             break;
@@ -1013,22 +1066,23 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_BAL: /* Fall-through */
         case MIPS_INS_JALR:
         case MIPS_INS_JAL: {
-            if (op_count == 1) {
-                delayslot(_)[call(operand(0)), jump(directSuccessorButOne())];
-            } else {
-                _[operand(0) ^= constant(directSuccessorButOneAddress)];
-                delayslot(_)[call(operand(op_count - 1)), jump(directSuccessorButOne())];
-            }
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block);
+            taken[call(operand(0)), jump(directSuccessorButOne())];
+            _[jump(taken.basicBlock())];
             break;
         }
         case MIPS_INS_J: /* Fall-through */
         case MIPS_INS_JR:
         case MIPS_INS_B: {
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block);
             if(getOperandRegister(0) == MIPS_REG_RA) {
-                delayslot(_)[jump(return_address())];
+                taken[jump(return_address())];
             } else {
-                delayslot(_)[jump(operand(0))];
+                taken[jump(operand(0))];
             }
+            _[jump(taken.basicBlock())];
             break;
         }
         default: {
@@ -1036,6 +1090,8 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         } /* switch */
+
+        return _.basicBlock();
     }
 
     void createStatements(const MipsInstruction *instruction, core::ir::Program *program) {
@@ -1045,8 +1101,7 @@ class MipsInstructionAnalyzerImpl {
         program_ = program;
         instruction_ = instruction;
 
-        MipsExpressionFactory factory(architecture_);
-        MipsExpressionFactoryCallback _(factory, program->getBasicBlockForInstruction(instruction), instruction);
+        MipsExpressionFactoryCallback _(factory_, program->getBasicBlockForInstruction(instruction), instruction);
 
         createStatements(_, instruction, program, nullptr);
     }
