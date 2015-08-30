@@ -78,6 +78,20 @@ class MipsInstructionAnalyzerImpl {
         return delayslotInstruction;
     };
 
+
+    void createStatements(const MipsInstruction *instruction, core::ir::Program *program) {
+        assert(instruction != nullptr);
+        assert(program != nullptr);
+
+        program_ = program;
+        instruction_ = instruction;
+
+		MipsExpressionFactory factory(architecture_);
+        MipsExpressionFactoryCallback _(factory, program->getBasicBlockForInstruction(instruction), instruction);
+
+        createStatements(_, instruction, program, nullptr);
+    }
+
     core::ir::BasicBlock *createStatements(MipsExpressionFactoryCallback & _, const MipsInstruction *instruction, core::ir::Program *program, const MipsInstruction *delayslotOwner) {
 
         instr_ = disassemble(instruction);
@@ -1092,18 +1106,6 @@ class MipsInstructionAnalyzerImpl {
         } /* switch */
 
         return _.basicBlock();
-    }
-
-    void createStatements(const MipsInstruction *instruction, core::ir::Program *program) {
-        assert(instruction != nullptr);
-        assert(program != nullptr);
-
-        program_ = program;
-        instruction_ = instruction;
-
-        MipsExpressionFactoryCallback _(factory_, program->getBasicBlockForInstruction(instruction), instruction);
-
-        createStatements(_, instruction, program, nullptr);
     }
 
   private:
