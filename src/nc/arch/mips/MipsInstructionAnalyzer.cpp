@@ -58,6 +58,7 @@ class MipsInstructionAnalyzerImpl {
     const MipsInstruction *instruction_;
     core::arch::CapstoneInstructionPtr instr_;
     const cs_mips *detail_;
+    const cs_mips *tmpdetail_;
     const core::arch::Instructions *instructions_;
 
   public:
@@ -99,10 +100,14 @@ class MipsInstructionAnalyzerImpl {
         if (instr_ == nullptr)
             return nullptr;
 
+        detail_ = &instr_->detail->mips;
+
         auto delayslotCallback = [&](MipsExpressionFactoryCallback &callback) -> MipsExpressionFactoryCallback & {
+     		tmpdetail_ = detail_;
             if (auto delayslotInstruction = getDelayslotInstruction(instruction)) {
                 callback.setBasicBlock(createStatements(callback, delayslotInstruction, program, instruction));
             }
+            detail_ = tmpdetail_;
             return callback;
         };
 
@@ -122,7 +127,6 @@ class MipsInstructionAnalyzerImpl {
             return cachedDirectSuccessorButOne;
         };
 
-        detail_ = &instr_->detail->mips;
         auto op_count = detail_->op_count;
 
         /*
@@ -859,7 +863,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_BEQ: {
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
-                             jump(operand(op_count - 1))
+	        	jump(operand(op_count - 1))
      		];
             _[
                 jump(operand(0) == operand(op_count - 2),
@@ -871,7 +875,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_BEQL: {
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
-                             jump(operand(op_count - 1))
+            	jump(operand(op_count - 1))
      		];
             _[
                 jump(operand(0) == operand(op_count - 2),
@@ -883,7 +887,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_BNEL: {
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
-                             jump(operand(op_count - 1))
+            	jump(operand(op_count - 1))
      		];
             _[
                 jump(~(operand(0) == operand(op_count - 2)),
@@ -907,7 +911,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_BGEZL: {
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
-                             jump(operand(1))
+           		jump(operand(1))
      		];
             _[
                 jump((signed_(operand(0)) >= constant(0)),
@@ -919,7 +923,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_BGEZ: {
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
-                             jump(operand(1))
+            	jump(operand(1))
      		];
             _[
                 jump((signed_(operand(0)) >= constant(0)),
@@ -932,7 +936,7 @@ class MipsInstructionAnalyzerImpl {
             /* This is a conditional call */
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
-                             call(operand(1)), jump(directSuccessorButOne())
+            	call(operand(1)), jump(directSuccessorButOne())
      		];
             _[
                 jump((signed_(operand(0)) >= constant(0)),
@@ -945,7 +949,7 @@ class MipsInstructionAnalyzerImpl {
             /* This is a conditional call */
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
-                             call(operand(1)), jump(directSuccessorButOne())
+           		call(operand(1)), jump(directSuccessorButOne())
      		];
             _[
                 jump((signed_(operand(0)) >= constant(0)),
@@ -957,7 +961,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_BGTZL: {
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
-                             jump(operand(1))
+            	jump(operand(1))
      		];
             _[
                 jump((signed_(operand(0)) > constant(0)),
@@ -969,7 +973,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_BGTZ: {
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
-                             jump(operand(1))
+            	jump(operand(1))
      		];
             _[
                 jump((signed_(operand(0)) > constant(0)),
@@ -981,7 +985,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_BLTZL: {
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
-                             jump(operand(1))
+           		jump(operand(1))
      		];
             _[
                 jump((signed_(operand(0)) < constant(0)),
@@ -992,7 +996,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_BLTZ: {
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
-                             jump(operand(1))
+            	jump(operand(1))
      		];
             _[
                 jump((signed_(operand(0)) < constant(0)),
@@ -1005,7 +1009,7 @@ class MipsInstructionAnalyzerImpl {
             /* This is a conditional call */
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
-                             call(operand(1)), jump(directSuccessorButOne())
+            	call(operand(1)), jump(directSuccessorButOne())
      		];
             _[
                 jump((signed_(operand(0)) < constant(0)),
@@ -1018,7 +1022,7 @@ class MipsInstructionAnalyzerImpl {
             /* This is a conditional call */
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
-                             call(operand(1)), jump(directSuccessorButOne())
+            	call(operand(1)), jump(directSuccessorButOne())
      		];
             _[
                 jump((signed_(operand(0)) < constant(0)),
@@ -1030,7 +1034,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_BLEZL: {
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
-                             jump(operand(1))
+            	jump(operand(1))
      		];
             _[
                 jump((signed_(operand(0)) <= constant(0)),
@@ -1042,7 +1046,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_BLEZ: {
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
-                             jump(operand(1))
+            	jump(operand(1))
      		];
             _[
                 jump((signed_(operand(0)) <= constant(0)),
@@ -1066,7 +1070,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_BNEZ: {
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
-                             jump(operand(1))
+           		jump(operand(1))
      		];
             _[
                 jump(~(operand(0) == constant(0)),
