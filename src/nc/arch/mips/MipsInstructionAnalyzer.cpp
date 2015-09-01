@@ -56,9 +56,8 @@ class MipsInstructionAnalyzerImpl {
     MipsExpressionFactory factory_;
     core::ir::Program *program_;
     const MipsInstruction *instruction_;
-    core::arch::CapstoneInstructionPtr instr_;
+    //core::arch::CapstoneInstructionPtr instr_;
     const cs_mips *detail_;
-    const cs_mips *tmpdetail_;
     const core::arch::Instructions *instructions_;
 
   public:
@@ -96,18 +95,18 @@ class MipsInstructionAnalyzerImpl {
     core::ir::BasicBlock *createStatements(MipsExpressionFactoryCallback & _, const MipsInstruction *instruction, core::ir::Program *program, const MipsInstruction *delayslotOwner) {
         using namespace core::irgen::expressions;
         
-        instr_ = disassemble(instruction);
+        auto instr_ = disassemble(instruction);
         if (instr_ == nullptr)
             return nullptr;
 
         detail_ = &instr_->detail->mips;
 
         auto delayslotCallback = [&](MipsExpressionFactoryCallback &callback) -> MipsExpressionFactoryCallback & {
-     		tmpdetail_ = detail_;
+     		auto detail = detail_;
             if (auto delayslotInstruction = getDelayslotInstruction(instruction)) {
                 callback.setBasicBlock(createStatements(callback, delayslotInstruction, program, instruction));
             }
-            detail_ = tmpdetail_;
+            detail_ = detail;
             return callback;
         };
 
