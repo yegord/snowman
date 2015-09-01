@@ -751,6 +751,12 @@ class MipsInstructionAnalyzerImpl {
                 ];
             break;
         }
+        case MIPS_INS_MTC1: {
+            _[
+                operand(1) ^= operand(0)
+            ];
+            break;
+        }
         case MIPS_INS_MFHI: {
             auto operand0 = operand(0);
             _[
