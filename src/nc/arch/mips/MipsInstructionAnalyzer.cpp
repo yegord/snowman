@@ -751,9 +751,17 @@ class MipsInstructionAnalyzerImpl {
                 ];
             break;
         }
+        /* Co-processor 1 is the FPU. */
         case MIPS_INS_MTC1: {
             _[
                 operand(1) ^= operand(0)
+            ];
+            break;
+        }
+        /* Co-processor 1 is the FPU. */
+        case MIPS_INS_MFC1: {
+            _[
+                operand(0) ^= operand(1)
             ];
             break;
         }
