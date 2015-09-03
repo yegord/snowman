@@ -32,10 +32,33 @@ struct mach_header_64 {
 static const uint32_t MH_MAGIC = 0xfeedface;
 static const uint32_t MH_MAGIC_64 = 0xfeedfacf;
 
+static const cpu_type_t CPU_TYPE_ANY = -1;
+static const cpu_type_t CPU_TYPE_VAX = 1;
+static const cpu_type_t CPU_TYPE_ROMP = 2;
+static const cpu_type_t CPU_TYPE_MC68020 = 3;
+static const cpu_type_t CPU_TYPE_NS32032 = 4;
+static const cpu_type_t CPU_TYPE_NS32332 = 5;
+static const cpu_type_t CPU_TYPE_MC680x0 = 6;
 static const cpu_type_t CPU_TYPE_I386 = 7;
-static const cpu_type_t CPU_TYPE_X86_64 = CPU_TYPE_I386 | 0x1000000;
-static const cpu_type_t CPU_TYPE_ARM = 12;
+static const cpu_type_t CPU_TYPE_X86 = CPU_TYPE_I386; /* Compability */
 static const cpu_type_t CPU_TYPE_MIPS = 8;
+static const cpu_type_t CPU_TYPE_NS32532 = 9;
+static const cpu_type_t CPU_TYPE_MC98000 = 10; // Old Motorola PowerPC;
+static const cpu_type_t CPU_TYPE_HPPA = 11;
+static const cpu_type_t CPU_TYPE_ARM = 12;
+static const cpu_type_t CPU_TYPE_MC88000= 13;
+static const cpu_type_t CPU_TYPE_SPARC= 14;
+static const cpu_type_t CPU_TYPE_I860= 15; /* BE */
+static const cpu_type_t CPU_TYPE_I860_LITTLE= 16; /* LE */
+static const cpu_type_t CPU_TYPE_ALPHA= 16;
+static const cpu_type_t CPU_TYPE_RS6000= 17;
+static const cpu_type_t CPU_TYPE_POWERPC= 18;
+static const cpu_type_t CPU_TYPE_VEO= 255;
+/* 64-bits CPUs */
+static const cpu_type_t CPU_TYPE_ARM64 = (CPU_TYPE_ARM | 0x1000000);
+static const cpu_type_t CPU_TYPE_POWERPC64 = (CPU_TYPE_POWERPC | 0x1000000);
+static const cpu_type_t CPU_TYPE_X86_64 = (CPU_TYPE_I386 | 0x1000000);
+
 
 struct load_command {
     uint32_t cmd;

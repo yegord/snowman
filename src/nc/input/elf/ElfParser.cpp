@@ -180,6 +180,19 @@ private:
                     image_->platform().setArchitecture(QLatin1String("arm-be"));
                 }
                 break;
+            case EM_MIPS: /* FALL Through */
+            case EM_MIPS_RS3_LE:
+                if (byteOrder_ == ByteOrder::LittleEndian) {
+                    if ((ehdr_.e_flags & 0x00FF0000) == 0x00A20000) { // E_MIPS_ALLEGREX
+                        image_->platform().setArchitecture(QLatin1String("allegrex"));
+                    }
+                    else {
+                        image_->platform().setArchitecture(QLatin1String("mips-le"));
+                    }
+                } else {
+                    image_->platform().setArchitecture(QLatin1String("mips-be"));
+                }
+                break;
             default:
                 throw ParseError(tr("Unknown machine id: %1.").arg(ehdr_.e_machine));
         }
@@ -250,6 +263,12 @@ private:
 
             for (std::size_t i = 0; i < shdrs_.size(); ++i) {
                 sections_[i]->setName(reader.readAsciizString(shdrs_[i].sh_name, shstrtab->size()));
+                /* Patch away MIPS lazy binding section */
+                if(sections_[i]->name() == QString(QLatin1String(".MIPS.stubs"))){
+                	sections_[i]->setCode(false);
+                	sections_[i]->setAllocated(false);
+                	sections_[i]->setExecutable(false);
+                }
             }
         }
     }
@@ -409,3 +428,4 @@ void ElfParser::doParse(QIODevice *source, core::image::Image *image, const LogT
 } // namespace nc
 
 /* vim:set et sts=4 sw=4: */
+

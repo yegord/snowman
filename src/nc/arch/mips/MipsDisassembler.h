@@ -12,30 +12,30 @@
 
 namespace nc {
 namespace arch {
-namespace arm {
+namespace mips {
 
-class ArmArchitecture;
+class MipsArchitecture;
 
 /**
- * Disassembler for ARM architecture.
+ * Disassembler for MIPS architecture.
  *
- * TODO: Support for THUMB instructions.
+ * TODO: Support for MIPS16 instructions.
  */
-class ArmDisassembler: public core::arch::Disassembler {
+class MipsDisassembler: public core::arch::Disassembler {
     std::unique_ptr<core::arch::Capstone> capstone_;
     int mode_;
 
 public:
     /**
-     * \param architecture Valid pointer to the ARM architecture.
+     * \param architecture Valid pointer to the MIPS architecture.
      */
-    ArmDisassembler(const ArmArchitecture *architecture);
+    MipsDisassembler(const MipsArchitecture *architecture);
 
-    virtual ~ArmDisassembler();
+    virtual ~MipsDisassembler();
 
     std::shared_ptr<core::arch::Instruction> disassembleSingleInstruction(ByteAddr pc, const void *buffer, ByteSize size) override;
 };
 
-}}} // namespace nc::arch::arm
+}}} // namespace nc::arch::mips
 
 /* vim:set et sts=4 sw=4: */

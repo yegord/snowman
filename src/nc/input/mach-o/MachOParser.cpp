@@ -111,6 +111,9 @@ public:
             case CPU_TYPE_ARM:
                 image_->platform().setArchitecture(QLatin1String(byteOrder_ == ByteOrder::LittleEndian ? "arm-le" : "arm-be"));
                 break;
+            case CPU_TYPE_MIPS:
+                image_->platform().setArchitecture(QLatin1String(byteOrder_ == ByteOrder::LittleEndian ? "mips-le" : "mips-be"));
+                break;
             default:
                 throw ParseError(tr("Unknown CPU type: %1.").arg(header.cputype));
         }

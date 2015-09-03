@@ -142,6 +142,11 @@ QString IdaFrontend::architecture() {
         return QLatin1String("arm-le");
     } else if (inf.procName == QLatin1String("ARMB")) {
         return QLatin1String("arm-be");
+    }
+    else if (inf.procName == QLatin1String("mipsl")) {
+        return QLatin1String("mips-le");
+    } else if (inf.procName == QLatin1String("mipsb")) {
+        return QLatin1String("mips-be");
     } else {
         /* Assume x86 by default. */
         if (segment_t *segment = get_segm_by_name(".text")) {
@@ -157,7 +162,7 @@ QString IdaFrontend::architecture() {
 }
 
 core::image::Platform::OperatingSystem IdaFrontend::operatingSystem() {
-    if (inf.filetype == f_WIN || inf.filetype == f_COFF || inf.filetype == f_PE) {
+    if (inf.filetype == f_WIN || inf.filetype == f_PE) {
         return core::image::Platform::Windows;
     }
     return core::image::Platform::UnknownOS;
