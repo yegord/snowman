@@ -93,7 +93,6 @@ class MipsInstructionAnalyzerImpl {
 
   private:
     core::ir::BasicBlock *createStatements(MipsExpressionFactoryCallback & _, const MipsInstruction *instruction, core::ir::Program *program, const MipsInstruction *delayslotOwner) {
-        using namespace core::irgen::expressions;
 
         auto instr_ = disassemble(instruction);
         if (instr_ == nullptr)
@@ -102,7 +101,7 @@ class MipsInstructionAnalyzerImpl {
         detail_ = &instr_->detail->mips;
 
         auto delayslotCallback = [&](MipsExpressionFactoryCallback &callback) -> MipsExpressionFactoryCallback & {
-            auto detail = detail_;
+			auto detail = detail_;
             if (auto delayslotInstruction = getDelayslotInstruction(instruction)) {
                 callback.setBasicBlock(createStatements(callback, delayslotInstruction, program, instruction));
             }
@@ -126,6 +125,7 @@ class MipsInstructionAnalyzerImpl {
             return cachedDirectSuccessorButOne;
         };
 
+        using namespace nc::core::irgen::expressions;
         auto op_count = detail_->op_count;
 
         /*

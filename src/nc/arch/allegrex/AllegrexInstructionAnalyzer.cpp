@@ -175,7 +175,6 @@ namespace nc {
                                                        const AllegrexInstruction *instruction,
                                                        core::ir::Program *program,
                                                        const AllegrexInstruction *delayslotOwner) {
-                    using namespace core::irgen::expressions;
 
                     allegrex_operand operand[8];
 
@@ -185,7 +184,7 @@ namespace nc {
                     _[regizter(AllegrexRegisters::zero()) ^= constant(0)];
 
                     auto delayslotCallback = [&](AllegrexExpressionFactoryCallback &callback) -> AllegrexExpressionFactoryCallback & {
-                        if (auto delayslotInstruction = getDelayslotInstruction(instruction)) {
+						if (auto delayslotInstruction = getDelayslotInstruction(instruction)) {
                             callback.setBasicBlock(createStatements(callback, delayslotInstruction, program, instruction));
                         }
                         return callback;
@@ -193,7 +192,7 @@ namespace nc {
 
                     core::ir::BasicBlock *cachedDirectSuccessor = nullptr;
                     auto directSuccessor = [&]() -> core::ir::BasicBlock * {
-                        if (!cachedDirectSuccessor) {
+						if (!cachedDirectSuccessor) {
                             cachedDirectSuccessor = program->createBasicBlock(instruction->endAddr());
                         }
                         return cachedDirectSuccessor;
@@ -201,7 +200,7 @@ namespace nc {
 
                     core::ir::BasicBlock *cachedDirectSuccessorButOne = nullptr;
                     auto directSuccessorButOne = [&]() -> core::ir::BasicBlock * {
-                        if (!cachedDirectSuccessorButOne) {
+						if (!cachedDirectSuccessorButOne) {
                             cachedDirectSuccessorButOne = program->createBasicBlock(instruction->endAddr() + instruction->size());
                         }
                         return cachedDirectSuccessorButOne;
@@ -276,6 +275,8 @@ namespace nc {
                             );
                         }
                     };
+	
+					using namespace nc::core::irgen::expressions;
 
                     switch (insn->id)
                     {
