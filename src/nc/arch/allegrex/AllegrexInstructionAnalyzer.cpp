@@ -181,7 +181,7 @@ namespace nc {
                     auto insn = disassemble(instruction, operand);
                     assert(insn);
 
-                    _[core::irgen::expressions::regizter(AllegrexRegisters::zero()) ^= constant(0)];
+                    _[core::irgen::expressions::regizter(AllegrexRegisters::zero()) ^= core::irgen::expressions::constant(0)];
 
                     auto delayslotCallback = [&](AllegrexExpressionFactoryCallback &callback) -> AllegrexExpressionFactoryCallback & {
 						if (auto delayslotInstruction = getDelayslotInstruction(instruction)) {
