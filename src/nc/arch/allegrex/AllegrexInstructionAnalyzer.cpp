@@ -402,13 +402,13 @@ namespace nc {
                         auto rd = unsigned_(gpr(0));
                         auto rt = unsigned_(gpr(1));
                         auto swapB = [&](unsigned shift, unsigned mask) {
-                            return ((std::move(rt) >> constant(shift)) & constant(mask)) | ((std::move(rt) & constant(mask)) << constant(shift));
+                            return ((std::move(rt) >> core::irgen::expressions::constant(shift)) & core::irgen::expressions::constant(mask)) | ((std::move(rt) & core::irgen::expressions::constant(mask)) << core::irgen::expressions::constant(shift));
                         };
                         auto swapS = [&](unsigned shift, unsigned mask) {
-                            return ((std::move(rd) >> constant(shift)) & constant(mask)) | ((std::move(rd) & constant(mask)) << constant(shift));
+                            return ((std::move(rd) >> core::irgen::expressions::constant(shift)) & core::irgen::expressions::constant(mask)) | ((std::move(rd) & core::irgen::expressions::constant(mask)) << core::irgen::expressions::constant(shift));
                         };
                         auto swapE = [&](unsigned shift) {
-                            return (std::move(rd) >> constant(shift)) | (std::move(rd) << constant(shift));
+                            return (std::move(rd) >> core::irgen::expressions::constant(shift)) | (std::move(rd) << core::irgen::expressions::constant(shift));
                         };
                         _[
                             std::move(rd) ^= swapB(1, 0x55555555),

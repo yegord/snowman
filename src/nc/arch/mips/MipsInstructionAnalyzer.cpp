@@ -712,7 +712,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_BITREV: {
             auto rt = unsigned_(operand(1));
             auto swap = [&](unsigned shift, unsigned mask) {
-                return ((std::move(rt) >> constant(shift)) & constant(mask)) | ((std::move(rt) & constant(mask)) << constant(shift));
+                return ((std::move(rt) >> core::irgen::expressions::constant(shift)) & core::irgen::expressions::constant(mask)) | ((std::move(rt) & core::irgen::expressions::constant(mask)) << core::irgen::expressions::constant(shift));
             };
             _[
                 rt ^= swap(1, 0x55555555),
