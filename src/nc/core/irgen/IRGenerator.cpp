@@ -65,10 +65,12 @@ IRGenerator::IRGenerator(const image::Image *image, const arch::Instructions *in
     assert(program);
 }
 
+
 IRGenerator::~IRGenerator() {}
 
 void IRGenerator::generate() {
     auto instructionAnalyzer = image_->platform().architecture()->createInstructionAnalyzer();
+    instructionAnalyzer->setInstructions(instructions_);
 
     /* Generate statements. */
     foreach (const auto &instr, instructions_->all()) {
@@ -106,7 +108,13 @@ void IRGenerator::generate() {
     foreach (auto basicBlock, program_->basicBlocks()) {
         foreach (auto statement, basicBlock->statements()) {
             if (statement->isTerminator()) {
+#if 1
                 assert(statement == basicBlock->statements().back());
+#else
+                if(statement != basicBlock->statements().back()){
+                    log_.warning(QString("addr_0x%1").arg(statement->instruction()->addr(), 0, 16));
+                }
+#endif
             }
         }
     }
