@@ -125,7 +125,7 @@ class MipsInstructionAnalyzerImpl {
             return cachedDirectSuccessorButOne;
         };
 
-        using namespace nc::core::irgen::expressions;
+        using namespace core::irgen::expressions;
         auto op_count = detail_->op_count;
 
         /*
