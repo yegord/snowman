@@ -70,6 +70,14 @@ class MipsInstructionAnalyzerImpl {
         instructions_ = instructions;
     }
 
+    const MipsInstruction *getDelayslotInstruction(const MipsInstruction *instruction) {
+        auto delayslotInstruction = checked_cast<const MipsInstruction *>(instructions_->get(instruction->endAddr()).get());
+        if (!delayslotInstruction) {
+            throw core::irgen::InvalidInstructionException(tr("Cannot find a delay slot at 0x%1.").arg(delayslotInstruction->endAddr(), 0, 16));
+        }
+        return delayslotInstruction;
+    };
+
     void createStatements(const MipsInstruction *instruction, core::ir::Program *program) {
         assert(instruction != nullptr);
         assert(program != nullptr);
@@ -80,15 +88,14 @@ class MipsInstructionAnalyzerImpl {
         MipsExpressionFactory factory(architecture_);
         MipsExpressionFactoryCallback _(factory, program->getBasicBlockForInstruction(instruction), instruction);
 
-        createStatements(_, instruction, program);
+       createStatements(_, instruction, program, nullptr);
     }
 
-private:
-    void createStatements(MipsExpressionFactoryCallback & _, const MipsInstruction *instruction, core::ir::Program *program) {
+  private:
+    core::ir::BasicBlock *createStatements(MipsExpressionFactoryCallback & _, const MipsInstruction *instruction, core::ir::Program *program, const MipsInstruction *delayslotOwner) {
         using namespace core::irgen::expressions;
 
-
-        instr_ = disassemble(instruction);
+        auto instr_ = disassemble(instruction);
         if (instr_ == nullptr)
             return nullptr;
 
@@ -119,25 +126,7 @@ private:
             return cachedDirectSuccessorButOne;
         };
 
-        auto delayslot = [&](MipsExpressionFactoryCallback &callback) -> MipsExpressionFactoryCallback & {
-            auto detail = detail_;
-            auto delayslot = checked_cast<const MipsInstruction *>(instructions_->get(instruction->endAddr()).get());
-            if (delayslot) {
-                createStatements(callback, delayslot, program, instruction);
-            } else {
-                throw core::irgen::InvalidInstructionException(tr("Cannot find a delay slot at 0x%1.").arg(instruction->endAddr(), 0, 16));
-            }
-            detail_ = detail;
-            return callback;
-        };
-
-        auto directSuccessorAddress = instruction->endAddr();
-        auto directSuccessorButOneAddress = directSuccessorAddress + instruction->size();
-
-        MipsExpressionFactory factory(architecture_);
-
         auto op_count = detail_->op_count;
-
 
         /*
          * The $zero-register always holds the value of zero (0).
@@ -477,7 +466,6 @@ private:
                 fatal_error("Invalid offset %x passed to lwr\n", offset);
             }
 #endif
-
             if(isBE) {
                 _[
                     jump(offset == constant(0),
@@ -540,14 +528,13 @@ private:
             auto offset = (ea & constant(3));
             auto memval = *(ea & constant(-4));
 
-            MipsExpressionFactoryCallback _case0(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then1(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case1(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then2(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case2(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then3(factory, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case3(factory, program->createBasicBlock(), instruction);
-
+            MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), instruction);
 #if 0
             uint32
             CPU::swl(uint32 regval, uint32 memval, uint8 offset) {
@@ -1165,30 +1152,29 @@ private:
     }
 
     core::irgen::expressions::TermExpression operand(std::size_t index, SmallBitSize sizeHint = 32) const {
+        return core::irgen::expressions::TermExpression(createTermForOperand(index, sizeHint));
+    }
+
+    std::unique_ptr<core::ir::Term> createTermForOperand(std::size_t index, SmallBitSize sizeHint) const {
         assert(index < boost::size(detail_->operands));
 
         const auto &operand = detail_->operands[index];
 
-        if (operand.type == MIPS_OP_INVALID)
-            throw core::irgen::InvalidInstructionException(tr("The instruction does not have an argument with index %1").arg(index));
-
-        return core::irgen::expressions::TermExpression(createTermForOperand(operand, sizeHint));
-    }
-
-    std::unique_ptr<core::ir::Term> createTermForOperand(const cs_mips_op &operand, SmallBitSize sizeHint) const {
         switch (operand.type) {
-            case MIPS_OP_REG: {
-                return std::make_unique<core::ir::MemoryLocationAccess>(getRegister(operand.reg)->memoryLocation().resized(sizeHint));
-            }
-            case MIPS_OP_IMM: {
-                /* Immediate value. */
-                return std::make_unique<core::ir::Constant>(SizedValue(sizeHint, operand.imm));
-            }
-            case MIPS_OP_MEM: {
-                return std::make_unique<core::ir::Dereference>(createDereferenceAddress(operand), core::ir::MemoryDomain::MEMORY, sizeHint);
-            }
-            default:
-                unreachable();
+        case MIPS_OP_INVALID:
+            throw core::irgen::InvalidInstructionException(tr("The instruction does not have an argument with index %1").arg(index));
+        case MIPS_OP_REG: {
+            return std::make_unique<core::ir::MemoryLocationAccess>(getRegister(operand.reg)->memoryLocation().resized(sizeHint));
+        }
+        case MIPS_OP_IMM: {
+            /* Immediate value. */
+            return std::make_unique<core::ir::Constant>(SizedValue(sizeHint, operand.imm));
+        }
+        case MIPS_OP_MEM: {
+            return std::make_unique<core::ir::Dereference>(createDereferenceAddress(operand), core::ir::MemoryDomain::MEMORY, sizeHint);
+        }
+        default:
+            unreachable();
         }
     }
 
@@ -1307,6 +1293,7 @@ private:
         }
     }
 };
+
 
 MipsInstructionAnalyzer::MipsInstructionAnalyzer(const MipsArchitecture *architecture):
     impl_(std::make_unique<MipsInstructionAnalyzerImpl>(architecture)) {

@@ -302,7 +302,8 @@ namespace nc {
                         break;
                     }
                     case I_BEQ:  {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(2))
                         ];
                         _[
@@ -313,7 +314,8 @@ namespace nc {
                         break;
                     }
                     case I_BEQL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(2))
                         ];
                         _[
@@ -324,7 +326,8 @@ namespace nc {
                         break;
                     }
                     case I_BGEZ: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(1))
                         ];
                         _[
@@ -335,7 +338,8 @@ namespace nc {
                         break;
                     }
                     case I_BGEZAL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             call(imm(1)), jump(directSuccessorButOne())
                         ];
                         _[
@@ -346,7 +350,8 @@ namespace nc {
                         break;
                     }
                     case I_BGEZALL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             call(imm(1)), jump(directSuccessorButOne())
                         ];
                         _[
@@ -357,7 +362,8 @@ namespace nc {
                         break;
                     }
                     case I_BGEZL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(1))
                         ];
                         _[
@@ -368,7 +374,8 @@ namespace nc {
                         break;
                     }
                     case I_BGTZ: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(1))
                         ];
                         _[
@@ -379,7 +386,8 @@ namespace nc {
                         break;
                     }
                     case I_BGTZL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(1))
                         ];
                         _[
@@ -411,7 +419,8 @@ namespace nc {
                         break;
                     }
                     case I_BLEZ: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(1))
                         ];
                         _[
@@ -422,7 +431,8 @@ namespace nc {
                         break;
                     }
                     case I_BLEZL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(1))
                         ];
                         _[
@@ -433,7 +443,8 @@ namespace nc {
                         break;
                     }
                     case I_BLTZ: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(1))
                         ];
                         _[
@@ -444,7 +455,8 @@ namespace nc {
                         break;
                     }
                     case I_BLTZL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(1))
                         ];
                         _[
@@ -455,7 +467,8 @@ namespace nc {
                         break;
                     }
                     case I_BLTZAL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             call(imm(1)), jump(directSuccessorButOne())
                         ];
                         _[
@@ -466,7 +479,8 @@ namespace nc {
                         break;
                     }
                     case I_BLTZALL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             call(imm(1)), jump(directSuccessorButOne())
                         ];
                         _[
@@ -477,7 +491,8 @@ namespace nc {
                         break;
                     }
                     case I_BNE: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(2))
                         ];
                         _[
@@ -488,7 +503,8 @@ namespace nc {
                         break;
                     }
                     case I_BNEL: {
-                        auto taken = delayslotCallback(_)[
+                        auto block = AllegrexExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+                        auto taken = delayslotCallback(block)[
                             jump(imm(2))
                         ];
                         _[
