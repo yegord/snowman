@@ -205,11 +205,7 @@ private:
          * Read section headers.
          */
         shdrs_.resize(ehdr_.e_shnum);
-<<<<<<< HEAD
         if (!read(source_, *shdrs_.data(), shdrs_.size())) {
-=======
-        if (!read(source_, shdrs_[0], shdrs_.size())) {
->>>>>>> cfe8c19... Re-add my files.
             throw ParseError(tr("Cannot read section headers."));
         }
 
@@ -219,10 +215,7 @@ private:
         sections_.reserve(shdrs_.size());
 
         foreach (typename Elf::Shdr &shdr, shdrs_) {
-<<<<<<< HEAD
             byteOrder_.convertFrom(shdr.sh_name);
-=======
->>>>>>> cfe8c19... Re-add my files.
             byteOrder_.convertFrom(shdr.sh_addr);
             byteOrder_.convertFrom(shdr.sh_size);
             byteOrder_.convertFrom(shdr.sh_flags);
