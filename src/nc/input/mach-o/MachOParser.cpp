@@ -62,6 +62,14 @@ public:
     static const uint32_t magic = MH_MAGIC_64;
 };
 
+struct IndirectSection {
+    uint32_t stride;
+    uint32_t size;
+    ByteAddr addr;
+    uint32_t index;
+    const core::image::Section *section;
+};
+
 class MachOParserImpl {
     Q_DECLARE_TR_FUNCTIONS(MachOParserImpl)
 
@@ -71,6 +79,8 @@ class MachOParserImpl {
 
     ByteOrder byteOrder_;
     std::vector<const core::image::Section *> sections_;
+    std::vector<const core::image::Symbol *> symbols_;
+    std::vector<IndirectSection> indirectSections_;
 
 public:
     MachOParserImpl(QIODevice *source, core::image::Image *image, const LogToken &log):
@@ -154,6 +164,10 @@ private:
                     parseSymtabCommand<Mach>();
                     break;
                 }
+                case LC_DYSYMTAB: {
+                    parseDySymtabCommand<Mach>();
+                    break;
+                }
             }
 
             if (!source_->seek(pos + loadCommand.cmdsize)) {
@@ -189,6 +203,9 @@ private:
         byteOrder_.convertFrom(section.size);
         byteOrder_.convertFrom(section.offset);
         byteOrder_.convertFrom(section.flags);
+        byteOrder_.convertFrom(section.reserved1);
+        byteOrder_.convertFrom(section.reserved2);
+
 
         auto sectionName = getAsciizString(section.sectname);
         auto segmentName = getAsciizString(section.segname);
@@ -201,6 +218,25 @@ private:
 
         auto imageSection = std::make_unique<core::image::Section>(tr("%1,%2").arg(segmentName).arg(sectionName),
                                                                    section.addr, section.size);
+
+        uint32_t section_type = section.flags & SECTION_TYPE;
+        if (section_type == S_NON_LAZY_SYMBOL_POINTERS ||
+            section_type == S_LAZY_SYMBOL_POINTERS ||
+            section_type == S_LAZY_DYLIB_SYMBOL_POINTERS ||
+            section_type == S_THREAD_LOCAL_VARIABLE_POINTERS ||
+            section_type == S_SYMBOL_STUBS)
+        {
+            IndirectSection indirectSection;
+            if (section_type == S_SYMBOL_STUBS)
+                indirectSection.stride = section.reserved2;
+            else
+                indirectSection.stride = 8;
+            indirectSection.index = section.reserved1;
+            indirectSection.size = section.size;
+            indirectSection.addr = section.addr;
+            indirectSection.section = imageSection.get();
+            indirectSections_.push_back(indirectSection);
+        }
 
         imageSection->setAllocated(protection);
         imageSection->setReadable(protection & VM_PROT_READ);
@@ -290,9 +326,58 @@ private:
                 }
             }
 
-            image_->addSymbol(std::make_unique<core::image::Symbol>(type, name, value, section));
+            auto sym = std::make_unique<core::image::Symbol>(type, name, value, section);
+            symbols_.push_back(sym.get());
+            image_->addSymbol(std::move(sym));
         }
     }
+
+    template<class Mach>
+    void parseDySymtabCommand() {
+        dysymtab_command command;
+        if (!read(source_, command)) {
+            throw ParseError(tr("Could not read dsymtab command."));
+        }
+        byteOrder_.convertFrom(command.ilocalsym);
+        byteOrder_.convertFrom(command.nlocalsym);
+        byteOrder_.convertFrom(command.iextdefsym);
+        byteOrder_.convertFrom(command.nextdefsym);
+        byteOrder_.convertFrom(command.iundefsym);
+        byteOrder_.convertFrom(command.nundefsym);
+        byteOrder_.convertFrom(command.indirectsymoff);
+        byteOrder_.convertFrom(command.nindirectsyms);
+
+        if (!source_->seek(command.indirectsymoff)) {
+            throw ParseError(tr("Could not seek to the string table."));
+        }
+
+        foreach (const auto &indirectSection, indirectSections_) {
+            if (!source_->seek(command.indirectsymoff + indirectSection.index * sizeof(uint32_t))) {
+                throw ParseError(tr("Could not seek to the string table."));
+            }
+
+            for (uint32_t i = 0; i < indirectSection.size; i += indirectSection.stride) {
+                using core::image::Symbol;
+                using core::image::SymbolType;
+
+                uint32_t symbolIndex;
+
+                if (!read(source_, symbolIndex)) {
+                    throw ParseError(tr("Could not read symbol number %1.").arg(i));
+                }
+                byteOrder_.convertFrom(symbolIndex);
+
+                if (! (symbolIndex & INDIRECT_SYMBOL_LOCAL || symbolIndex & INDIRECT_SYMBOL_ABS)) {
+                    if (symbolIndex >= symbols_.size()) {
+                        throw ParseError(tr("symbol index too large %1.").arg(symbolIndex));
+                    }
+                    const core::image::Symbol * sym = symbols_[symbolIndex];
+                    image_->addSymbol(std::make_unique<core::image::Symbol>(sym->type(), sym->name(), indirectSection.addr + i, indirectSection.section));
+                }
+            }
+        }
+    }
+
 };
 
 } // anonymous namespace
