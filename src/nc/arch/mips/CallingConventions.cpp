@@ -31,6 +31,17 @@ DefaultCallingConvention::DefaultCallingConvention(const MipsArchitecture *archi
 
     addReturnValueLocation(MipsRegisters::v0()->memoryLocation());
     addReturnValueLocation(MipsRegisters::v1()->memoryLocation());
+    
+    addVolatileRegisterLocation(MipsRegisters::gp()->memoryLocation());
+    addVolatileRegisterLocation(MipsRegisters::s0()->memoryLocation());
+    addVolatileRegisterLocation(MipsRegisters::s1()->memoryLocation());
+    addVolatileRegisterLocation(MipsRegisters::s2()->memoryLocation());
+    addVolatileRegisterLocation(MipsRegisters::s3()->memoryLocation());
+    addVolatileRegisterLocation(MipsRegisters::s4()->memoryLocation());
+    addVolatileRegisterLocation(MipsRegisters::s5()->memoryLocation());
+    addVolatileRegisterLocation(MipsRegisters::s6()->memoryLocation());
+    addVolatileRegisterLocation(MipsRegisters::s7()->memoryLocation());
+    addVolatileRegisterLocation(MipsRegisters::fp()->memoryLocation());
 
     addEnterStatement(std::make_unique<core::ir::Assignment>(
         std::make_unique<core::ir::MemoryLocationAccess>(MipsRegisters::ra()->memoryLocation()),

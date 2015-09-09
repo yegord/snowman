@@ -59,6 +59,7 @@ private:
     BitSize argumentAlignment_; ///< Alignment of stack arguments in bits.
 
     std::vector<std::vector<MemoryLocation>> argumentGroups_; ///< Groups of locations through which arguments of different kinds can be passed.
+    std::vector<MemoryLocation> volatileRegisterLocations_; ///< List of memory locations that are part of global memory.
     std::vector<MemoryLocation> returnValueLocations_; ///< List of memory locations that can be used for passing return values.
 
     bool calleeCleanup_; ///< Callee cleans up arguments.
@@ -141,6 +142,12 @@ public:
     const std::vector<MemoryLocation> &returnValueLocations() const { return returnValueLocations_; }
 
     /**
+     * \return List of memory locations that is part of global memory.
+     */
+    const std::vector<MemoryLocation> &volatileRegisterLocations() const { return volatileRegisterLocations_; }
+
+
+    /**
      * \param memoryLocation A memory location.
      *
      * \return Possible return value location covering given memory location.
@@ -190,6 +197,13 @@ protected:
      * \param location Valid memory location.
      */
     void addReturnValueLocation(const MemoryLocation &location);
+
+    /**
+     * Adds a memory location that is part of global memory.
+     *
+     * \param location Valid memory location.
+     */
+    void addVolatileRegisterLocation(const MemoryLocation &location);
 
     /**
      * Sets whether callee cleans up arguments.
