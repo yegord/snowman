@@ -22,6 +22,7 @@ DefaultCallingConvention::DefaultCallingConvention(const MipsArchitecture *archi
     setFirstArgumentOffset(0);
     setArgumentAlignment(architecture_->bitness());
 
+	/* Regular registers */
     std::vector<core::ir::MemoryLocation> args;
     args.push_back(MipsRegisters::a0()->memoryLocation());
     args.push_back(MipsRegisters::a1()->memoryLocation());
@@ -29,19 +30,46 @@ DefaultCallingConvention::DefaultCallingConvention(const MipsArchitecture *archi
     args.push_back(MipsRegisters::a3()->memoryLocation());
     addArgumentGroup(std::move(args));
 
+	/* FP registers */
+    std::vector<core::ir::MemoryLocation> fpArgs;
+    fpArgs.push_back(MipsRegisters::f12()->memoryLocation());
+    fpArgs.push_back(MipsRegisters::f13()->memoryLocation());
+	fpArgs.push_back(MipsRegisters::f14()->memoryLocation());
+    addArgumentGroup(std::move(fpArgs));
+
+	/* Regular registers */
     addReturnValueLocation(MipsRegisters::v0()->memoryLocation());
     addReturnValueLocation(MipsRegisters::v1()->memoryLocation());
+ 
+	/* FP registers */
+    addReturnValueLocation(MipsRegisters::f0()->memoryLocation());
+    addReturnValueLocation(MipsRegisters::f1()->memoryLocation());
     
-    addVolatileRegisterLocation(MipsRegisters::gp()->memoryLocation());
-    addVolatileRegisterLocation(MipsRegisters::s0()->memoryLocation());
-    addVolatileRegisterLocation(MipsRegisters::s1()->memoryLocation());
-    addVolatileRegisterLocation(MipsRegisters::s2()->memoryLocation());
-    addVolatileRegisterLocation(MipsRegisters::s3()->memoryLocation());
-    addVolatileRegisterLocation(MipsRegisters::s4()->memoryLocation());
-    addVolatileRegisterLocation(MipsRegisters::s5()->memoryLocation());
-    addVolatileRegisterLocation(MipsRegisters::s6()->memoryLocation());
-    addVolatileRegisterLocation(MipsRegisters::s7()->memoryLocation());
-    addVolatileRegisterLocation(MipsRegisters::fp()->memoryLocation());
+    /* Regular registers */
+    addNonVolatileRegisterLocation(MipsRegisters::s0()->memoryLocation());
+    addNonVolatileRegisterLocation(MipsRegisters::s1()->memoryLocation());
+    addNonVolatileRegisterLocation(MipsRegisters::s2()->memoryLocation());
+    addNonVolatileRegisterLocation(MipsRegisters::s3()->memoryLocation());
+    addNonVolatileRegisterLocation(MipsRegisters::s4()->memoryLocation());
+    addNonVolatileRegisterLocation(MipsRegisters::s5()->memoryLocation());
+    addNonVolatileRegisterLocation(MipsRegisters::s6()->memoryLocation());
+    addNonVolatileRegisterLocation(MipsRegisters::s7()->memoryLocation());
+    addNonVolatileRegisterLocation(MipsRegisters::fp()->memoryLocation());
+    addNonVolatileRegisterLocation(MipsRegisters::sp()->memoryLocation());
+    addNonVolatileRegisterLocation(MipsRegisters::gp()->memoryLocation());
+    
+    /* FP registers */
+	addNonVolatileRegisterLocation(MipsRegisters::f20()->memoryLocation());
+    addNonVolatileRegisterLocation(MipsRegisters::f21()->memoryLocation());
+	addNonVolatileRegisterLocation(MipsRegisters::f22()->memoryLocation());
+    addNonVolatileRegisterLocation(MipsRegisters::f23()->memoryLocation());
+	addNonVolatileRegisterLocation(MipsRegisters::f24()->memoryLocation());
+    addNonVolatileRegisterLocation(MipsRegisters::f25()->memoryLocation());
+	addNonVolatileRegisterLocation(MipsRegisters::f26()->memoryLocation());
+    addNonVolatileRegisterLocation(MipsRegisters::f27()->memoryLocation());
+	addNonVolatileRegisterLocation(MipsRegisters::f28()->memoryLocation());
+    addNonVolatileRegisterLocation(MipsRegisters::f29()->memoryLocation());
+	addNonVolatileRegisterLocation(MipsRegisters::f30()->memoryLocation());
 
     addEnterStatement(std::make_unique<core::ir::Assignment>(
         std::make_unique<core::ir::MemoryLocationAccess>(MipsRegisters::ra()->memoryLocation()),

@@ -219,9 +219,9 @@ void Convention::addReturnValueLocation(const MemoryLocation &memoryLocation) {
     returnValueLocations_.push_back(memoryLocation);
 }
 
-void Convention::addVolatileRegisterLocation(const MemoryLocation &memoryLocation) {
+void Convention::addNonVolatileRegisterLocation(const MemoryLocation &memoryLocation) {
     assert(memoryLocation);
-    volatileRegisterLocations_.push_back(memoryLocation);
+    nonVolatileRegisterLocations_.push_back(memoryLocation);
 }
 
 void Convention::addEnterStatement(std::unique_ptr<Statement> statement) {
