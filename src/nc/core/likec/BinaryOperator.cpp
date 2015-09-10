@@ -25,6 +25,7 @@
 #include "BinaryOperator.h"
 
 #include <nc/common/Unreachable.h>
+#include <cstdlib>
 
 #include "PrintContext.h"
 
