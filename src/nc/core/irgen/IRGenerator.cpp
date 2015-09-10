@@ -69,19 +69,7 @@ IRGenerator::IRGenerator(const image::Image *image, const arch::Instructions *in
 IRGenerator::~IRGenerator() {}
 
 void IRGenerator::generate() {
-    auto instructionAnalyzer = image_->platform().architecture()->createInstructionAnalyzer();
-    instructionAnalyzer->setInstructions(instructions_);
-
-    /* Generate statements. */
-    foreach (const auto &instr, instructions_->all()) {
-        try {
-            instructionAnalyzer->createStatements(instr.get(), program_);
-        } catch (const InvalidInstructionException &e) {
-            /* Note: this is an AntiIdiom: http://c2.com/cgi/wiki?LoggingDiscussion */
-            log_.warning(e.unicodeWhat());
-        }
-        canceled_.poll();
-    }
+    image_->platform().architecture()->createInstructionAnalyzer()->createStatements(instructions_, program_, canceled_, log_);
 
 #ifndef NDEBUG
     /*
