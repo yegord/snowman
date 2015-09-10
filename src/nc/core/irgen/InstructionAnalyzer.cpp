@@ -43,6 +43,7 @@ void InstructionAnalyzer::createStatements(const arch::Instructions *instruction
                                            const CancellationToken &canceled, const LogToken &log) {
     assert(instructions);
     assert(program);
+    setInstructions(instructions);
     doCreateStatements(instructions, program, canceled, log);
 }
 
