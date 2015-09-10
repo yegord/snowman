@@ -51,15 +51,13 @@ public:
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] identifier Name of this variable.
      * \param[in] type Valid pointer to the type of this variable.
      * \param[in] initialValue Pointer to the expression representing the initial value. Can be nullptr.
      */
-    VariableDeclaration(Tree &tree, QString identifier, const Type *type,
-                        std::unique_ptr<Expression> initialValue = nullptr)
-        : Declaration(tree, VARIABLE_DECLARATION, std::move(identifier)), type_(type),
-          variableIdentifier_(new VariableIdentifier(tree, this)), initialValue_(std::move(initialValue)) {
+    VariableDeclaration(QString identifier, const Type *type, std::unique_ptr<Expression> initialValue = nullptr)
+        : Declaration(VARIABLE_DECLARATION, std::move(identifier)), type_(type),
+          variableIdentifier_(new VariableIdentifier(this)), initialValue_(std::move(initialValue)) {
         assert(type != nullptr);
     }
 
@@ -76,9 +74,12 @@ public:
     /**
      * \return Pointer to the expression representing the initial value. Can be nullptr.
      */
-    const Expression *initialValue() const { return initialValue_.get(); }
+    std::unique_ptr<Expression> &initialValue() { return initialValue_; }
 
-    VariableDeclaration *rewrite() override;
+    /**
+     * \return Pointer to the expression representing the initial value. Can be nullptr.
+     */
+    const Expression *initialValue() const { return initialValue_.get(); }
 
 protected:
     void doCallOnChildren(const std::function<void(TreeNode *)> &fun) override;

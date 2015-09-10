@@ -45,11 +45,10 @@ public:
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] identifier Struct tag/id.
      */
-    StructTypeDeclaration(Tree &tree, QString identifier):
-        Declaration(tree, STRUCT_TYPE_DECLARATION, std::move(identifier)), type_(this)
+    explicit StructTypeDeclaration(QString identifier):
+        Declaration(STRUCT_TYPE_DECLARATION, std::move(identifier)), type_(this)
     {}
 
     /**

@@ -96,19 +96,6 @@ public:
      */
     void generate();
 
-    /**
-     * Tries to find all instructions reachable from the given one.
-     *
-     * \param[in] image Valid pointer to the executable image.
-     * \param[in] startAddress Virtual address of the instruction to start from.
-     * \param[in] followCalls Pass true to follow calls, pass false to stay within one function.
-     * \param[in] canceled Cancellation token.
-     * \param[in] log Log token.
-     *
-     * \return Valid pointer to the set of instructions discovered.
-     */
-    static std::unique_ptr<arch::Instructions> explore(const image::Image *image, ByteAddr startAddress, bool followCalls, const CancellationToken &canceled, const LogToken &log);
-
 private:
     /**
      * Computes jump targets in the basic block.

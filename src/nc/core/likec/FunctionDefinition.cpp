@@ -42,12 +42,6 @@ void FunctionDefinition::doCallOnChildren(const std::function<void(TreeNode *)> 
     }
 }
 
-FunctionDefinition *FunctionDefinition::rewrite() {
-    rewriteChild(block_);
-    rewriteChildren(labels_);
-    return this;
-}
-
 void FunctionDefinition::doPrint(PrintContext &context) const {
     printComment(context);
     printSignature(context);

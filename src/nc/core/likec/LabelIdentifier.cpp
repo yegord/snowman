@@ -32,18 +32,14 @@ namespace nc {
 namespace core {
 namespace likec {
 
-LabelIdentifier::LabelIdentifier(Tree &tree, LabelDeclaration *declaration):
-    Expression(tree, LABEL_IDENTIFIER), declaration_(declaration)
+LabelIdentifier::LabelIdentifier(LabelDeclaration *declaration):
+    Expression(LABEL_IDENTIFIER), declaration_(declaration)
 {
     declaration_->incReferenceCount();
 }
 
 void LabelIdentifier::doPrint(PrintContext &context) const {
     context.out() << declaration_->identifier();
-}
-
-const Type *LabelIdentifier::getType() const {
-    return tree().makePointerType(tree().pointerSize(), tree().makeVoidType());
 }
 
 } // namespace likec

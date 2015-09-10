@@ -32,17 +32,9 @@ namespace core {
 namespace likec {
 
 void Return::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
-    if (returnValue()) {
-        fun(returnValue());
+    if (returnValue_) {
+        fun(returnValue_.get());
     }
-}
-
-Statement *Return::rewrite() {
-    if (returnValue()) {
-        rewriteChild(returnValue_);
-    }
-
-    return this;
 }
 
 void Return::doPrint(PrintContext &context) const {

@@ -39,13 +39,6 @@ void VariableDeclaration::doCallOnChildren(const std::function<void(TreeNode *)>
     }
 }
 
-VariableDeclaration *VariableDeclaration::rewrite() {
-    if (initialValue_) {
-        rewriteChild(initialValue_);
-    }
-    return this;
-}
-
 void VariableDeclaration::doPrint(PrintContext &context) const {
     printComment(context);
 

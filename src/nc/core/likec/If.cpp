@@ -26,51 +26,19 @@
 
 #include <nc/common/make_unique.h>
 
-#include "Block.h"
 #include "PrintContext.h"
-#include "Simplify.h"
-#include "UnaryOperator.h"
 
 namespace nc {
 namespace core {
 namespace likec {
 
 void If::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
-    fun(condition());
-    fun(thenStatement());
+    fun(condition_.get());
+    fun(thenStatement_.get());
 
-    if (elseStatement() != nullptr) {
-        fun(elseStatement());
-    }
-}
-
-If *If::rewrite() {
-    assert(condition_);
-    assert(thenStatement_);
-
-    rewriteChild(thenStatement_);
     if (elseStatement_) {
-        rewriteChild(elseStatement_);
-
-        if (auto block = elseStatement_->as<Block>()) {
-            if (block->statements().empty()) {
-                elseStatement_.reset();
-            }
-        }
-
-        if (elseStatement_) {
-            if (auto block = thenStatement_->as<Block>()) {
-                if (block->statements().empty()) {
-                    thenStatement_ = std::move(elseStatement_);
-                    condition_ = std::make_unique<UnaryOperator>(tree(), UnaryOperator::LOGICAL_NOT, std::move(condition_));
-                }
-            }
-        }
+        fun(elseStatement_.get());
     }
-
-    condition_ = simplifyBooleanExpression(std::move(condition_));
-
-    return this;
 }
 
 void If::doPrint(PrintContext &context) const {

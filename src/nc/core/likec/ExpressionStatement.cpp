@@ -24,8 +24,6 @@
 
 #include "ExpressionStatement.h"
 
-#include <cassert>
-
 #include "Expression.h"
 #include "PrintContext.h"
 
@@ -34,14 +32,7 @@ namespace core {
 namespace likec {
 
 void ExpressionStatement::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
-    fun(expression());
-}
-
-Statement *ExpressionStatement::rewrite() {
-    rewriteChild(expression_);
-    assert(expression_);
-
-    return this;
+    fun(expression_.get());
 }
 
 void ExpressionStatement::doPrint(PrintContext &context) const {

@@ -27,7 +27,7 @@
 
 #include "Statement.h"
 
-#include <memory> /* unique_ptr */
+#include <memory>
 
 namespace nc {
 namespace core {
@@ -46,18 +46,17 @@ public:
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] expression Valid pointer to the switch expression.
      * \param[in] body Valid pointer to the switch body.
      */
-    Switch(Tree &tree, std::unique_ptr<Expression> expression, std::unique_ptr<Statement> body):
-        Statement(tree, SWITCH), expression_(std::move(expression)), body_(std::move(body))
+    Switch(std::unique_ptr<Expression> expression, std::unique_ptr<Statement> body):
+        Statement(SWITCH), expression_(std::move(expression)), body_(std::move(body))
     {}
 
     /**
      * \return Switch expression.
      */
-    Expression *expression() { return expression_.get(); }
+    std::unique_ptr<Expression> &expression() { return expression_; }
 
     /**
      * \return Switch expression.
@@ -67,14 +66,12 @@ public:
     /**
      * \return Switch body.
      */
-    Statement *body() { return body_.get(); }
+    std::unique_ptr<Statement> &body() { return body_; }
 
     /**
      * \return Switch body.
      */
     const Statement *body() const { return body_.get(); }
-
-    Switch *rewrite() override;
 
 protected:
     void doCallOnChildren(const std::function<void(TreeNode *)> &fun) override;

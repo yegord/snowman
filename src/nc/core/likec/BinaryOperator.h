@@ -74,13 +74,12 @@ class BinaryOperator: public Expression {
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] operatorKind Operator's kind.
      * \param[in] left Left operand.
      * \param[in] right Right operand.
      */
-    BinaryOperator(Tree &tree, int operatorKind, std::unique_ptr<Expression> left, std::unique_ptr<Expression> right):
-        Expression(tree, BINARY_OPERATOR), operatorKind_(operatorKind), left_(std::move(left)), right_(std::move(right))
+    BinaryOperator(int operatorKind, std::unique_ptr<Expression> left, std::unique_ptr<Expression> right):
+        Expression(BINARY_OPERATOR), operatorKind_(operatorKind), left_(std::move(left)), right_(std::move(right))
     {}
 
     /**
@@ -93,7 +92,7 @@ class BinaryOperator: public Expression {
     /**
      * \return Left operand.
      */
-    Expression *left() { return left_.get(); }
+    std::unique_ptr<Expression> &left() { return left_; }
 
     /**
      * \return Left operand.
@@ -101,52 +100,18 @@ class BinaryOperator: public Expression {
     const Expression *left() const { return left_.get(); }
 
     /**
-     * Sets right operand of this operator.
-     * Old operand is deleted.
-     *
-     * \param expression New right operand.
-     */
-    void setLeft(std::unique_ptr<Expression> expression) { left_ = std::move(expression); }
-
-    /**
-     * Releases operator's ownership of left operand.
-     *
-     * \return Operand.
-     */
-    std::unique_ptr<Expression> releaseLeft() { return std::move(left_); }
-
-    /**
      * \return Right operand.
      */
-    Expression *right() { return right_.get(); }
-
-    /**
-     * Sets left operand of this operator.
-     * Old operand is deleted.
-     *
-     * \param expression New left operand.
-     */
-    void setRight(std::unique_ptr<Expression> expression) { right_ = std::move(expression); }
-
-    /**
-     * Releases operator's ownership of right operand.
-     *
-     * \return Operand.
-     */
-    std::unique_ptr<Expression> releaseRight() { return std::move(right_); }
+    std::unique_ptr<Expression> &right() { return right_; }
 
     /**
      * \return Right operand.
      */
     const Expression *right() const { return right_.get(); }
 
-    const Type *getType() const override;
     int precedence() const override;
-    Expression *rewrite() override;
 
 protected:
-    const Type *getType(int operatorKind, const Expression *left, const Expression *right) const;
-
     void doCallOnChildren(const std::function<void(TreeNode *)> &fun) override;
     void doPrint(PrintContext &context) const override;
 };

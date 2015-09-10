@@ -31,10 +31,6 @@ namespace nc {
 namespace core {
 namespace likec {
 
-const Type *VariableIdentifier::getType() const {
-    return declaration_->type();
-}
-
 void VariableIdentifier::doPrint(PrintContext &context) const {
     context.out() << declaration_->identifier();
 }

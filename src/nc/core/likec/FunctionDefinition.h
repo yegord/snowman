@@ -54,18 +54,25 @@ public:
      */
     FunctionDefinition(Tree &tree, QString identifier, const Type *returnType, bool variadic = false):
         FunctionDeclaration(tree, FUNCTION_DEFINITION, std::move(identifier), returnType, variadic),
-        block_(new Block(tree))
+        block_(new Block())
     {}
 
     /**
      * \return Block of the function.
      */
-    Block *block() { return block_.get(); }
+    std::unique_ptr<Block> &block() { return block_; }
 
     /**
      * \return Block of the function.
      */
-    const Block *block() const { return block_.get(); }
+    const std::unique_ptr<const Block> &block() const {
+        return reinterpret_cast<const std::unique_ptr<const Block> &>(block_);
+    }
+
+    /**
+     * \return Labels of the function.
+     */
+    std::vector<std::unique_ptr<LabelDeclaration>> &labels() { return labels_; };
 
     /**
      * Adds invisible label declaration to the function.
@@ -73,8 +80,6 @@ public:
      * \param[in] label Valid pointer to the label declaration.
      */
     void addLabel(std::unique_ptr<LabelDeclaration> label) { labels_.push_back(std::move(label)); }
-
-    FunctionDefinition *rewrite() override;
 
 protected:
     void doCallOnChildren(const std::function<void(TreeNode *)> &fun) override;

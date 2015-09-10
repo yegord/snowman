@@ -25,6 +25,7 @@
 #include "CodeGenerator.h"
 
 #include <nc/common/CancellationToken.h>
+#include <nc/common/Foreach.h>
 #include <nc/common/Range.h>
 #include <nc/common/make_unique.h>
 
@@ -56,7 +57,7 @@ namespace cgen {
 
 void CodeGenerator::makeCompilationUnit() {
     tree().setPointerSize(image().platform().architecture()->bitness());
-    tree().setRoot(std::make_unique<likec::CompilationUnit>(tree()));
+    tree().setRoot(std::make_unique<likec::CompilationUnit>());
 
     foreach (const Function *function, functions().list()) {
         makeFunctionDefinition(function);
@@ -128,7 +129,7 @@ const likec::StructType *CodeGenerator::makeStructuralType(const types::Type *ty
         return nullptr;
     }
 
-    auto typeDeclaration = std::make_unique<likec::StructTypeDeclaration>(tree_, QString("s%1").arg(traits2structType_.size()));
+    auto typeDeclaration = std::make_unique<likec::StructTypeDeclaration>(QString("s%1").arg(traits2structType_.size()));
 
     likec::StructType *type = typeDeclaration->type();
     traits2structType_[typeTraits] = type;
@@ -144,11 +145,11 @@ const likec::StructType *CodeGenerator::makeStructuralType(const types::Type *ty
         if (offsetValue >= 0 && offsetType->pointee() && offsetType->pointee()->size()) {
             if (offsetValue > type->size() / CHAR_BIT) {
                 typeDeclaration->type()->addMember(std::make_unique<likec::MemberDeclaration>(
-                    tree_, QString("pad%1").arg(offsetValue),
+                    QString("pad%1").arg(offsetValue),
                     tree_.makeArrayType(tree_.makeIntegerType(CHAR_BIT, false), offsetValue - type->size() / CHAR_BIT)));
             }
             typeDeclaration->type()->addMember(std::make_unique<likec::MemberDeclaration>(
-                tree_, QString("f%1").arg(offsetValue), makeType(offsetType->pointee())));
+                QString("f%1").arg(offsetValue), makeType(offsetType->pointee())));
         }
     }
 
@@ -181,7 +182,7 @@ likec::VariableDeclaration *CodeGenerator::makeGlobalVariableDeclaration(const v
         auto initialValue = makeInitialValue(variable->memoryLocation(), type);
         auto nameAndComment = nameGenerator().getGlobalVariableName(variable->memoryLocation());
 
-        auto declaration = std::make_unique<likec::VariableDeclaration>(tree(),
+        auto declaration = std::make_unique<likec::VariableDeclaration>(
             std::move(nameAndComment.name()),
             type,
             std::move(initialValue));
@@ -210,11 +211,11 @@ std::unique_ptr<likec::Expression> CodeGenerator::makeInitialValue(const MemoryL
         if (auto value = image::Reader(&image()).readInt<ConstantValue>(
                 addr, size, image().platform().architecture()->getByteOrder(MemoryDomain::MEMORY))) {
             if (auto integerType = type->as<likec::IntegerType>()) {
-                return std::make_unique<likec::IntegerConstant>(tree(), *value, integerType);
+                return std::make_unique<likec::IntegerConstant>(*value, integerType);
             } else {
-                return std::make_unique<likec::Typecast>(tree(),
+                return std::make_unique<likec::Typecast>(
                     type,
-                    std::make_unique<likec::IntegerConstant>(tree(), *value, tree().makeIntegerType(type->size(), true)));
+                    std::make_unique<likec::IntegerConstant>(*value, tree().makeIntegerType(type->size(), true)));
             }
         }
     }

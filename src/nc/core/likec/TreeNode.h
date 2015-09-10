@@ -25,14 +25,9 @@
 
 #include <nc/config.h>
 
-#include <algorithm> /* remove_if */
 #include <functional>
 
-#include <QString>
-
-#include <nc/common/Foreach.h>
 #include <nc/common/Subclass.h>
-#include <nc/common/Unused.h>
 
 namespace nc {
 namespace core {
@@ -47,37 +42,28 @@ class Tree;
 class TreeNode {
     NC_BASE_CLASS(TreeNode, nodeKind)
 
-    Tree &tree_; ///< Owning tree.
-
 public:
     /**
      * Node kind.
      */
     enum {
-        COMPILATION_UNIT,               ///< Compilation unit.
-        DECLARATION,                    ///< Declaration.
-        EXPRESSION,                     ///< Expression.
-        STATEMENT,                      ///< Statement.
-        USER = 1000                     ///< Base for user-defined nodes.
+        COMPILATION_UNIT, ///< Compilation unit.
+        DECLARATION,      ///< Declaration.
+        EXPRESSION,       ///< Expression.
+        STATEMENT,        ///< Statement.
     };
 
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] nodeKind Node kind.
      */
-    TreeNode(Tree &tree, int nodeKind): nodeKind_(nodeKind), tree_(tree) {}
+    explicit TreeNode(int nodeKind): nodeKind_(nodeKind) {}
 
     /**
      * Virtual destructor.
      */
     virtual ~TreeNode() {}
-
-    /**
-     * \return Owning tree.
-     */
-    Tree &tree() const { return tree_; }
 
     /**
      * Calls a given function on all the children of this node.
@@ -98,13 +84,6 @@ public:
         assert(fun);
         doCallOnChildren(fun);
     }
-
-    /**
-     * Rewrites subtree starting from this node for the purpose of its optimization.
-     *
-     * \return Rewritten node.
-     */
-    virtual TreeNode *rewrite() { return this; }
 
     /**
      * Prints the tree node calling appropriate print callbacks.
@@ -129,52 +108,6 @@ protected:
      * \param[in] context Print context.
      */
     virtual void doPrint(PrintContext &context) const = 0;
-
-    /**
-     * Rewrites child and puts rewritten subtree in its place.
-     *
-     * \tparam T Type of smart pointer to a child node.
-     *
-     * \param child Smart pointer to a child.
-     */
-    template<class T>
-    void rewriteChild(T &child) {
-        auto *result = child->rewrite();
-        if (result != child.get()) {
-            child.reset(result);
-            if (child) {
-                rewriteChild(child);
-            }
-        }
-    }
-
-    /**
-     * Rewrites children and puts rewritten subtrees in its place.
-     *
-     * \tparam T Type of container of smart pointers to children.
-     *
-     * \param children Reference to a container of smart pointers to children.
-     */
-    template<class T>
-    void rewriteChildren(T &children) {
-        foreach (auto &child, children) {
-            rewriteChild(child);
-        }
-        children.erase(std::remove_if(children.begin(), children.end(), IsNull()), children.end());
-    }
-
-private:
-    /**
-     * Predicate class for checking if a smart pointer is non-zero.
-     */
-    class IsNull {
-        public:
-
-        template<class T>
-        bool operator()(const T& pointer) const {
-            return !pointer.get();
-        }
-    };
 };
 
 } // namespace likec

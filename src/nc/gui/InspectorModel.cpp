@@ -275,7 +275,7 @@ void expand(InspectorItem *item, const core::likec::Declaration *declaration) {
         case core::likec::Declaration::FUNCTION_DEFINITION: {
             const core::likec::FunctionDefinition *functionDefinition = declaration->as<core::likec::FunctionDefinition>();
             item->addComment(tr("Function Definition"));
-            item->addChild(tr("block"), functionDefinition->block());
+            item->addChild(tr("block"), functionDefinition->block().get());
             break;
         }
         case core::likec::Declaration::LABEL_DECLARATION: {
@@ -323,7 +323,7 @@ void expand(InspectorItem *item, const core::likec::Expression *expression) {
 
             auto arguments = item->addChild(tr("arguments"));
             foreach (const auto &argument, call->arguments()) {
-                arguments->addChild("", argument.get());
+                arguments->addChild("", argument);
             }
             break;
         }
@@ -383,7 +383,6 @@ void expand(InspectorItem *item, const core::likec::Expression *expression) {
             break;
         }
     }
-    item->addChild(tr("type"), expression->getType());
 }
 
 void expand(InspectorItem *item, const core::likec::Statement *statement) {
@@ -398,12 +397,12 @@ void expand(InspectorItem *item, const core::likec::Statement *statement) {
 
             InspectorItem *declarations = item->addChild(tr("declarations"));
             foreach (const auto &declaration, block->declarations()) {
-                declarations->addChild(declaration->identifier(), declaration.get());
+                declarations->addChild(declaration->identifier(), declaration);
             }
 
             InspectorItem *statements = item->addChild(tr("statements"));
             foreach (const auto &statement, block->statements()) {
-                statements->addChild("", statement.get());
+                statements->addChild("", statement);
             }
             break;
         }
@@ -499,7 +498,7 @@ void expand(InspectorItem *item, const core::likec::TreeNode *node) {
             const core::likec::CompilationUnit *unit = node->as<core::likec::CompilationUnit>();
             item->addComment(tr("Compilation unit"));
             foreach (const auto &declaration, unit->declarations()) {
-                item->addChild(declaration->identifier(), declaration.get());
+                item->addChild(declaration->identifier(), declaration);
             }
             break;
         }

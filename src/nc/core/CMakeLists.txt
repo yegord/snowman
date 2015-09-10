@@ -207,8 +207,8 @@ set(SOURCES
     likec/PrintContext.h
     likec/Return.cpp
     likec/Return.h
-    likec/Simplify.cpp
-    likec/Simplify.h
+    likec/Simplifier.cpp
+    likec/Simplifier.h
     likec/Statement.cpp
     likec/Statement.h
     likec/String.cpp
@@ -224,12 +224,16 @@ set(SOURCES
     likec/TreeNode.cpp
     likec/TreeNode.h
     likec/Type.h
+    likec/TypeCalculator.cpp
+    likec/TypeCalculator.h
     likec/Typecast.cpp
     likec/Typecast.h
     likec/Types.cpp
     likec/Types.h
     likec/UnaryOperator.cpp
     likec/UnaryOperator.h
+    likec/Utils.cpp
+    likec/Utils.h
     likec/VariableDeclaration.cpp
     likec/VariableDeclaration.h
     likec/VariableIdentifier.cpp

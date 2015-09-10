@@ -24,14 +24,15 @@
 
 #include "LabelDeclaration.h"
 
-#include <stdexcept>
+#include <nc/common/Unreachable.h>
 
 namespace nc {
 namespace core {
 namespace likec {
 
 void LabelDeclaration::doPrint(PrintContext & /*context*/) const {
-    throw std::logic_error("LabelDeclaration should never be printed.");
+    /* LabelDeclaration should never be printed. */
+    unreachable();
 }
 
 } // namespace likec

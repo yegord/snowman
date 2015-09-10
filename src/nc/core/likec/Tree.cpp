@@ -27,6 +27,7 @@
 #include <nc/common/Foreach.h>
 
 #include "PrintContext.h"
+#include "Simplifier.h"
 #include "Types.h"
 
 namespace nc {
@@ -35,10 +36,7 @@ namespace likec {
 
 void Tree::rewriteRoot() {
     if (root_) {
-        CompilationUnit *result = root_->rewrite();
-        if (result != root_.get()) {
-            root_.reset(result);
-        }
+        root_ = Simplifier(*this).simplify(std::move(root_));
     }
 }
 

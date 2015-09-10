@@ -45,16 +45,21 @@ class Block: public Statement {
 
 public:
     /**
-     * Class constructor.
-     *
-     * \param[in] tree Owning tree.
+     * Constructor.
      */
-    Block(Tree &tree): Statement(tree, BLOCK) {}
+    Block(): Statement(BLOCK) {}
 
     /**
      * \return Declarations.
      */
-    const std::vector<std::unique_ptr<Declaration> > &declarations() const { return declarations_; }
+    std::vector<std::unique_ptr<Declaration>> &declarations() { return declarations_; }
+
+    /**
+     * \return Declarations.
+     */
+    const std::vector<Declaration *> &declarations() const {
+        return reinterpret_cast<const std::vector<Declaration *> &>(declarations_);
+    }
 
     /**
      * Adds a definition to the block.
@@ -69,7 +74,14 @@ public:
     /**
      * \return Declarations.
      */
-    const std::vector<std::unique_ptr<Statement> > &statements() const { return statements_; }
+    std::vector<std::unique_ptr<Statement>> &statements() { return statements_; }
+
+    /**
+     * \return Declarations.
+     */
+    const std::vector<Statement *> &statements() const {
+        return reinterpret_cast<const std::vector<Statement *> &>(statements_);
+    }
 
     /**
      * Adds a statement to the block.
@@ -80,8 +92,6 @@ public:
         assert(statement != nullptr);
         statements_.push_back(std::move(statement));
     }
-
-    Block *rewrite() override;
 
 protected:
     void doCallOnChildren(const std::function<void(TreeNode *)> &fun) override;

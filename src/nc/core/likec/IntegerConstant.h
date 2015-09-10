@@ -46,20 +46,18 @@ public:
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] value Value of the constant.
      * \param[in] type Type of the constant. The type size must be equal to the value size.
      */
-    IntegerConstant(Tree &tree, const SizedValue &value, const IntegerType *type);
+    IntegerConstant(const SizedValue &value, const IntegerType *type);
 
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] value Value.
      * \param[in] type Type of the constant.
      */
-    IntegerConstant(Tree &tree, ConstantValue value, const IntegerType *type);
+    IntegerConstant(ConstantValue value, const IntegerType *type);
 
     /**
      * \return The value of the constant.
@@ -77,8 +75,6 @@ public:
      * \return Type of the constant.
      */
     const IntegerType *type() const { return type_; }
-
-    const Type *getType() const override { return type(); }
 
 protected:
     void doPrint(PrintContext &context) const override;

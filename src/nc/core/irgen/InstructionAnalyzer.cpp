@@ -24,8 +24,12 @@
 
 #include "InstructionAnalyzer.h"
 
+#include <nc/common/CancellationToken.h>
+#include <nc/common/Foreach.h>
+#include <nc/common/LogToken.h>
 #include <nc/common/make_unique.h>
 
+#include <nc/core/arch/Instructions.h>
 #include <nc/core/arch/Register.h>
 #include <nc/core/ir/Terms.h>
 
@@ -34,6 +38,26 @@
 namespace nc {
 namespace core {
 namespace irgen {
+
+void InstructionAnalyzer::createStatements(const arch::Instructions *instructions, ir::Program *program,
+                                           const CancellationToken &canceled, const LogToken &log) {
+    assert(instructions);
+    assert(program);
+    doCreateStatements(instructions, program, canceled, log);
+}
+
+void InstructionAnalyzer::doCreateStatements(const arch::Instructions *instructions, ir::Program *program,
+                      const CancellationToken &canceled, const LogToken &log) {
+    foreach (const auto &instr, instructions->all()) {
+        try {
+            createStatements(instr.get(), program);
+        } catch (const InvalidInstructionException &e) {
+            /* Note: this is an AntiIdiom: http://c2.com/cgi/wiki?LoggingDiscussion */
+            log.warning(e.unicodeWhat());
+        }
+        canceled.poll();
+    }
+}
 
 void InstructionAnalyzer::createStatements(const arch::Instruction *instruction, ir::Program *program) {
     assert(instruction);

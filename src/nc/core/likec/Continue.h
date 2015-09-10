@@ -36,12 +36,7 @@ namespace likec {
  */
 class Continue: public Statement {
 public:
-    /**
-     * Constructor.
-     *
-     * \param[in] tree Owning tree.
-     */
-    Continue(Tree &tree): Statement(tree, CONTINUE) {}
+    Continue(): Statement(CONTINUE) {}
 
 protected:
     void doPrint(PrintContext &context) const override;
