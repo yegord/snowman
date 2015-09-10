@@ -33,19 +33,13 @@ MipsArchitecture::MipsArchitecture(ByteOrder byteOrder):
     static core::MasterAnalyzer masterAnalyzer;
     setMasterAnalyzer(&masterAnalyzer);
 
-    addCallingConvention(std::make_unique<DefaultCallingConvention>(this));
+    addCallingConvention(std::make_unique<o32CallingConvention>(this));
 }
 
 MipsArchitecture::~MipsArchitecture() {}
 
 ByteOrder MipsArchitecture::getByteOrder(core::ir::Domain domain) const {
-    if (domain == core::ir::MemoryDomain::MEMORY ||
-        domain == core::ir::MemoryDomain::STACK)
-    {
         return byteOrder_;
-    } else {
-        return ByteOrder::LittleEndian;
-    }
 }
 
 std::unique_ptr<core::arch::Disassembler> MipsArchitecture::createDisassembler() const {

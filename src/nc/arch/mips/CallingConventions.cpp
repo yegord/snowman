@@ -14,8 +14,8 @@ namespace nc {
 namespace arch {
 namespace mips {
 
-DefaultCallingConvention::DefaultCallingConvention(const MipsArchitecture *architecture_):
-    core::ir::calling::Convention(QLatin1String("Default"))
+o32CallingConvention::o32CallingConvention(const MipsArchitecture *architecture_):
+    core::ir::calling::Convention(QLatin1String("o32"))
 {
     setStackPointer(MipsRegisters::sp()->memoryLocation());
 
@@ -46,7 +46,7 @@ DefaultCallingConvention::DefaultCallingConvention(const MipsArchitecture *archi
     addReturnValueLocation(MipsRegisters::f1()->memoryLocation());
     
     /* Regular registers */
-    addNonVolatileRegisterLocation(MipsRegisters::s0()->memoryLocation());
+    /*addNonVolatileRegisterLocation(MipsRegisters::s0()->memoryLocation());
     addNonVolatileRegisterLocation(MipsRegisters::s1()->memoryLocation());
     addNonVolatileRegisterLocation(MipsRegisters::s2()->memoryLocation());
     addNonVolatileRegisterLocation(MipsRegisters::s3()->memoryLocation());
@@ -54,12 +54,11 @@ DefaultCallingConvention::DefaultCallingConvention(const MipsArchitecture *archi
     addNonVolatileRegisterLocation(MipsRegisters::s5()->memoryLocation());
     addNonVolatileRegisterLocation(MipsRegisters::s6()->memoryLocation());
     addNonVolatileRegisterLocation(MipsRegisters::s7()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::fp()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::sp()->memoryLocation());
+    addNonVolatileRegisterLocation(MipsRegisters::fp()->memoryLocation());*/
     addNonVolatileRegisterLocation(MipsRegisters::gp()->memoryLocation());
     
     /* FP registers */
-	addNonVolatileRegisterLocation(MipsRegisters::f20()->memoryLocation());
+	/*addNonVolatileRegisterLocation(MipsRegisters::f20()->memoryLocation());
     addNonVolatileRegisterLocation(MipsRegisters::f21()->memoryLocation());
 	addNonVolatileRegisterLocation(MipsRegisters::f22()->memoryLocation());
     addNonVolatileRegisterLocation(MipsRegisters::f23()->memoryLocation());
@@ -69,7 +68,7 @@ DefaultCallingConvention::DefaultCallingConvention(const MipsArchitecture *archi
     addNonVolatileRegisterLocation(MipsRegisters::f27()->memoryLocation());
 	addNonVolatileRegisterLocation(MipsRegisters::f28()->memoryLocation());
     addNonVolatileRegisterLocation(MipsRegisters::f29()->memoryLocation());
-	addNonVolatileRegisterLocation(MipsRegisters::f30()->memoryLocation());
+	addNonVolatileRegisterLocation(MipsRegisters::f30()->memoryLocation());*/
 
     addEnterStatement(std::make_unique<core::ir::Assignment>(
         std::make_unique<core::ir::MemoryLocationAccess>(MipsRegisters::ra()->memoryLocation()),

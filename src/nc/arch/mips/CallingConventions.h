@@ -13,9 +13,9 @@ namespace mips {
 
 class MipsArchitecture;
 
-class DefaultCallingConvention: public core::ir::calling::Convention {
+class o32CallingConvention: public core::ir::calling::Convention {
 public:
-    DefaultCallingConvention(const MipsArchitecture *architecture_);
+    o32CallingConvention(const MipsArchitecture *architecture_);
 };
 
 }}} // namespace nc::arch::mips
