@@ -34,7 +34,7 @@ public:
     ByteOrder byteOrder() const { return byteOrder_; }
 
     ByteOrder getByteOrder(core::ir::Domain domain) const override;
-	bool isGlobalMemory(const core::ir::MemoryLocation &memoryLocation) const override;
+    bool isGlobalMemory(const core::ir::MemoryLocation &memoryLocation) const override;
     std::unique_ptr<core::arch::Disassembler> createDisassembler() const override;
     std::unique_ptr<core::irgen::InstructionAnalyzer> createInstructionAnalyzer() const override;
 };
