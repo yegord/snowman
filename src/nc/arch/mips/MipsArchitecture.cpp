@@ -42,6 +42,19 @@ ByteOrder MipsArchitecture::getByteOrder(core::ir::Domain domain) const {
         return byteOrder_;
 }
 
+bool MipsArchitecture::isGlobalMemory(const core::ir::MemoryLocation &memoryLocation) const {
+	/* Check if the register is non-volatile like $gp. */
+	bool nonVolatileRegister = false;
+	foreach (const auto &nonVolatileMemoryLocation, this->getCallingConvention(QLatin1String("o32"))->nonVolatileRegisterLocations()) {
+      	if(memoryLocation == nonVolatileMemoryLocation){
+      		nonVolatileRegister = true;
+      		break;
+      	}
+	}
+    
+    return ((memoryLocation.domain() == core::ir::MemoryDomain::MEMORY) || nonVolatileRegister);
+}
+
 std::unique_ptr<core::arch::Disassembler> MipsArchitecture::createDisassembler() const {
     return std::make_unique<MipsDisassembler>(this);
 }

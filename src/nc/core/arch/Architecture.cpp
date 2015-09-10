@@ -78,11 +78,7 @@ void Architecture::setRegisters(Registers *registers) {
 }
 
 bool Architecture::isGlobalMemory(const ir::MemoryLocation &memoryLocation) const {
-	/*foreach (const auto &memoryLocation, convention->nonVolatileLocations()) {
-      	auto term = std::make_unique<MemoryLocationAccess>(memoryLocation);
-	}*/
-    
-    return (memoryLocation.domain() == ir::MemoryDomain::MEMORY);
+    return memoryLocation.domain() == ir::MemoryDomain::MEMORY;
 }
 
 void Architecture::addCallingConvention(std::unique_ptr<ir::calling::Convention> convention) {
