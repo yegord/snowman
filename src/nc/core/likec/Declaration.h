@@ -25,7 +25,7 @@
 
 #include <nc/config.h>
 
-#include <string>
+#include <QString>
 
 #include "TreeNode.h"
 
@@ -53,26 +53,22 @@ public:
         MEMBER_DECLARATION,             ///< Declaration of a struct or union member.
         STRUCT_TYPE_DECLARATION,        ///< Declaration of structural type.
         VARIABLE_DECLARATION,           ///< Variable declaration.
-        USER_DECLARATION = 1000         ///< Base for user-defined declarations.
     };
 
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] declarationKind Declaration kind.
      * \param[in] identifier Name of declared entity.
      */
-    Declaration(Tree &tree, int declarationKind, QString identifier):
-        TreeNode(tree, DECLARATION), declarationKind_(declarationKind), identifier_(std::move(identifier))
+    Declaration(int declarationKind, QString identifier):
+        TreeNode(DECLARATION), declarationKind_(declarationKind), identifier_(std::move(identifier))
     {}
 
     /**
      * \return Name of declared entity.
      */
     const QString &identifier() const { return identifier_; }
-
-    Declaration *rewrite() override { return this; }
 };
 
 } // namespace likec

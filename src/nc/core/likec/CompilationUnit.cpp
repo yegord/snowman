@@ -50,11 +50,6 @@ void CompilationUnit::doPrint(PrintContext &context) const {
     }
 }
 
-CompilationUnit *CompilationUnit::rewrite() {
-    rewriteChildren(declarations_);
-    return this;
-}
-
 } // namespace likec
 } // namespace core
 } // namespace nc

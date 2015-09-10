@@ -24,19 +24,13 @@
 
 #include "String.h"
 
-#include <nc/common/Foreach.h>
 #include <nc/common/Escaping.h>
 
 #include "PrintContext.h"
-#include "Tree.h"
 
 namespace nc {
 namespace core {
 namespace likec {
-
-const Type *String::getType() const {
-    return tree().makePointerType(tree().pointerSize(), tree().makeIntegerType(1, false));
-}
 
 void String::doPrint(PrintContext &context) const {
     context.out() << '"' << escapeCString(characters_) << '"';

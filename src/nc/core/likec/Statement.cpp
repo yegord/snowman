@@ -31,10 +31,6 @@ namespace nc {
 namespace core {
 namespace likec {
 
-Statement *Statement::rewrite() {
-    return this;
-}
-
 void Statement::printNestedStatement(const Statement *statement, PrintContext &context) {
     if (statement->is<Block>()) {
         statement->print(context);

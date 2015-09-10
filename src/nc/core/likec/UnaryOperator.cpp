@@ -25,136 +25,15 @@
 #include "UnaryOperator.h"
 
 #include <nc/common/Unreachable.h>
-#include <nc/common/make_unique.h>
 
 #include "PrintContext.h"
-#include "BinaryOperator.h"
-#include "Tree.h"
-#include "Typecast.h"
 
 namespace nc {
 namespace core {
 namespace likec {
 
 void UnaryOperator::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
-    fun(operand());
-}
-
-const Type *UnaryOperator::getType() const {
-    const Type *operandType = operand()->getType();
-
-    switch (operatorKind()) {
-        case REFERENCE: {
-            return tree().makePointerType(operandType);
-        }
-        case DEREFERENCE: {
-            if (const PointerType *pointerType = operandType->as<PointerType>()) {
-                return pointerType->pointeeType();
-            }
-            return tree().makeErroneousType();
-        }
-        case BITWISE_NOT: {
-            if (operandType->isInteger()) {
-                return tree().integerPromotion(operandType);
-            }
-            return tree().makeErroneousType();
-        }
-        case LOGICAL_NOT: {
-            if (operandType->isScalar()) {
-                return tree().makeIntegerType(tree().intSize(), false);
-            }
-            return tree().makeErroneousType();
-        }
-        case NEGATION: {
-            if (operandType->isInteger() || operandType->isFloat()) {
-                return operandType;
-            }
-            return tree().makeErroneousType();
-        }
-        case PREFIX_INCREMENT:
-        case PREFIX_DECREMENT: {
-            if (operandType->isScalar()) {
-                return operandType;
-            }
-            return tree().makeErroneousType();
-        }
-        default: {
-            unreachable();
-        }
-    }
-}
-
-Expression *UnaryOperator::rewrite() {
-    rewriteChild(operand_);
-
-    if (operatorKind() == BITWISE_NOT && operand()->getType()->size() == 1) {
-        setOperatorKind(LOGICAL_NOT);
-    }
-
-    switch (operatorKind()) {
-        case DEREFERENCE: {
-            if (UnaryOperator *unary = operand()->as<UnaryOperator>()) {
-                if (unary->operatorKind() == REFERENCE) {
-                    return unary->releaseOperand().release();
-                }
-            }
-            if (auto binary = operand()->as<BinaryOperator>()) {
-                if (binary->operatorKind() == BinaryOperator::ADD) {
-                    if (binary->left()->getType()->isPointer()) {
-                        return std::make_unique<BinaryOperator>(tree(), BinaryOperator::ARRAY_SUBSCRIPT,
-                                                                binary->releaseLeft(), binary->releaseRight()).release();
-                    } else if (binary->right()->getType()->isPointer()) {
-                        return std::make_unique<BinaryOperator>(tree(), BinaryOperator::ARRAY_SUBSCRIPT,
-                                                                binary->releaseRight(), binary->releaseLeft()).release();
-                    }
-                }
-            }
-            return this;
-        }
-        case LOGICAL_NOT: {
-            while (Typecast *typecast = operand()->as<Typecast>()) {
-                if (typecast->type()->isScalar() && typecast->operand()->getType()->isScalar()) {
-                    setOperand(typecast->releaseOperand());
-                } else {
-                    break;
-                }
-            }
-            if (BinaryOperator *binary = operand()->as<BinaryOperator>()) {
-                switch (binary->operatorKind()) {
-                    case BinaryOperator::EQ:
-                        binary->setOperatorKind(BinaryOperator::NEQ);
-                        return releaseOperand().release();
-                    case BinaryOperator::NEQ:
-                        binary->setOperatorKind(BinaryOperator::EQ);
-                        return releaseOperand().release();
-                    case BinaryOperator::LT:
-                        binary->setOperatorKind(BinaryOperator::GEQ);
-                        return releaseOperand().release();
-                    case BinaryOperator::LEQ:
-                        binary->setOperatorKind(BinaryOperator::GT);
-                        return releaseOperand().release();
-                    case BinaryOperator::GT:
-                        binary->setOperatorKind(BinaryOperator::LEQ);
-                        return releaseOperand().release();
-                    case BinaryOperator::GEQ:
-                        binary->setOperatorKind(BinaryOperator::LT);
-                        return releaseOperand().release();
-                    default:
-                        break;
-                }
-            }
-            if (UnaryOperator *unary = operand()->as<UnaryOperator>()) {
-                if (unary->operatorKind() == LOGICAL_NOT) {
-                    if (unary->operand()->getType()->size() == 1) {
-                        return unary->releaseOperand().release();
-                    }
-                }
-            }
-            return this;
-        }
-        default:
-            return this;
-    }
+    fun(operand_.get());
 }
 
 int UnaryOperator::precedence() const {

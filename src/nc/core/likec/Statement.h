@@ -64,17 +64,15 @@ public:
         SWITCH,                         ///< Switch.
         CASE_LABEL,                     ///< Case label.
         DEFAULT_LABEL,                  ///< Default case label.
-        USER_STATEMENT = 1000           ///< Base for user-defined statements.
     };
 
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] statementKind Statement kind.
      */
-    Statement(Tree &tree, int statementKind):
-        TreeNode(tree, STATEMENT), statementKind_(statementKind), statement_(nullptr)
+    explicit Statement(int statementKind):
+        TreeNode(STATEMENT), statementKind_(statementKind), statement_(nullptr)
     {}
 
     /**
@@ -91,8 +89,6 @@ public:
 
         statement_ = statement;
     }
-
-    Statement *rewrite() override;
 
 protected:
     /**

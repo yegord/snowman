@@ -36,12 +36,7 @@ namespace likec {
  */
 class DefaultLabel: public Statement {
 public:
-    /**
-     * Class constructor.
-     *
-     * \param[in] tree Owning tree.
-     */
-    DefaultLabel(Tree &tree): Statement(tree, DEFAULT_LABEL) {}
+    DefaultLabel(): Statement(DEFAULT_LABEL) {}
 
 protected:
     void doPrint(PrintContext &callback) const override;

@@ -43,11 +43,10 @@ public:
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] declaration Variable declaration.
      */
-    VariableIdentifier(Tree &tree, VariableDeclaration *declaration):
-        Expression(tree, VARIABLE_IDENTIFIER), declaration_(declaration)
+    explicit VariableIdentifier(VariableDeclaration *declaration):
+        Expression(VARIABLE_IDENTIFIER), declaration_(declaration)
     {}
 
     /**
@@ -59,8 +58,6 @@ public:
      * \return Variable declaration.
      */
     const VariableDeclaration *declaration() const { return declaration_; }
-
-    const Type *getType() const override;
 
 protected:
     void doPrint(PrintContext &context) const override;

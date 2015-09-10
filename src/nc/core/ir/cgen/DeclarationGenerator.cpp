@@ -24,6 +24,7 @@
 
 #include "DeclarationGenerator.h"
 
+#include <nc/common/Foreach.h>
 #include <nc/common/make_unique.h>
 
 #include <nc/core/image/Image.h>
@@ -85,7 +86,7 @@ const likec::Type *DeclarationGenerator::makeReturnType() {
 likec::ArgumentDeclaration *DeclarationGenerator::makeArgumentDeclaration(const Term *term) {
     auto nameAndComment = parent().nameGenerator().getArgumentName(term, declaration()->arguments().size() + 1);
 
-    auto argumentDeclaration = std::make_unique<likec::ArgumentDeclaration>(tree(),
+    auto argumentDeclaration = std::make_unique<likec::ArgumentDeclaration>(
         std::move(nameAndComment.name()), parent().makeType(parent().types().getType(term)));
     argumentDeclaration->setComment(std::move(nameAndComment.comment()));
 

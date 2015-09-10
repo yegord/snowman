@@ -39,12 +39,11 @@ public:
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] identifier Name of this variable.
      * \param[in] type Type of this variable.
      */
-    ArgumentDeclaration(Tree &tree, const QString &identifier, const Type *type):
-    	VariableDeclaration(tree, identifier, type)
+    ArgumentDeclaration(const QString &identifier, const Type *type):
+        VariableDeclaration(identifier, type)
     {}
 
 protected:

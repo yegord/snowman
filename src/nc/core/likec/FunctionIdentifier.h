@@ -41,11 +41,10 @@ class FunctionIdentifier: public Expression {
 
 public:
     /**
-     * \param[in] tree Owning tree.
      * \param[in] declaration Valid pointer to a function declaration.
      */
-    FunctionIdentifier(Tree &tree, FunctionDeclaration *declaration):
-        Expression(tree, FUNCTION_IDENTIFIER), declaration_(declaration)
+    explicit FunctionIdentifier(FunctionDeclaration *declaration):
+        Expression(FUNCTION_IDENTIFIER), declaration_(declaration)
     {
         assert(declaration != nullptr);
     }
@@ -67,8 +66,6 @@ public:
         assert(declaration != nullptr);
         declaration_ = declaration;
     }
-
-    const Type *getType() const override;
 
 protected:
     void doPrint(PrintContext &context) const override;

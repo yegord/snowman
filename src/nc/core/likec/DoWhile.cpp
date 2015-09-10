@@ -26,25 +26,14 @@
 
 #include "Expression.h"
 #include "PrintContext.h"
-#include "Simplify.h"
 
 namespace nc {
 namespace core {
 namespace likec {
 
 void DoWhile::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
-    fun(body());
+    fun(body_.get());
     fun(condition_.get());
-}
-
-DoWhile *DoWhile::rewrite() {
-    assert(condition_);
-    assert(body_);
-
-    condition_ = simplifyBooleanExpression(std::move(condition_));
-    rewriteChild(body_);
-
-    return this;
 }
 
 void DoWhile::doPrint(PrintContext &context) const {

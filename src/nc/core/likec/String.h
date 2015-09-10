@@ -43,19 +43,16 @@ public:
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] characters Characters of the string.
      */
-    String(Tree &tree, QString characters):
-        Expression(tree, STRING), characters_(std::move(characters))
+    explicit String(QString characters):
+        Expression(STRING), characters_(std::move(characters))
     {}
 
     /**
      * \return Characters of the string.
      */
     const QString &characters() const { return characters_; }
-
-    const Type *getType() const override;
 
 protected:
     void doPrint(PrintContext &context) const override;

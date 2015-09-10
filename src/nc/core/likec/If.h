@@ -46,16 +46,14 @@ public:
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] condition Condition.
      * \param[in] thenStatement Statement of "then" branch.
      * \param[in] elseStatement Statement of "else" branch.
      */
-    If(Tree &tree,
-       std::unique_ptr<Expression> condition,
+    If(std::unique_ptr<Expression> condition,
        std::unique_ptr<Statement> thenStatement,
        std::unique_ptr<Statement> elseStatement = nullptr)
-    :  Statement(tree, IF),
+    :  Statement(IF),
        condition_(std::move(condition)),
        thenStatement_(std::move(thenStatement)),
        elseStatement_(std::move(elseStatement))
@@ -64,7 +62,7 @@ public:
     /**
      * \return Condition.
      */
-    Expression *condition() { return condition_.get(); }
+    std::unique_ptr<Expression> &condition() { return condition_; }
 
     /**
      * \return Condition.
@@ -74,7 +72,7 @@ public:
     /**
      * \return Then-statement.
      */
-    Statement *thenStatement() { return thenStatement_.get(); }
+    std::unique_ptr<Statement> &thenStatement() { return thenStatement_; }
 
     /**
      * \return Then-statement.
@@ -84,14 +82,12 @@ public:
     /**
      * \return Else-statement.
      */
-    Statement *elseStatement() { return elseStatement_.get(); }
+    std::unique_ptr<Statement> &elseStatement() { return elseStatement_; }
 
     /**
      * \return Else-statement.
      */
     const Statement *elseStatement() const { return elseStatement_.get(); }
-
-    If *rewrite() override;
 
 protected:
     void doCallOnChildren(const std::function<void(TreeNode *)> &fun) override;

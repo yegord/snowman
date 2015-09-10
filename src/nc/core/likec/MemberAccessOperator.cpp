@@ -37,12 +37,7 @@ namespace core {
 namespace likec {
 
 void MemberAccessOperator::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
-    fun(compound());
-}
-
-const Type *MemberAccessOperator::getType() const {
-    // TODO: add type checks.
-    return member_->type();
+    fun(compound_.get());
 }
 
 int MemberAccessOperator::precedence() const {
@@ -50,11 +45,8 @@ int MemberAccessOperator::precedence() const {
         case ARROW:
         case DOT:
             return 2;
-            break;
-        default:
-            unreachable();
-            return 0;
     }
+    unreachable();
 }
 
 void MemberAccessOperator::doPrint(PrintContext &context) const {

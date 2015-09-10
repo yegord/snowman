@@ -56,13 +56,12 @@ public:
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] accessKind Access kind.
      * \param[in] compound Accessed struct or union.
      * \param[in] member Accessed member.
      */
-    MemberAccessOperator(Tree &tree, AccessKind accessKind, std::unique_ptr<Expression> compound, const MemberDeclaration *member):
-        Expression(tree, MEMBER_ACCESS_OPERATOR), accessKind_(accessKind), compound_(std::move(compound)), member_(member)
+    MemberAccessOperator(AccessKind accessKind, std::unique_ptr<Expression> compound, const MemberDeclaration *member):
+        Expression(MEMBER_ACCESS_OPERATOR), accessKind_(accessKind), compound_(std::move(compound)), member_(member)
     {}
 
     /**
@@ -78,7 +77,7 @@ public:
     /**
      * \return Accessed struct or union.
      */
-    Expression *compound() { return compound_.get(); }
+    std::unique_ptr<Expression> &compound() { return compound_; }
 
     /**
      * \return Accessed struct or union.
@@ -90,7 +89,6 @@ public:
      */
     const MemberDeclaration *member() const { return member_; }
 
-    const Type *getType() const override;
     int precedence() const override;
 
 protected:

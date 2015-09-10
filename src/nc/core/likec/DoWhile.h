@@ -46,18 +46,17 @@ public:
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] condition Valid pointer to the loop condition.
      * \param[in] body Valid pointer to the loop body.
      */
-    DoWhile(Tree &tree, std::unique_ptr<Statement> body, std::unique_ptr<Expression> condition):
-        Statement(tree, DO_WHILE), body_(std::move(body)), condition_(std::move(condition))
+    DoWhile(std::unique_ptr<Statement> body, std::unique_ptr<Expression> condition):
+        Statement(DO_WHILE), body_(std::move(body)), condition_(std::move(condition))
     {}
 
     /**
      * \return Loop body.
      */
-    Statement *body() { return body_.get(); }
+    std::unique_ptr<Statement> &body() { return body_; }
 
     /**
      * \return Loop body.
@@ -67,14 +66,12 @@ public:
     /**
      * \return Loop condition.
      */
-    Expression *condition() { return condition_.get(); }
+    std::unique_ptr<Expression> &condition() { return condition_; }
 
     /**
      * \return Loop condition.
      */
     const Expression *condition() const { return condition_.get(); }
-
-    DoWhile *rewrite() override;
 
 protected:
     void doCallOnChildren(const std::function<void(TreeNode *)> &fun) override;

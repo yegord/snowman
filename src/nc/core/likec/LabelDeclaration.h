@@ -41,14 +41,11 @@ public:
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] identifier Name of the label.
      */
-    LabelDeclaration(Tree &tree, const QString identifier):
-        Declaration(tree, LABEL_DECLARATION, std::move(identifier)), referenceCount_(0)
+    explicit LabelDeclaration(QString identifier):
+        Declaration(LABEL_DECLARATION, std::move(identifier)), referenceCount_(0)
     {}
-
-    LabelDeclaration *rewrite() override { return this; }
 
     /**
      * Increments reference count by the given delta.

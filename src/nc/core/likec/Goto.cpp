@@ -31,12 +31,7 @@ namespace core {
 namespace likec {
 
 void Goto::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
-    fun(destination());
-}
-
-Goto *Goto::rewrite() {
-    rewriteChild(destination_);
-    return this;
+    fun(destination_.get());
 }
 
 void Goto::doPrint(PrintContext &context) const {

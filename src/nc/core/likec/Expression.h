@@ -27,8 +27,6 @@
 
 #include <cassert>
 
-#include <nc/common/Unused.h>
-
 #include "TreeNode.h"
 
 namespace nc {
@@ -39,8 +37,6 @@ namespace ir {
 }
 
 namespace likec {
-
-class Type;
 
 /**
  * Base class for different kinds of expressions.
@@ -64,25 +60,21 @@ public:
         TYPECAST,               ///< (t)a.
         UNARY_OPERATOR,         ///< Unary operator.
         VARIABLE_IDENTIFIER,    ///< Identifier of a variable.
-        USER_EXPRESSION = 1000  ///< Base for user-defined expressions.
     };
 
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] expressionKind Kind of expression.
      */
-    Expression(Tree &tree, int expressionKind):
-        TreeNode(tree, EXPRESSION), expressionKind_(expressionKind), term_(nullptr)
+    explicit Expression(int expressionKind):
+        TreeNode(EXPRESSION), expressionKind_(expressionKind), term_(nullptr)
     {}
 
     /**
      * \return Term this expression was created from.
      */
-    const ir::Term *term() const {
-        return term_;
-    }
+    const ir::Term *term() const { return term_; }
 
     /**
      * \param[in] term Term this expression was created from.
@@ -93,13 +85,6 @@ public:
         
         term_ = term;
     }
-
-    /**
-     * \return Valid pointer to the type of this expression.
-     */
-    virtual const Type *getType() const = 0;
-
-    Expression *rewrite() override { return this; }
 
     /**
      * \return Precedence of operator:

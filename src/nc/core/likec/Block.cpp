@@ -41,12 +41,6 @@ void Block::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
     }
 }
 
-Block *Block::rewrite() {
-    rewriteChildren(declarations_);
-    rewriteChildren(statements_);
-    return this;
-}
-
 void Block::doPrint(PrintContext &context) const {
     context.out() << "{" << endl;
     context.indentMore();

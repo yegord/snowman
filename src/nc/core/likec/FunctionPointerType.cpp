@@ -24,8 +24,6 @@
 
 #include "FunctionPointerType.h"
 
-#include <QTextStream>
-
 #include <nc/common/Foreach.h>
 
 namespace nc {

@@ -24,17 +24,12 @@
 
 #include "LabelStatement.h"
 
-#include "LabelDeclaration.h"
 #include "LabelIdentifier.h"
 #include "PrintContext.h"
 
 namespace nc {
 namespace core {
 namespace likec {
-
-LabelStatement *LabelStatement::rewrite() {
-    return identifier()->declaration()->referenceCount() ? this : 0;
-}
 
 void LabelStatement::doPrint(PrintContext &context) const {
     identifier()->print(context);

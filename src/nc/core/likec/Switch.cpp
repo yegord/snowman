@@ -32,18 +32,8 @@ namespace core {
 namespace likec {
 
 void Switch::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
-    fun(body());
-    fun(expression());
-}
-
-Switch *Switch::rewrite() {
-    assert(expression_);
-    assert(body_);
-
-    rewriteChild(expression_);
-    rewriteChild(body_);
-
-    return this;
+    fun(body_.get());
+    fun(expression_.get());
 }
 
 void Switch::doPrint(PrintContext &context) const {

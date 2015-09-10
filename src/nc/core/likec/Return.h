@@ -45,23 +45,20 @@ public:
     /**
      * Constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] returnValue Returned value. Can be nullptr.
      */
-    Return(Tree &tree, std::unique_ptr<Expression> returnValue = nullptr):
-        Statement(tree, RETURN), returnValue_(std::move(returnValue)) {}
+    explicit Return(std::unique_ptr<Expression> returnValue = nullptr):
+        Statement(RETURN), returnValue_(std::move(returnValue)) {}
 
     /**
      * \return Returned value. Can be nullptr.
      */
-    Expression *returnValue() { return returnValue_.get(); }
+    std::unique_ptr<Expression> &returnValue() { return returnValue_; }
 
     /**
      * \return Returned value. Can be nullptr.
      */
     const Expression *returnValue() const { return returnValue_.get(); }
-
-    Statement *rewrite() override;
 
 protected:
     void doCallOnChildren(const std::function<void(TreeNode *)> &fun) override;

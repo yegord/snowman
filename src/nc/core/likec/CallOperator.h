@@ -26,10 +26,9 @@
 #include <nc/config.h>
 
 #include <vector>
-#include <memory> /* unique_ptr */
+#include <memory>
 
 #include "Expression.h"
-#include "VariableDeclaration.h"
 
 namespace nc {
 namespace core {
@@ -42,21 +41,19 @@ class CallOperator: public Expression {
     std::unique_ptr<Expression> callee_; ///< Callee.
     std::vector<std::unique_ptr<Expression> > arguments_; ///< Function arguments.
 
-    public:
-
+public:
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] callee Callee.
      */
-    CallOperator(Tree &tree, std::unique_ptr<Expression> callee):
-        Expression(tree, CALL_OPERATOR), callee_(std::move(callee)) {}
+    explicit CallOperator(std::unique_ptr<Expression> callee):
+        Expression(CALL_OPERATOR), callee_(std::move(callee)) {}
 
     /**
      * \return Callee.
      */
-    Expression *callee() { return callee_.get(); }
+    std::unique_ptr<Expression> &callee() { return callee_; }
 
     /**
      * \return Callee.
@@ -66,7 +63,14 @@ class CallOperator: public Expression {
     /**
      * Function arguments.
      */
-    const std::vector<std::unique_ptr<Expression> > &arguments() const { return arguments_; }
+    std::vector<std::unique_ptr<Expression>> &arguments() { return arguments_; }
+
+    /**
+     * Function arguments.
+     */
+    const std::vector<Expression *> &arguments() const {
+        return reinterpret_cast<const std::vector<Expression *> &>(arguments_);
+    }
 
     /**
      * Adds argument to the function call and takes ownership of argument's expression.
@@ -78,8 +82,6 @@ class CallOperator: public Expression {
         arguments_.push_back(std::move(argument));
     }
 
-    const Type *getType() const override;
-    CallOperator *rewrite() override;
     int precedence() const override { return 2; }
 
 protected:

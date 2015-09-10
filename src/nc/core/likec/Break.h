@@ -36,12 +36,7 @@ namespace likec {
  */
 class Break: public Statement {
 public:
-    /**
-     * Constructor.
-     *
-     * \param[in] tree Owning tree.
-     */
-    Break(Tree &tree): Statement(tree, BREAK) {}
+    Break(): Statement(BREAK) {}
 
 protected:
     void doPrint(PrintContext &context) const override;

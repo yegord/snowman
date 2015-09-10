@@ -47,11 +47,10 @@ public:
     /**
      * Class constructor.
      *
-     * \param[in] tree Owning tree.
      * \param[in] expression Valid pointer to the case expression.
      */
-    CaseLabel(Tree &tree, std::unique_ptr<Expression> expression):
-        Statement(tree, CASE_LABEL), expression_(std::move(expression))
+    explicit CaseLabel(std::unique_ptr<Expression> expression):
+        Statement(CASE_LABEL), expression_(std::move(expression))
     {
         assert(expression_);
     }
