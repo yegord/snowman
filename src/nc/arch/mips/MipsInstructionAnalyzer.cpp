@@ -548,10 +548,11 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_SWL: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
-            auto rt = operand(0);
+            auto rt = mem(1, 32);
             auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
             auto offset = (ea & constant(3));
-            auto memval = *(ea & constant(-4));
+            //auto memval = *(ea & constant(-4));
+            auto memval = operand(0);
 
             MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), instruction);
             MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), instruction);
@@ -632,10 +633,11 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_SWR: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
-            auto rt = operand(0);
+            auto rt = mem(1, 32);
             auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
             auto offset = (ea & constant(3));
-            auto memval = *(ea & constant(-4));
+            //auto memval = *(ea & constant(-4));
+            auto memval = operand(0);
 
             MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), instruction);
             MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), instruction);
