@@ -327,7 +327,9 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_LW: {
-            _[operand(0) ^= operand(1)];
+            auto operand0 = operand(0);
+            auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+            _[operand0 ^= operand1];
             break;
         }
         case MIPS_INS_LWL: {
