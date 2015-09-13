@@ -124,6 +124,33 @@ class MipsInstructionAnalyzerImpl {
             return cachedDirectSuccessorButOne;
         };
 
+
+                    auto mem = [&](int index, int sizeHint) -> core::irgen::expressions::TermExpression {
+                    	 const auto &operand = detail_->operands[index];
+                        if (operand.mem.disp) {
+                            return core::irgen::expressions::TermExpression(
+                                std::make_unique<core::ir::Dereference>(
+                                    std::make_unique<core::ir::BinaryOperator>(
+                                        core::ir::BinaryOperator::ADD,
+                                        MipsInstructionAnalyzer::createTerm(getRegister(operand.mem.base)),
+                                        std::make_unique<core::ir::Constant>(SizedValue(32, operand.mem.disp)),
+                                        32
+                                    ),
+                                    core::ir::MemoryDomain::MEMORY,
+                                    sizeHint
+                                )
+                            );
+                        } else {
+                            return core::irgen::expressions::TermExpression(
+                                std::make_unique<core::ir::Dereference>(
+                                    MipsInstructionAnalyzer::createTerm(getRegister(operand.mem.base)),
+                                    core::ir::MemoryDomain::MEMORY,
+                                    sizeHint
+                                )
+                            );
+                        }
+                    };
+
         using namespace core::irgen::expressions;
         auto op_count = detail_->op_count;
 
@@ -311,25 +338,24 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_LB: {
-            _[operand(0) ^= sign_extend(operand(1, 8))];
+            _[operand(0) ^= sign_extend(mem(1, 8))];
             break;
         }
         case MIPS_INS_LBU: {
-            _[operand(0) ^= zero_extend(operand(1, 8))];
+            _[operand(0) ^= zero_extend(mem(1, 8))];
             break;
         }
         case MIPS_INS_LH: {
-            _[operand(0) ^= sign_extend(operand(1, 16))];
+            _[operand(0) ^= sign_extend(mem(1, 16))];
             break;
         }
         case MIPS_INS_LHU: {
-            _[operand(0) ^= zero_extend(operand(1, 16))];
+            _[operand(0) ^= zero_extend(mem(1, 16))];
             break;
         }
         case MIPS_INS_LW: {
             auto operand0 = operand(0);
-            auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-            _[operand0 ^= operand1];
+            _[operand0 ^= mem(1, 32)];
             break;
         }
         case MIPS_INS_LWL: {
@@ -509,17 +535,15 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_SB: {
-            _[operand(0, 8) ^= truncate(operand(1))];
+            _[mem(1, 8) ^= truncate(operand(0), 8)];
             break;
         }
         case MIPS_INS_SH: {
-            _[operand(0, 16) ^= truncate(operand(1))];
+            _[mem(1, 16) ^= truncate(operand(0), 16)];
             break;
         }
         case MIPS_INS_SW: {
-            auto operand0 = operand(0);
-            auto operand1 = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-            _[operand0 ^= operand1];
+            _[mem(1, 32) ^= operand(0)];
             break;
         }
         case MIPS_INS_SWL: {
