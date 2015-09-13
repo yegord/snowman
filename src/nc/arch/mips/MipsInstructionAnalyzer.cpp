@@ -56,7 +56,6 @@ class MipsInstructionAnalyzerImpl {
     MipsExpressionFactory factory_;
     core::ir::Program *program_;
     const MipsInstruction *instruction_;
-    //core::arch::CapstoneInstructionPtr instr_;
     const cs_mips *detail_;
     const core::arch::Instructions *instructions_;
 
