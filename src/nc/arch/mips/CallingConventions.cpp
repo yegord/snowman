@@ -46,7 +46,7 @@ o32CallingConvention::o32CallingConvention(const MipsArchitecture *architecture_
     addReturnValueLocation(MipsRegisters::f1()->memoryLocation());
     
     /* Regular registers */
-    addNonVolatileRegisterLocation(MipsRegisters::s0()->memoryLocation());
+    /*addNonVolatileRegisterLocation(MipsRegisters::s0()->memoryLocation());
     addNonVolatileRegisterLocation(MipsRegisters::s1()->memoryLocation());
     addNonVolatileRegisterLocation(MipsRegisters::s2()->memoryLocation());
     addNonVolatileRegisterLocation(MipsRegisters::s3()->memoryLocation());
@@ -57,10 +57,10 @@ o32CallingConvention::o32CallingConvention(const MipsArchitecture *architecture_
     addNonVolatileRegisterLocation(MipsRegisters::fp()->memoryLocation());
     addNonVolatileRegisterLocation(MipsRegisters::sp()->memoryLocation());
     addNonVolatileRegisterLocation(MipsRegisters::ra()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::gp()->memoryLocation());
+    addNonVolatileRegisterLocation(MipsRegisters::gp()->memoryLocation());*/
     
     /* FP registers */
-	addNonVolatileRegisterLocation(MipsRegisters::f20()->memoryLocation());
+	/*addNonVolatileRegisterLocation(MipsRegisters::f20()->memoryLocation());
     addNonVolatileRegisterLocation(MipsRegisters::f21()->memoryLocation());
 	addNonVolatileRegisterLocation(MipsRegisters::f22()->memoryLocation());
     addNonVolatileRegisterLocation(MipsRegisters::f23()->memoryLocation());
@@ -70,7 +70,7 @@ o32CallingConvention::o32CallingConvention(const MipsArchitecture *architecture_
     addNonVolatileRegisterLocation(MipsRegisters::f27()->memoryLocation());
 	addNonVolatileRegisterLocation(MipsRegisters::f28()->memoryLocation());
     addNonVolatileRegisterLocation(MipsRegisters::f29()->memoryLocation());
-	addNonVolatileRegisterLocation(MipsRegisters::f30()->memoryLocation());
+	addNonVolatileRegisterLocation(MipsRegisters::f30()->memoryLocation());*/
 
     addEnterStatement(std::make_unique<core::ir::Assignment>(
         std::make_unique<core::ir::MemoryLocationAccess>(MipsRegisters::ra()->memoryLocation()),
