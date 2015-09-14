@@ -783,12 +783,12 @@ namespace nc {
                     }
                     case I_OR: {
                         if (operand[0].reg != R_ZERO)
-                            _[gpr(0) ^= gpr(1) ^ gpr(2)];
+                            _[gpr(0) ^= gpr(1) | gpr(2)];
                         break;
                     }
                     case I_ORI: {
                         if (operand[0].reg != R_ZERO)
-                            _[gpr(0) ^= gpr(1) ^ imm(2)];
+                            _[gpr(0) ^= gpr(1) | imm(2)];
                         break;
                     }
                     case I_ROTR:
