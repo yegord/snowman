@@ -69,14 +69,6 @@ class MipsInstructionAnalyzerImpl {
         instructions_ = instructions;
     }
 
-    const MipsInstruction *getDelayslotInstruction(const MipsInstruction *instruction) {
-        auto delayslotInstruction = checked_cast<const MipsInstruction *>(instructions_->get(instruction->endAddr()).get());
-        if (!delayslotInstruction) {
-            throw core::irgen::InvalidInstructionException(tr("Cannot find a delay slot at 0x%1.").arg(delayslotInstruction->endAddr(), 0, 16));
-        }
-        return delayslotInstruction;
-    };
-
     void createStatements(const MipsInstruction *instruction, core::ir::Program *program) {
         assert(instruction != nullptr);
         assert(program != nullptr);
@@ -91,6 +83,15 @@ class MipsInstructionAnalyzerImpl {
     }
 
   private:
+
+    const MipsInstruction *getDelayslotInstruction(const MipsInstruction *instruction) {
+        auto delayslotInstruction = checked_cast<const MipsInstruction *>(instructions_->get(instruction->endAddr()).get());
+        if (!delayslotInstruction) {
+            throw core::irgen::InvalidInstructionException(tr("Cannot find a delay slot at 0x%1.").arg(delayslotInstruction->endAddr(), 0, 16));
+        }
+        return delayslotInstruction;
+    };
+
     core::ir::BasicBlock *createStatements(MipsExpressionFactoryCallback & _, const MipsInstruction *instruction, core::ir::Program *program, const MipsInstruction *delayslotOwner) {
 
         auto instr_ = disassemble(instruction);
@@ -219,7 +220,7 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_MOVN: {
             auto move = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
-                           operand(0) ^= operand(1)
+                           operand(0) ^= std::move(operand(1))
                         ];
             _[
                 jump(operand(2),
@@ -230,7 +231,7 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_MOVZ: {
             auto move = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
-                            operand(0) ^= operand(1)
+                            operand(0) ^= std::move(operand(1))
                         ];
             _[
                 jump(operand(2),
