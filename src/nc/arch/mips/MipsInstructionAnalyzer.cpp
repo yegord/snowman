@@ -125,32 +125,6 @@ class MipsInstructionAnalyzerImpl {
         };
 
 
-        auto mem = [&](int index, int sizeHint) -> core::irgen::expressions::TermExpression {
-            const auto &operand = detail_->operands[index];
-            if (operand.mem.disp) {
-                return core::irgen::expressions::TermExpression(
-                    std::make_unique<core::ir::Dereference>(
-                        std::make_unique<core::ir::BinaryOperator>(
-                            core::ir::BinaryOperator::ADD,
-                            MipsInstructionAnalyzer::createTerm(getRegister(operand.mem.base)),
-                            std::make_unique<core::ir::Constant>(SizedValue(32, operand.mem.disp)),
-                            32
-                        ),
-                        core::ir::MemoryDomain::MEMORY,
-                        sizeHint
-                    )
-                );
-            } else {
-                return core::irgen::expressions::TermExpression(
-                    std::make_unique<core::ir::Dereference>(
-                        MipsInstructionAnalyzer::createTerm(getRegister(operand.mem.base)),
-                        core::ir::MemoryDomain::MEMORY,
-                        sizeHint
-                    )
-                );
-            }
-        };
-
         using namespace core::irgen::expressions;
         auto op_count = detail_->op_count;
 
@@ -245,7 +219,7 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_MOVN: {
             auto move = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
-                            mem(0, 32) ^= operand(1)
+                           operand(0) ^= operand(1)
                         ];
             _[
                 jump(operand(2),
@@ -256,7 +230,7 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_MOVZ: {
             auto move = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
-                             mem(0, 32) ^= operand(1)
+                            operand(0) ^= operand(1)
                         ];
             _[
                 jump(operand(2),
@@ -338,30 +312,30 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_LB: {
-            _[operand(0) ^= sign_extend(mem(1, 8))];
+            _[operand(0) ^= sign_extend(core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 8)))];
             break;
         }
         case MIPS_INS_LBU: {
-            _[operand(0) ^= zero_extend(mem(1, 8))];
+            _[operand(0) ^= zero_extend(core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 8)))];
             break;
         }
         case MIPS_INS_LH: {
-            _[operand(0) ^= sign_extend(mem(1, 16))];
+            _[operand(0) ^= sign_extend(core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 16)))];
             break;
         }
         case MIPS_INS_LHU: {
-            _[operand(0) ^= zero_extend(mem(1, 16))];
+            _[operand(0) ^= zero_extend(core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 6)))];
             break;
         }
         case MIPS_INS_LW: {
             auto operand0 = operand(0);
-            _[operand0 ^= mem(1, 32)];
+            _[operand0 ^= core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 32))];
             break;
         }
         case MIPS_INS_LWL: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
             auto rt = operand(0);
-            auto ea = mem(1, 32);
+            auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 32));
             auto offset = (ea & constant(3));
             auto memval = *(ea & constant(-4));
 
@@ -446,7 +420,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_LWR: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
             auto rt = operand(0);
-            auto ea = mem(1, 32);
+            auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 32));
             auto offset = (ea & constant(3));
             auto memval = *(ea & constant(-4));
 
@@ -535,20 +509,20 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_SB: {
-            _[mem(1, 8) ^= truncate(operand(0), 8)];
+            _[core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 8)) ^= truncate(operand(0), 8)];
             break;
         }
         case MIPS_INS_SH: {
-            _[mem(1, 16) ^= truncate(operand(0), 16)];
+            _[core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 16)) ^= truncate(operand(0), 16)];
             break;
         }
         case MIPS_INS_SW: {
-            _[mem(1, 32) ^= operand(0)];
+            _[core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 32)) ^= operand(0)];
             break;
         }
         case MIPS_INS_SWL: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
-            auto rt = mem(1, 32);
+            auto rt = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 32));
             auto offset = (rt & constant(3));
             //auto memval = *(ea & constant(-4));
             auto memval = operand(0);
@@ -632,7 +606,7 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_SWR: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
-            auto rt = mem(1, 32);
+            auto rt = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 32));
             auto offset = (rt & constant(3));
             //auto memval = *(ea & constant(-4));
             auto memval = operand(0);
