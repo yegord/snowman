@@ -1209,7 +1209,7 @@ class MipsInstructionAnalyzerImpl {
                    createDereferenceAddress(operand, sizeHint), core::ir::MemoryDomain::MEMORY, sizeHint);
     }
 
-    std::unique_ptr<core::ir::Term> createDereferenceAddress(const cs_mips_op &operand, SmallBitSize sizeHint) const {
+    std::unique_ptr<core::ir::Dereference> createDereferenceAddress(const cs_mips_op &operand, SmallBitSize sizeHint) const {
         if (operand.type != MIPS_OP_MEM) {
             throw core::irgen::InvalidInstructionException(tr("Expected the operand to be a memory operand"));
         }
