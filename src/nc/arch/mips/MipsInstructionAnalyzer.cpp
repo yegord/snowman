@@ -361,7 +361,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_LWL: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
             auto rt = operand(0);
-            auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+            auto ea = mem(1, 32);
             auto offset = (ea & constant(3));
             auto memval = *(ea & constant(-4));
 
@@ -446,7 +446,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_LWR: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
             auto rt = operand(0);
-            auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
+            auto ea = mem(1, 32);
             auto offset = (ea & constant(3));
             auto memval = *(ea & constant(-4));
 
@@ -549,8 +549,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_SWL: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
             auto rt = mem(1, 32);
-            auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-            auto offset = (ea & constant(3));
+            auto offset = (rt & constant(3));
             //auto memval = *(ea & constant(-4));
             auto memval = operand(0);
 
@@ -634,8 +633,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_SWR: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
             auto rt = mem(1, 32);
-            auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1]));
-            auto offset = (ea & constant(3));
+            auto offset = (rt & constant(3));
             //auto memval = *(ea & constant(-4));
             auto memval = operand(0);
 
@@ -1198,7 +1196,7 @@ class MipsInstructionAnalyzerImpl {
             return std::make_unique<core::ir::Constant>(SizedValue(sizeHint, operand.imm));
         }
         case MIPS_OP_MEM: {
-            return std::make_unique<core::ir::Dereference>(createDereferenceAddress(operand), core::ir::MemoryDomain::MEMORY, sizeHint);
+            return std::make_unique<core::ir::Dereference>(createDereferenceAddress(operand, sizeHint), core::ir::MemoryDomain::MEMORY, sizeHint);
         }
         default:
             unreachable();
@@ -1206,32 +1204,21 @@ class MipsInstructionAnalyzerImpl {
     }
 
 
-    std::unique_ptr<core::ir::Dereference> createDereference(const cs_mips_op &operand) const {
+    std::unique_ptr<core::ir::Dereference> createDereference(const cs_mips_op &operand, SmallBitSize sizeHint) const {
         return std::make_unique<core::ir::Dereference>(
-                   createDereferenceAddress(operand), core::ir::MemoryDomain::MEMORY, 32);
+                   createDereferenceAddress(operand, sizeHint), core::ir::MemoryDomain::MEMORY, sizeHint);
     }
 
-    std::unique_ptr<core::ir::Term> createDereferenceAddress(const cs_mips_op &operand) const {
+    std::unique_ptr<core::ir::Term> createDereferenceAddress(const cs_mips_op &operand, SmallBitSize sizeHint) const {
         if (operand.type != MIPS_OP_MEM) {
             throw core::irgen::InvalidInstructionException(tr("Expected the operand to be a memory operand"));
         }
 
-        const auto &mem = operand.mem;
-
-        auto result = createRegisterAccess(mem.base);
-        auto offsetValue = SizedValue(result->size(), mem.disp);
-
-        if (offsetValue.value() || !result) {
-            auto offset = std::make_unique<core::ir::Constant>(offsetValue);
-
-            if (result) {
-                result = std::make_unique<core::ir::BinaryOperator>(core::ir::BinaryOperator::ADD, std::move(result), std::move(offset), result->size());
+            if (operand.mem.disp) {
+                return std::make_unique<core::ir::Dereference>(std::make_unique<core::ir::BinaryOperator>(core::ir::BinaryOperator::ADD, MipsInstructionAnalyzer::createTerm(getRegister(operand.mem.base)), std::make_unique<core::ir::Constant>(SizedValue(32, operand.mem.disp)), 32), core::ir::MemoryDomain::MEMORY, sizeHint);
             } else {
-                result = std::move(offset);
+                return std::make_unique<core::ir::Dereference>(MipsInstructionAnalyzer::createTerm(getRegister(operand.mem.base)), core::ir::MemoryDomain::MEMORY, sizeHint);
             }
-        }
-
-        return result;
     }
 
     static std::unique_ptr<core::ir::Term> createRegisterAccess(int reg) {
