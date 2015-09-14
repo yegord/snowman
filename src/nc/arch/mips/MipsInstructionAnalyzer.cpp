@@ -496,15 +496,15 @@ class MipsInstructionAnalyzerImpl {
             if(isBE) {
                 _[
                     jump(offset == constant(0),
-                         _case0[rt ^= ((unsigned_(memval & constant(0xff000000)) >> constant(24)) | (rt & constant(0xffffff00))),
+                         _case0[rt ^= ((rt & constant(0xffffff00)) | (unsigned_(memval & constant(0xff000000)) >> constant(24))),
                                 jump(directSuccessor())].basicBlock(),
                          _then1[
                              jump(offset == constant(1),
-                                  _case1[rt ^= ((unsigned_(memval & constant(0xffff0000)) >> constant(16)) | (rt  & constant(0xffff0000))),
+                                  _case1[rt ^= ((rt  & constant(0xffff0000)) | (unsigned_(memval & constant(0xffff0000)) >> constant(16))),
                                          jump(directSuccessor())].basicBlock(),
                                   _then2[
                                       jump(offset == constant(2),
-                                           _case2[rt ^= ((unsigned_(memval & constant(0xffffff00)) >> constant(8)) | (rt & constant(0xff000000))),
+                                           _case2[rt ^= ((rt & constant(0xff000000)) | (unsigned_(memval & constant(0xffffff00)) >> constant(8))),
                                                   jump(directSuccessor())].basicBlock(),
                                            _then3[
                                                jump(offset == constant(3),
@@ -519,15 +519,15 @@ class MipsInstructionAnalyzerImpl {
                                 jump(directSuccessor())].basicBlock(),
                          _then1[
                              jump(offset == constant(1),
-                                  _case1[rt ^= ((unsigned_(memval & constant(0xffffff00)) >> constant(8)) | (rt & constant(0xff000000))),
+                                  _case1[rt ^= ((rt & constant(0xff000000)) | (unsigned_(memval & constant(0xffffff00)) >> constant(8))),
                                          jump(directSuccessor())].basicBlock(),
                                   _then2[
                                       jump(offset == constant(2),
-                                           _case2[rt ^= ((unsigned_(memval & constant(0xffff0000)) >> constant(16)) | (rt  & constant(0xffff0000))),
+                                           _case2[rt ^= ((rt  & constant(0xffff0000)) | (unsigned_(memval & constant(0xffff0000)) >> constant(16))),
                                                   jump(directSuccessor())].basicBlock(),
                                            _then3[
                                                jump(offset == constant(3),
-                                                    _case3[rt ^= ((unsigned_(memval & constant(0xff000000)) >> constant(24)) | (rt & constant(0xffffff00))),
+                                                    _case3[rt ^= ((rt & constant(0xffffff00)) | (unsigned_(memval & constant(0xff000000)) >> constant(24))),
                                                             jump(directSuccessor())].basicBlock(),
                                                     directSuccessor())].basicBlock())].basicBlock())].basicBlock())
                 ];
@@ -677,15 +677,15 @@ class MipsInstructionAnalyzerImpl {
             if(isBE) {
                 _[
                     jump(offset == constant(0),
-                         _case0[rt ^= ((memval & constant(0xffffff)) | ((rt << constant(24)) & constant(0xff000000))),
+                         _case0[rt ^= (((rt << constant(24)) & constant(0xff000000))) | (memval & constant(0xffffff)),
                                 jump(directSuccessor())].basicBlock(),
                          _then1[
                              jump(offset == constant(1),
-                                  _case1[rt ^= ((memval & constant(0xffff)) | ((rt << constant(16)) & constant(0xffff0000))),
+                                  _case1[rt ^= (((rt << constant(16)) & constant(0xffff0000)) | (memval & constant(0xffff))),
                                          jump(directSuccessor())].basicBlock(),
                                   _then2[
                                       jump(offset == constant(2),
-                                           _case2[rt ^= ((memval & constant(0xff)) | ((rt << constant(8)) & constant(0xffffff00))),
+                                           _case2[rt ^= (((rt << constant(8)) & constant(0xffffff00)) | (memval & constant(0xff))),
                                                   jump(directSuccessor())].basicBlock(),
                                            _then3[
                                                jump(offset == constant(3),
@@ -700,15 +700,15 @@ class MipsInstructionAnalyzerImpl {
                                 jump(directSuccessor())].basicBlock(),
                          _then1[
                              jump(offset == constant(1),
-                                  _case1[rt ^= ((memval & constant(0xff)) | ((rt << constant(8)) & constant(0xffffff00))),
+                                  _case1[rt ^= (((rt << constant(8)) & constant(0xffffff00)) | (memval & constant(0xff))),
                                          jump(directSuccessor())].basicBlock(),
                                   _then2[
                                       jump(offset == constant(2),
-                                           _case2[rt ^= ((memval & constant(0xffff)) | ((rt << constant(16)) & constant(0xffff0000))),
+                                           _case2[rt ^= (((rt << constant(16)) & constant(0xffff0000)) | (memval & constant(0xffff))),
                                                   jump(directSuccessor())].basicBlock(),
                                            _then3[
                                                jump(offset == constant(3),
-                                                    _case3[rt ^= ((memval & constant(0xffffffff)) | ((rt << constant(24)) & constant(0xff000000))),
+                                                    _case3[rt ^= (((rt << constant(24)) & constant(0xff000000)) | (memval & constant(0xffffffff))),
                                                             jump(directSuccessor())].basicBlock(),
                                                     directSuccessor())].basicBlock())].basicBlock())].basicBlock())
                 ];
