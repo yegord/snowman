@@ -87,7 +87,7 @@ class MipsInstructionAnalyzerImpl {
         MipsExpressionFactory factory(architecture_);
         MipsExpressionFactoryCallback _(factory, program->getBasicBlockForInstruction(instruction), instruction);
 
-       createStatements(_, instruction, program, nullptr);
+        createStatements(_, instruction, program, nullptr);
     }
 
   private:
@@ -100,7 +100,7 @@ class MipsInstructionAnalyzerImpl {
         detail_ = &instr_->detail->mips;
 
         auto delayslotCallback = [&](MipsExpressionFactoryCallback &callback) -> MipsExpressionFactoryCallback & {
-			auto detail = detail_;
+            auto detail = detail_;
             if (auto delayslotInstruction = getDelayslotInstruction(instruction)) {
                 callback.setBasicBlock(createStatements(callback, delayslotInstruction, program, instruction));
             }
@@ -125,31 +125,31 @@ class MipsInstructionAnalyzerImpl {
         };
 
 
-                    auto mem = [&](int index, int sizeHint) -> core::irgen::expressions::TermExpression {
-                    	 const auto &operand = detail_->operands[index];
-                        if (operand.mem.disp) {
-                            return core::irgen::expressions::TermExpression(
-                                std::make_unique<core::ir::Dereference>(
-                                    std::make_unique<core::ir::BinaryOperator>(
-                                        core::ir::BinaryOperator::ADD,
-                                        MipsInstructionAnalyzer::createTerm(getRegister(operand.mem.base)),
-                                        std::make_unique<core::ir::Constant>(SizedValue(32, operand.mem.disp)),
-                                        32
-                                    ),
-                                    core::ir::MemoryDomain::MEMORY,
-                                    sizeHint
-                                )
-                            );
-                        } else {
-                            return core::irgen::expressions::TermExpression(
-                                std::make_unique<core::ir::Dereference>(
-                                    MipsInstructionAnalyzer::createTerm(getRegister(operand.mem.base)),
-                                    core::ir::MemoryDomain::MEMORY,
-                                    sizeHint
-                                )
-                            );
-                        }
-                    };
+        auto mem = [&](int index, int sizeHint) -> core::irgen::expressions::TermExpression {
+            const auto &operand = detail_->operands[index];
+            if (operand.mem.disp) {
+                return core::irgen::expressions::TermExpression(
+                    std::make_unique<core::ir::Dereference>(
+                        std::make_unique<core::ir::BinaryOperator>(
+                            core::ir::BinaryOperator::ADD,
+                            MipsInstructionAnalyzer::createTerm(getRegister(operand.mem.base)),
+                            std::make_unique<core::ir::Constant>(SizedValue(32, operand.mem.disp)),
+                            32
+                        ),
+                        core::ir::MemoryDomain::MEMORY,
+                        sizeHint
+                    )
+                );
+            } else {
+                return core::irgen::expressions::TermExpression(
+                    std::make_unique<core::ir::Dereference>(
+                        MipsInstructionAnalyzer::createTerm(getRegister(operand.mem.base)),
+                        core::ir::MemoryDomain::MEMORY,
+                        sizeHint
+                    )
+                );
+            }
+        };
 
         using namespace core::irgen::expressions;
         auto op_count = detail_->op_count;
@@ -245,7 +245,7 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_MOVN: {
             auto move = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
-                            operand(0) ^= operand(1)
+                            mem(0, 32) ^= operand(1)
                         ];
             _[
                 jump(operand(2),
@@ -256,7 +256,7 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_MOVZ: {
             auto move = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
-                            operand(0) ^= operand(1)
+                             mem(0, 32) ^= operand(1)
                         ];
             _[
                 jump(operand(2),
