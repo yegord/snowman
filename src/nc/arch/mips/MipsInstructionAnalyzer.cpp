@@ -220,7 +220,7 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_MOVN: {
             auto move = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
-                           operand(0) ^= std::move(operand(1))
+                           operand(0) ^= operand(1)
                         ];
             _[
                 jump(operand(2),
@@ -231,7 +231,7 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_MOVZ: {
             auto move = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
-                            operand(0) ^= std::move(operand(1))
+                            operand(0) ^= operand(1)
                         ];
             _[
                 jump(operand(2),
