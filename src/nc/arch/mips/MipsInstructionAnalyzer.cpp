@@ -847,6 +847,7 @@ class MipsInstructionAnalyzerImpl {
             ];
             break;
         }
+#if 0 /* Not correctly implemented in capstone. */
         case MIPS_INS_MUL: {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
@@ -857,6 +858,7 @@ class MipsInstructionAnalyzerImpl {
             ];
             break;
         }
+#endif
         case MIPS_INS_MULT: {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
