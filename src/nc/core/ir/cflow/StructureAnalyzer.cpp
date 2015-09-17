@@ -26,7 +26,6 @@
 
 #include <algorithm>
 #include <queue>
-#include <tuple>
 
 #include <boost/unordered_map.hpp>
 
@@ -241,6 +240,21 @@ bool StructureAnalyzer::reduceCompoundCondition(Node *entry) {
     return false;
 }
 
+namespace {
+
+struct LoopDescription {
+    Region::RegionKind kind;
+    Node *condition;
+    Node *bodyEntry;
+    Node *exitNode;
+
+    LoopDescription(Region::RegionKind kind, Node *condition, Node *bodyEntry, Node *exitNode):
+        kind(kind), condition(condition), bodyEntry(bodyEntry), exitNode(exitNode)
+    {}
+};
+
+} // anonymous namespace
+
 bool StructureAnalyzer::reduceCyclic(Node *entry, const Dfs &dfs) {
     /*
      * Try to find the nodes constituting the loop.
@@ -264,7 +278,14 @@ bool StructureAnalyzer::reduceCyclic(Node *entry, const Dfs &dfs) {
      * analysis on the loop subregion, because we need the edges before
      * their redirection by insertSubregion().
      */
-    std::vector<std::tuple<Node *, const BasicBlock *, Region::RegionKind>> loopConditions;
+    std::vector<LoopDescription> loopDescriptions;
+
+    auto detectLoop = [&](Region::RegionKind kind, Node *condition, Node *bodyEntry, Node *loopExit) {
+        if (!nc::contains(subregion->nodes(), loopExit)) {
+            assert(nc::contains(subregion->nodes(), bodyEntry));
+            loopDescriptions.push_back(LoopDescription(kind, condition, bodyEntry, loopExit));
+        }
+    };
 
     /*
      * For a DO_WHILE loop.
@@ -273,11 +294,8 @@ bool StructureAnalyzer::reduceCyclic(Node *entry, const Dfs &dfs) {
         if (dfs.getEdgeType(edge) == Dfs::BACK) {
             Node *n = edge->tail();
             if (n->isFork() && n->isCondition()) {
-                foreach (Edge *e, n->outEdges()) {
-                    if (!nc::contains(subregion->nodes(), e->head())) {
-                        loopConditions.push_back(std::make_tuple(n, e->head()->getEntryBasicBlock(), Region::DO_WHILE));
-                    }
-                }
+                detectLoop(Region::DO_WHILE, n, n->outEdges()[0]->head(), n->outEdges()[1]->head());
+                detectLoop(Region::DO_WHILE, n, n->outEdges()[1]->head(), n->outEdges()[0]->head());
             }
         }
     }
@@ -286,12 +304,8 @@ bool StructureAnalyzer::reduceCyclic(Node *entry, const Dfs &dfs) {
      * For a WHILE loop.
      */
     if (entry->isFork() && entry->isCondition()) {
-        foreach (const Edge *edge, entry->outEdges()) {
-            if (!nc::contains(subregion->nodes(), edge->head())) {
-                loopConditions.push_back(std::make_tuple(entry, edge->head()->getEntryBasicBlock(), Region::WHILE));
-                break;
-            }
-        }
+        detectLoop(Region::WHILE, entry, entry->outEdges()[0]->head(), entry->outEdges()[1]->head());
+        detectLoop(Region::WHILE, entry, entry->outEdges()[1]->head(), entry->outEdges()[0]->head());
     }
 
     /*
@@ -308,8 +322,8 @@ bool StructureAnalyzer::reduceCyclic(Node *entry, const Dfs &dfs) {
      */
     std::vector<Edge *> continueEdges = entry->inEdges();
     foreach (Edge *edge, continueEdges) {
-        edge->setTail(0);
-        edge->setHead(0);
+        edge->setTail(nullptr);
+        edge->setHead(nullptr);
     }
 
     /*
@@ -320,11 +334,25 @@ bool StructureAnalyzer::reduceCyclic(Node *entry, const Dfs &dfs) {
     /*
      * Try to find a condition node.
      */
-    foreach (const auto &tuple, loopConditions) {
-        if (std::get<0>(tuple)->parent() == loop) {
-            loop->setLoopCondition(std::get<0>(tuple));
-            loop->setExitBasicBlock(std::get<1>(tuple));
-            loop->setRegionKind(std::get<2>(tuple));
+    foreach (const auto &description, loopDescriptions) {
+        if (description.condition->parent() == loop) {
+            if (description.kind == Region::WHILE) {
+                /*
+                 * analyze() could put the body entry somewhere
+                 * in the middle of some other region, in which
+                 * case we will not be able to fall through into
+                 * it from the while condition.
+                 */
+                auto uniqueSuccessor = description.condition->uniqueSuccessor();
+                if (!uniqueSuccessor ||
+                    description.bodyEntry->getEntryBasicBlock() != uniqueSuccessor->getEntryBasicBlock()) {
+                    continue;
+                }
+            }
+
+            loop->setRegionKind(description.kind);
+            loop->setLoopCondition(description.condition);
+            loop->setExitBasicBlock(description.exitNode->getEntryBasicBlock());
             break;
         }
     }
@@ -606,8 +634,8 @@ Region *StructureAnalyzer::insertSubregion(Region *region, std::unique_ptr<Regio
         edge->setTail(subregion.get());
     }
     foreach (Edge *edge, duplicateEdges) {
-        edge->setTail(0);
-        edge->setHead(0);
+        edge->setTail(nullptr);
+        edge->setHead(nullptr);
     }
 
     return graph_.addNode(std::move(subregion));

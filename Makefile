@@ -1,5 +1,6 @@
 SRC_DIR		= $(CURDIR)/src
-BUILD_DIR	= $(CURDIR)/build
+BUILD_DIR	!= echo /tmp/snowman.`echo $(CURDIR) | sha1sum | awk '{print $$1}'`
+BUILD_DIR_LINK	= $(CURDIR)/build
 DECOMPILER	= $(BUILD_DIR)/nocode/nocode
 
 .PHONY: all
@@ -9,8 +10,12 @@ all: tags build
 build: $(BUILD_DIR)/build.ninja
 	cmake --build $(BUILD_DIR)
 
-$(BUILD_DIR)/build.ninja:
-	mkdir -p $(BUILD_DIR) && cd $(BUILD_DIR) && cmake -G Ninja $(SRC_DIR)
+$(BUILD_DIR) $(BUILD_DIR_LINK):
+	mkdir -m 700 $(BUILD_DIR)
+	ln -s $(BUILD_DIR) $(BUILD_DIR_LINK)
+
+$(BUILD_DIR)/build.ninja: $(BUILD_DIR)
+	cd $(BUILD_DIR) && cmake -G Ninja $(SRC_DIR)
 
 .PHONY: test
 test: build
@@ -36,4 +41,4 @@ clean:
 
 .PHONY:
 distclean: clean
-	rm -rf $(BUILD_DIR) doxydoc gitstats
+	rm -rf $(BUILD_DIR) $(BUILD_DIR_LINK) doxydoc gitstats

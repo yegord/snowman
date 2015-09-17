@@ -25,6 +25,7 @@
 
 #include <nc/config.h>
 
+#include <boost/optional.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 
@@ -47,6 +48,7 @@ namespace ir {
 
 class BinaryOperator;
 class BasicBlock;
+class CFG;
 class Dominators;
 class Jump;
 class JumpTarget;
@@ -65,7 +67,6 @@ namespace dflow {
 
 namespace vars {
     class Variable;
-    class Variables;
 }
 
 namespace liveness {
@@ -80,19 +81,20 @@ class SwitchContext;
  * Generator of function definitions.
  */
 class DefinitionGenerator: public DeclarationGenerator {
-    const Function *function_; ///< Function, whose code is being generated.
-    const dflow::Dataflow &dataflow_; ///< Dataflow information.
-    const cflow::Graph &graph_; ///< Reduced control-flow graph.
-    const liveness::Liveness &liveness_; ///< Liveness information.
-    std::unique_ptr<dflow::Uses> uses_; ///< Information about which term is used by which term.
-    std::unique_ptr<Dominators> dominators_; ///< Dominator sets for the function.
+    const Function *function_;
+    const dflow::Dataflow &dataflow_;
+    const cflow::Graph &graph_;
+    const liveness::Liveness &liveness_;
+    std::unique_ptr<dflow::Uses> uses_;
+    std::unique_ptr<CFG> cfg_;
+    std::unique_ptr<Dominators> dominators_;
+    boost::unordered_set<const Statement *> hookStatements_;
 
-    likec::FunctionDefinition *definition_; ///< Function's definition.
+    likec::FunctionDefinition *definition_;
 
-    boost::unordered_map<const ir::vars::Variable *, likec::VariableDeclaration *> variableDeclarations_; ///< Local variables of current function definition.
-    boost::unordered_map<const BasicBlock *, likec::LabelDeclaration *> labels_; ///< Labels inside the function.
-    boost::unordered_set<const Statement *> invisibleStatements_; ///< Statements that must be generate no code.
-    mutable boost::unordered_map<const Term *, bool> write2isSubstitutable_;
+    boost::unordered_map<const ir::vars::Variable *, likec::VariableDeclaration *> variableDeclarations_;
+    boost::unordered_map<const BasicBlock *, likec::LabelDeclaration *> labels_;
+    boost::unordered_map<const Term *, boost::optional<bool>> isSubstituted_;
 
 public:
     /**
@@ -304,62 +306,37 @@ private:
     std::unique_ptr<likec::Expression> makeVariableAccess(const Term *term);
 
     /**
+     * \param[in] read Valid pointer to a read term.
+     *
+     * \return Pointer to the term, code for which should be generated
+     *         instead of the code for this term, or nullptr if the
+     *         code for the argument term must be generated.
+     */
+    const Term *getSubstitute(const Term *read);
+
+    /**
      * \param[in] write Valid pointer to a write term.
      *
      * \return True iff the write->source() can be safely put
      *         in all the places where the value written by
      *         the write term is used.
      */
-    bool isSubstitutableWrite(const Term *write) const;
+    bool isSubstituted(const Term *write);
+
+    /**
+     * Actually computes what isSubstituted returns.
+     */
+    bool computeIsSubstituted(const Term *write);
 
     /**
      * \param[in] source Valid pointer to a read term.
-     * \param[in] destination Valid pointer to a read term.
+     * \param[in] destination Valid pointer to a statement in the same function.
      *
      * \return True iff the code generated for the source term
      *         can be put in place of the code for the destination
-     *         term without changing the semantics of the program.
+     *         statement without changing the semantics of the program.
      */
-    bool canBeMoved(const Term *source, const Term *destination) const;
-
-    /**
-     * \param[in] read Valid pointer to a read term.
-     *
-     * \return True iff instead of the expression for the read term
-     *         one can safely generate the expression for the definition
-     *         of the value read by this term.
-     */
-    bool isSubstitutableRead(const Term *read) const;
-
-    /**
-     * \param[in] write Valid pointer to a write term.
-     * \param[in] read Valid pointer to a read term.
-     *
-     * \return True if the write dominates the read, false otherwise.
-     */
-    bool isDominating(const Term *write, const Term *read) const;
-
-    /**
-     * \param[in] read Valid pointer to a read term.
-     *
-     * \return A valid pointer to the term being the only term
-     *         defining what the read term reads. If there is
-     *         more than one such term or no such term, returns
-     *         nullptr.
-     */
-    const Term *getTheOnlyDefinition(const Term *read) const;
-
-    /**
-     * Computes the statements for which no code must be generated.
-     * They are the statements to which the clones of argument and
-     * return value statements belong.
-     */
-    void computeInvisibleStatements();
-
-    /**
-     * Computes which terms can be substituted instead of which ones.
-     */
-    void computeSubstitutions();
+    bool canBeMoved(const Term *term, const Statement *destination);
 };
 
 } // namespace cgen

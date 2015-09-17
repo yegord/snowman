@@ -114,6 +114,8 @@ set(SOURCES
     ir/cgen/NameGenerator.cpp
     ir/cgen/NameGenerator.h
     ir/cgen/SwitchContext.h
+    ir/cgen/Utils.cpp
+    ir/cgen/Utils.h
     ir/dflow/Dataflow.cpp
     ir/dflow/Dataflow.h
     ir/dflow/DataflowAnalyzer.cpp

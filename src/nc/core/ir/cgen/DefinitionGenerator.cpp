@@ -25,7 +25,6 @@
 #include "DefinitionGenerator.h"
 
 #include <nc/common/Foreach.h>
-#include <nc/common/Memoization.h>
 #include <nc/common/Range.h>
 #include <nc/common/Unreachable.h>
 #include <nc/common/make_unique.h>
@@ -88,6 +87,7 @@
 #include <nc/core/likec/While.h>
 
 #include "SwitchContext.h"
+#include "Utils.h"
 
 namespace nc {
 namespace core {
@@ -101,7 +101,9 @@ DefinitionGenerator::DefinitionGenerator(CodeGenerator &parent, const Function *
     graph_(*parent.graphs().at(function)),
     liveness_(*parent.livenesses().at(function)),
     uses_(std::make_unique<dflow::Uses>(dataflow_)),
-    dominators_(std::make_unique<Dominators>(CFG(function->basicBlocks()), canceled)),
+    cfg_(std::make_unique<CFG>(function->basicBlocks())),
+    dominators_(std::make_unique<Dominators>(*cfg_, canceled)),
+    hookStatements_(getHookStatements(function, dataflow_, parent.hooks())),
     definition_(nullptr)
 {
     assert(function != nullptr);
@@ -148,8 +150,6 @@ std::unique_ptr<likec::FunctionDefinition> DefinitionGenerator::createDefinition
             }
         }
     }
-
-    computeInvisibleStatements();
 
     SwitchContext switchContext;
     makeStatements(graph_.root(), definition()->block().get(), nullptr, nullptr, nullptr, switchContext);
@@ -314,10 +314,8 @@ void DefinitionGenerator::makeStatements(const cflow::Node *node, likec::Block *
 
             addLabels(region->entry()->getEntryBasicBlock(), block, switchContext);
 
-            cflow::Node *bodyEntry = region->entry()->uniqueSuccessor();
-
             auto condition = makeExpression(region->entry(), nullptr,
-                bodyEntry ? bodyEntry->getEntryBasicBlock() : region->entry()->getEntryBasicBlock(),
+                region->entry()->uniqueSuccessor()->getEntryBasicBlock(),
                 region->exitBasicBlock(), switchContext);
 
             cflow::Dfs dfs(region);
@@ -593,7 +591,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeExpression(const cfl
 std::unique_ptr<likec::Statement> DefinitionGenerator::makeStatement(const Statement *statement, const BasicBlock *nextBB, const BasicBlock *breakBB, const BasicBlock *continueBB) {
     assert(statement);
 
-    if (nc::contains(invisibleStatements_, statement)) {
+    if (nc::contains(hookStatements_, statement)) {
         return nullptr;
     }
 
@@ -638,7 +636,7 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
                 return nullptr;
             }
 
-            if (isSubstitutableWrite(assignment->left())) {
+            if (isSubstituted(assignment->left())) {
                 return nullptr;
             }
 
@@ -810,12 +808,14 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::doMakeExpression(const T
     }
 #endif
 
-    if (parent().variables().getVariable(term)) {
-        if (term->isRead() && isSubstitutableRead(term)) {
-            return makeExpression(getTheOnlyDefinition(term)->source());
-        } else {
-            return makeVariableAccess(term);
+    if (term->isRead()) {
+        if (const Term *substitute = getSubstitute(term)) {
+            return makeExpression(substitute);
         }
+    }
+
+    if (parent().variables().getVariable(term)) {
+        return makeVariableAccess(term);
     }
 
     switch (term->kind()) {
@@ -1112,226 +1112,169 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeVariableAccess(const
     }
 }
 
-void DefinitionGenerator::computeInvisibleStatements() {
-    if (auto hook = parent().hooks().getEntryHook(function_)) {
-        foreach (const auto &termAndClone, hook->argumentTerms()) {
-            invisibleStatements_.insert(termAndClone.second->statement());
-        }
-    }
+const Term *DefinitionGenerator::getSubstitute(const Term *read) {
+    assert(read != nullptr);
+    assert(read->isRead());
+    assert(liveness_.isLive(read));
 
-    foreach (auto basicBlock, function_->basicBlocks()) {
-        foreach (auto statement, basicBlock->statements()) {
-            if (auto call = statement->asCall()) {
-                if (auto hook = parent().hooks().getCallHook(call)) {
-                    foreach (const auto &termAndClone, hook->argumentTerms()) {
-                        invisibleStatements_.insert(termAndClone.second->statement());
-                    }
-                    foreach (const auto &termAndClone, hook->returnValueTerms()) {
-                        invisibleStatements_.insert(termAndClone.second->statement());
-                    }
-                }
-            } else if (auto jump = statement->asJump()) {
-                if (dflow::isReturn(jump, dataflow_)) {
-                    if (auto hook = parent().hooks().getReturnHook(jump)) {
-                        foreach (const auto &termAndClone, hook->returnValueTerms()) {
-                            invisibleStatements_.insert(termAndClone.second->statement());
-                        }
-                    }
-                }
-            }
+    if (auto write = getTheOnlyDefinition(read, dataflow_)) {
+        if (isSubstituted(write)) {
+            return write->source();
         }
     }
+    return nullptr;
 }
 
-bool DefinitionGenerator::isSubstitutableWrite(const Term *write) const {
+bool DefinitionGenerator::isSubstituted(const Term *write) {
     assert(write != nullptr);
     assert(write->isWrite());
-    assert(liveness_.isLive(write) && "We should not care about dead writes.");
+    assert(liveness_.isLive(write));
 
-    return nc::memoize(write2isSubstitutable_, write, [&]() -> bool {
-        auto source = write->source();
-        if (!source) {
-            return false;
+    auto i = isSubstituted_.find(write);
+    if (i != isSubstituted_.end()) {
+        /* The result is being computed? */
+        if (i->second == boost::none) {
+            /* Cyclic dependency. */
+            i->second = false;
         }
+        return *i->second;
+    }
 
-        if (nc::contains(invisibleStatements_, write->statement())) {
-            return false;
-        }
+    /* Mark the result as being computed. */
+    isSubstituted_.emplace_hint(i, std::make_pair(write, boost::none));
 
-        const auto &memoryLocation = dataflow_.getMemoryLocation(write);
-        if (!memoryLocation) {
-            return false;
-        }
+    auto result = computeIsSubstituted(write);
 
-        if (!parent().variables().getVariable(write)->isLocal()) {
-            return false;
-        }
+    auto &cached = isSubstituted_[write];
+    if (!cached) {
+        cached = result;
+    }
 
-        std::size_t nuses = 0;
-
-        foreach (const auto &use, uses_->getUses(write)) {
-            auto destination = use.term();
-
-            if (liveness_.isLive(destination)) {
-                if (dataflow_.getMemoryLocation(destination) != memoryLocation) {
-                    return false;
-                }
-
-                auto theOnlyDefinition = getTheOnlyDefinition(destination);
-                if (!theOnlyDefinition) {
-                    return false;
-                }
-                assert(theOnlyDefinition == write);
-
-                if (!isDominating(write, destination)) {
-                    return false;
-                }
-
-                if (!canBeMoved(source, destination)) {
-                    return false;
-                }
-
-                ++nuses;
-            }
-        }
-
-        assert(nuses >= 1 && "Live write must have at least one live read.");
-
-        if (nuses > 1 && (source->kind() == Term::UNARY_OPERATOR || source->kind() == Term::BINARY_OPERATOR)) {
-            /* We do not want to substitute complex expressions multiple times. */
-            return false;
-        }
-
-        return true;
-    });
+    return result;
 }
 
-bool DefinitionGenerator::canBeMoved(const Term *source, const Term *destination) const {
-    assert(source != nullptr);
-    assert(source->isRead());
-    assert(liveness_.isLive(source) && "We should not care about dead reads.");
+bool DefinitionGenerator::computeIsSubstituted(const Term *write) {
+    auto source = write->source();
+    if (!source) {
+        return false;
+    }
+
+    if (nc::contains(hookStatements_, write->statement())) {
+        return false;
+    }
+
+    const auto &memoryLocation = dataflow_.getMemoryLocation(write);
+    if (!memoryLocation) {
+        return false;
+    }
+
+    if (!parent().variables().getVariable(write)->isLocal()) {
+        return false;
+    }
+
+    std::size_t nuses = 0;
+
+    foreach (const auto &use, uses_->getUses(write)) {
+        auto read = use.term();
+
+        if (liveness_.isLive(read)) {
+            if (dataflow_.getMemoryLocation(read) != memoryLocation) {
+                return false;
+            }
+
+            auto theOnlyDefinition = getTheOnlyDefinition(read, dataflow_);
+            if (!theOnlyDefinition) {
+                return false;
+            }
+            assert(theOnlyDefinition == write);
+
+            if (!isDominating(write->statement(), read->statement(), *dominators_)) {
+                return false;
+            }
+
+            if (!canBeMoved(source, read->statement())) {
+                return false;
+            }
+
+            ++nuses;
+        }
+    }
+
+    assert(nuses >= 1 && "Live write must have at least one live read.");
+
+    if (nuses > 1 && (source->kind() == Term::UNARY_OPERATOR || source->kind() == Term::BINARY_OPERATOR)) {
+        /* We do not want to substitute complex expressions multiple times. */
+        return false;
+    }
+
+    return true;
+}
+
+bool DefinitionGenerator::canBeMoved(const Term *term, const Statement *destination) {
+    assert(term != nullptr);
+    assert(term->isRead());
     assert(destination != nullptr);
-    assert(destination->isRead());
-    assert(liveness_.isLive(destination) && "We should not care about dead reads.");
+    assert(liveness_.isLive(term));
 
 #ifdef NC_PREFER_CONSTANTS_TO_EXPRESSIONS
-    if (dataflow_.getValue(source)->abstractValue().isConcrete()) {
+    if (dataflow_.getValue(term)->abstractValue().isConcrete()) {
         return true;
     }
 #endif
 
-    switch (source->kind()) {
+    if (auto substitute = getSubstitute(term)) {
+        return canBeMoved(substitute, destination);
+    }
+
+    switch (term->kind()) {
         case Term::INT_CONST:
         case Term::INTRINSIC: {
             return true;
         }
         case Term::MEMORY_LOCATION_ACCESS:
         case Term::DEREFERENCE: {
-            /* This must be a local variable. */
-            auto variable = parent().variables().getVariable(source);
-            if (!variable || !variable->isLocal()) {
-                return false;
+            if (auto variable = parent().variables().getVariable(term)) {
+                /*
+                 * This assumes that our dataflow analysis has successfully
+                 * detected all accesses to the local variable, which obviously
+                 * cannot always be the case.
+                 */
+                return variable->isLocal() &&
+                     allOfStatementsBetween(
+                        term->statement(), destination, *cfg_,
+                        [&](const Statement *statement) -> bool {
+                            auto term = getWrittenTerm(statement);
+                            return !term || parent().variables().getVariable(term) != variable;
+                        }) == true;
             }
 
-            if (source->statement()->basicBlock() == destination->statement()->basicBlock()) {
-                /* There must be no writes to source's variable in between. */
-
-                auto begin = source->statement()->basicBlock()->statements().get_iterator(source->statement());
-                auto end = destination->statement()->basicBlock()->statements().get_iterator(destination->statement());
-
-                return std::find_if(begin, end, [&](const Statement *statement) -> bool {
-                    if (auto assignment = statement->asAssignment()) {
-                        return parent().variables().getVariable(assignment->left()) == variable;
-                    } else if (auto touch = statement->asTouch()) {
-                        return touch->term()->isWrite() && parent().variables().getVariable(touch->term()) == variable;
-                    }
-                    return false;
-                }) == end;
-            } else {
-                /* All definitions must dominate all uses. */
-                foreach (const auto &def, variable->termsAndLocations()) {
-                    if (def.term->isWrite()) {
-                        foreach (const auto &use, variable->termsAndLocations()) {
-                            if (use.term->isRead()) {
-                                if (!isDominating(def.term, use.term)) {
-                                    return false;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return true;
+            Domain domain = *getDomain(term);
+            return allOfStatementsBetween(
+                term->statement(), destination, *cfg_,
+                [&](const Statement *statement) -> bool {
+                    auto term = getWrittenTerm(statement);
+                    return !term || getDomain(term) != domain;
+                }) == true;
         }
         case Term::UNARY_OPERATOR: {
-            auto unary = source->asUnaryOperator();
+            auto unary = term->asUnaryOperator();
             return canBeMoved(unary->operand(), destination);
         }
         case Term::BINARY_OPERATOR: {
-            auto binary = source->asBinaryOperator();
-            return canBeMoved(binary->left(), destination) && canBeMoved(binary->right(), destination);
+            auto binary = term->asBinaryOperator();
+            return canBeMoved(binary->left(), destination) &&
+                   canBeMoved(binary->right(), destination);
         }
         case Term::CHOICE: {
-            auto choice = source->asChoice();
+            auto choice = term->asChoice();
             if (!dataflow_.getDefinitions(choice->preferredTerm()).empty()) {
                 return canBeMoved(choice->preferredTerm(), destination);
             } else {
                 return canBeMoved(choice->defaultTerm(), destination);
             }
         }
-        default: {
-            unreachable();
-        }
     }
-}
-
-bool DefinitionGenerator::isSubstitutableRead(const Term *read) const {
-    assert(read != nullptr);
-    assert(read->isRead());
-    assert(liveness_.isLive(read) && "We should not care about dead reads.");
-
-    auto write = getTheOnlyDefinition(read);
-    return write && isSubstitutableWrite(write);
-}
-
-const Term *DefinitionGenerator::getTheOnlyDefinition(const Term *read) const {
-    assert(read != nullptr);
-    assert(read->isRead());
-
-    const auto &definitions = dataflow_.getDefinitions(read);
-
-    if (definitions.chunks().size() == 1 &&
-        definitions.chunks().front().definitions().size() == 1)
-    {
-        return definitions.chunks().front().definitions().front();
-    }
-    return nullptr;
-}
-
-bool DefinitionGenerator::isDominating(const Term *write, const Term *read) const {
-    assert(write != nullptr);
-    assert(write->isWrite());
-    assert(read != nullptr);
-    assert(read->isRead());
-
-    if (write->statement()->basicBlock() == read->statement()->basicBlock()) {
-        if (write->statement()->instruction() && read->statement()->instruction() &&
-            write->statement()->instruction() != read->statement()->instruction())
-        {
-            return write->statement()->instruction()->addr() < read->statement()->instruction()->addr();
-        } else {
-            const auto &statements = read->statement()->basicBlock()->statements();
-            assert(nc::contains(statements, write->statement()));
-            assert(nc::contains(statements, read->statement()));
-            return std::find(
-                std::find(statements.begin(), statements.end(), write->statement()),
-                statements.end(),
-                read->statement()) != statements.end();
-        }
-    } else {
-        return dominators_->isDominating(write->statement()->basicBlock(), read->statement()->basicBlock());
-    }
+    unreachable();
 }
 
 } // namespace cgen
