@@ -148,10 +148,10 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_ABS: {
-            MipsExpressionFactoryCallback negative(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback positive(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback negative(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback positive(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             _[
-                jump((signed_(operand(1)) < signed_(constant(0))),
+                jump((signed_(operand(1)) < constant(0)),
                      (negative[operand(0) ^= -(operand(1)), jump(directSuccessor())]).basicBlock(),
                      (positive[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock())
             ];
@@ -341,13 +341,13 @@ class MipsInstructionAnalyzerImpl {
             auto offset = (ea & constant(3));
             auto memval = *(ea & constant(-4));
 
-            MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
 #if 0
             uint32
             CPU::lwl(uint32 regval, uint32 memval, uint8 offset) {
@@ -426,13 +426,13 @@ class MipsInstructionAnalyzerImpl {
             auto offset = (ea & constant(3));
             auto memval = *(ea & constant(-4));
 
-            MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
 
 #if 0
             uint32
@@ -530,13 +530,13 @@ class MipsInstructionAnalyzerImpl {
             //auto memval = *(ea & constant(-4));
             auto memval = operand(0);
 
-            MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
 #if 0
             uint32
             CPU::swl(uint32 regval, uint32 memval, uint8 offset) {
@@ -614,13 +614,13 @@ class MipsInstructionAnalyzerImpl {
             //auto memval = *(ea & constant(-4));
             auto memval = operand(0);
 
-            MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), instruction);
-            MipsExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), instruction);
+            MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            MipsExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
 
 #if 0
             uint32
@@ -795,7 +795,7 @@ class MipsInstructionAnalyzerImpl {
             ];
             break;
         }
-#if 0
+#if 0 /* See below */
         case MIPS_INS_MAD: {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
