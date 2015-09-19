@@ -67,7 +67,6 @@ NC_DEFINE_REGISTER_EXPRESSION(X86Registers, flags)
 NC_DEFINE_REGISTER_EXPRESSION(X86Registers, eflags)
 NC_DEFINE_REGISTER_EXPRESSION(X86Registers, rflags)
 
-NC_DEFINE_REGISTER_EXPRESSION(X86Registers, pseudo_flags)
 NC_DEFINE_REGISTER_EXPRESSION(X86Registers, less)
 NC_DEFINE_REGISTER_EXPRESSION(X86Registers, less_or_equal)
 NC_DEFINE_REGISTER_EXPRESSION(X86Registers, below_or_equal)
@@ -142,7 +141,9 @@ public:
                     sf ^= signed_(operand(0)) < constant(0),
                     of ^= intrinsic(),
                     af ^= intrinsic(),
-                    kill(pseudo_flags)
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
@@ -155,7 +156,9 @@ public:
                     sf ^= signed_(operand(0)) < constant(0),
                     of ^= intrinsic(),
                     af ^= intrinsic(),
-                    kill(pseudo_flags)
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
@@ -173,7 +176,9 @@ public:
                     sf ^= intrinsic(),
                     of ^= constant(0),
                     af ^= undefined(),
-                    kill(pseudo_flags)
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
@@ -189,7 +194,9 @@ public:
                     zf ^= undefined(),
                     af ^= undefined(),
                     pf ^= undefined(),
-                    kill(pseudo_flags)
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
@@ -373,7 +380,9 @@ public:
                     sf ^= intrinsic(),
                     of ^= intrinsic(),
                     af ^= intrinsic(),
-                    kill(pseudo_flags),
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf,
 
                     jump(zf, then.basicBlock(), directSuccessor())
                 ];
@@ -406,7 +415,9 @@ public:
                     sf ^= signed_(operand(0)) < constant(0),
                     of ^= intrinsic(),
                     af ^= intrinsic(),
-                    kill(pseudo_flags)
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
@@ -553,7 +564,10 @@ public:
                     sf ^= undefined(),
                     zf ^= undefined(),
                     af ^= undefined(),
-                    pf ^= undefined()
+                    pf ^= undefined(),
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
@@ -565,12 +579,14 @@ public:
                     sf ^= signed_(operand(0)) < constant(0),
                     of ^= intrinsic(),
                     af ^= intrinsic(),
-                    kill(pseudo_flags)
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
             case UD_Ija: {
-                _[jump(~choice(below_or_equal, cf | zf), operand(0), directSuccessor())];
+                _[jump(~below_or_equal, operand(0), directSuccessor())];
                 break;
             }
             case UD_Ijae: {
@@ -582,7 +598,7 @@ public:
                 break;
             }
             case UD_Ijbe: {
-                _[jump(choice(below_or_equal, cf | zf), operand(0), directSuccessor())];
+                _[jump(below_or_equal, operand(0), directSuccessor())];
                 break;
             }
             case UD_Ijcxz: {
@@ -602,19 +618,19 @@ public:
                 break;
             }
             case UD_Ijg: {
-                _[jump(~choice(less_or_equal, zf | ~(sf == of)), operand(0), directSuccessor())];
+                _[jump(~less_or_equal, operand(0), directSuccessor())];
                 break;
             }
             case UD_Ijge: {
-                _[jump(~choice(less, ~(sf == of)), operand(0), directSuccessor())];
+                _[jump(~less, operand(0), directSuccessor())];
                 break;
             }
             case UD_Ijl: {
-                _[jump(choice(less, ~(sf == of)), operand(0), directSuccessor())];
+                _[jump(less, operand(0), directSuccessor())];
                 break;
             }
             case UD_Ijle: {
-                _[jump(choice(less_or_equal, zf | ~(sf == of)), operand(0), directSuccessor())];
+                _[jump(less_or_equal, operand(0), directSuccessor())];
                 break;
             }
             case UD_Ijnz: {
@@ -657,23 +673,23 @@ public:
 
                 switch (ud_obj_.mnemonic) {
                     case UD_Icmova:
-                        _[jump(~choice(below_or_equal, cf | zf), then.basicBlock(), directSuccessor())]; break;
+                        _[jump(~below_or_equal, then.basicBlock(), directSuccessor())]; break;
                     case UD_Icmovae:
                         _[jump(~cf, then.basicBlock(), directSuccessor())]; break;
                     case UD_Icmovb:
                         _[jump(cf, then.basicBlock(), directSuccessor())]; break;
                     case UD_Icmovbe:
-                        _[jump(choice(below_or_equal, cf | zf), then.basicBlock(), directSuccessor())]; break;
+                        _[jump(below_or_equal, then.basicBlock(), directSuccessor())]; break;
                     case UD_Icmovz:
                         _[jump(zf, then.basicBlock(), directSuccessor())]; break;
                     case UD_Icmovg:
-                        _[jump(~choice(less_or_equal, zf | ~(sf == of)), then.basicBlock(), directSuccessor())]; break;
+                        _[jump(~less_or_equal, then.basicBlock(), directSuccessor())]; break;
                     case UD_Icmovge:
-                        _[jump(~choice(less, ~(sf == of)), then.basicBlock(), directSuccessor())]; break;
+                        _[jump(~less, then.basicBlock(), directSuccessor())]; break;
                     case UD_Icmovl:
-                        _[jump(choice(less, ~(sf == of)), then.basicBlock(), directSuccessor())]; break;
+                        _[jump(less, then.basicBlock(), directSuccessor())]; break;
                     case UD_Icmovle:
-                        _[jump(choice(less_or_equal, zf | ~(sf == of)), then.basicBlock(), directSuccessor())]; break;
+                        _[jump(less_or_equal, then.basicBlock(), directSuccessor())]; break;
                     case UD_Icmovnz:
                         _[jump(~zf, then.basicBlock(), directSuccessor())]; break;
                     case UD_Icmovno:
@@ -786,7 +802,9 @@ public:
                     sf ^= intrinsic(),
                     of ^= intrinsic(),
                     af ^= intrinsic(),
-                    kill(pseudo_flags)
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
@@ -811,7 +829,9 @@ public:
                     sf ^= intrinsic(),
                     of ^= constant(0),
                     af ^= undefined(),
-                    kill(pseudo_flags)
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
@@ -918,7 +938,10 @@ public:
                     cf ^= intrinsic(),
                     sf ^= undefined(),
                     zf ^= operand(0) == constant(0),
-                    pf ^= intrinsic()
+                    pf ^= intrinsic(),
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
@@ -933,7 +956,10 @@ public:
                     cf ^= intrinsic(),
                     sf ^= undefined(),
                     zf ^= operand(0) == constant(0),
-                    pf ^= intrinsic()
+                    pf ^= intrinsic(),
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
@@ -955,7 +981,7 @@ public:
                 break;
             }
             case UD_Iseta: {
-                _[operand(0) ^= zero_extend(~choice(below_or_equal, cf | zf))];
+                _[operand(0) ^= zero_extend(~below_or_equal)];
                 break;
             }
             case UD_Isetnb: {
@@ -967,7 +993,7 @@ public:
                 break;
             }
             case UD_Isetbe: {
-                _[operand(0) ^= zero_extend(choice(below_or_equal, cf | zf))];
+                _[operand(0) ^= zero_extend(below_or_equal)];
                 break;
             }
             case UD_Isetz: {
@@ -975,19 +1001,19 @@ public:
                 break;
             }
             case UD_Isetg: {
-                _[operand(0) ^= zero_extend(~choice(less_or_equal, zf & ~(sf == of)))];
+                _[operand(0) ^= zero_extend(~less_or_equal)];
                 break;
             }
             case UD_Isetge: {
-                _[operand(0) ^= zero_extend(~choice(less, ~(sf == of)))];
+                _[operand(0) ^= zero_extend(~less)];
                 break;
             }
             case UD_Isetl: {
-                _[operand(0) ^= zero_extend(choice(less, ~(sf == of)))];
+                _[operand(0) ^= zero_extend(less)];
                 break;
             }
             case UD_Isetle: {
-                _[operand(0) ^= zero_extend(choice(less_or_equal, zf | ~(sf == of)))];
+                _[operand(0) ^= zero_extend(less_or_equal)];
                 break;
             }
             case UD_Isetnz: {
@@ -1029,7 +1055,10 @@ public:
                     cf ^= intrinsic(),
                     sf ^= undefined(),
                     zf ^= operand(0) == constant(0),
-                    pf ^= intrinsic()
+                    pf ^= intrinsic(),
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
@@ -1073,7 +1102,9 @@ public:
                 _[
                     of ^= constant(0),
                     af ^= undefined(),
-                    kill(pseudo_flags)
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
@@ -1102,7 +1133,9 @@ public:
                     sf ^= intrinsic(),
                     of ^= constant(0),
                     af ^= undefined(),
-                    kill(pseudo_flags)
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }

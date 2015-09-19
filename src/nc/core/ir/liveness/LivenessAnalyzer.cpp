@@ -221,15 +221,6 @@ void LivenessAnalyzer::propagateLiveness(const Term *term) {
             makeLive(binary->right());
             break;
         }
-        case Term::CHOICE: {
-            const Choice *choice = term->asChoice();
-            if (!dataflow_.getDefinitions(choice->preferredTerm()).empty()) {
-                makeLive(choice->preferredTerm());
-            } else {
-                makeLive(choice->defaultTerm());
-            }
-            break;
-        }
         default:
             log_.warning(tr("%1: Unknown term kind: %2.").arg(Q_FUNC_INFO).arg(term->kind()));
             break;

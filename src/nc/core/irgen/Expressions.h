@@ -378,16 +378,6 @@ public:
 };
 
 /**
- * Class for choice expressions.
- */
-template<class L, class R>
-class ChoiceExpression: public BinaryExpressionBase<L, R, ChoiceExpression<L, R> > {
-    typedef BinaryExpressionBase<L, R, ChoiceExpression<L, R> > base_type;
-public:
-    ChoiceExpression(L left, R right): base_type(std::move(left), std::move(right)) {}
-};
-
-/**
  * Class for sign expressions.
  *
  * These expressions have no direct counterpart in IR. Instead, they are used
@@ -754,16 +744,6 @@ template<class L, class R>
 inline
 typename std::enable_if<
     IsExpression<L>::value && IsExpression<R>::value,
-    ChoiceExpression<L, R>
->::type
-choice(L first, R second) {
-    return ChoiceExpression<L, R>(std::move(first), std::move(second));
-}
-
-template<class L, class R>
-inline
-typename std::enable_if<
-    IsExpression<L>::value && IsExpression<R>::value,
     AssignmentStatement<L, R>
 >::type
 operator^=(L left, R right) {
@@ -991,15 +971,6 @@ protected:
     }
 
     /**
-     * \param expression               Choice expression to create term from.
-     * \returns                        Newly created term for the given expression.
-     */
-    template<class L, class R>
-    std::unique_ptr<ir::Term> doCreateTerm(ChoiceExpression<L, R> &expression) const {
-        return std::make_unique<ir::Choice>(createTerm(expression.left()), createTerm(expression.right()));
-    }
-
-    /**
      * \param expression               Null expression to create term from.
      * \returns                        Newly created term for the given expression.
      */
@@ -1017,17 +988,6 @@ protected:
         NC_UNUSED(statement);
 
         return std::make_unique<ir::Halt>();
-    }
-
-    /**
-     * \param statement                Kill statement to create IR statement from.
-     * \returns                        Newly created ir statement for the given statement.
-     */
-    template<class E>
-    std::unique_ptr<ir::Statement> doCreateStatement(KillStatement<E> &statement) const {
-        computeSize(statement.expression(), 0);
-
-        return std::make_unique<ir::Touch>(createTerm(statement.expression()), ir::Term::KILL);
     }
 
     /**

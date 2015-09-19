@@ -86,9 +86,6 @@ void Touch::print(QTextStream &out) const {
         case Term::WRITE:
             out << "write";
             break;
-        case Term::KILL:
-            out << "kill";
-            break;
         default:
             unreachable();
     }

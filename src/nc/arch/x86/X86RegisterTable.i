@@ -137,10 +137,8 @@ REG(vif,              VIF,              23, 19,  1, "Virtual interrupt flag (Pen
 REG(vip,              VIP,              23, 20,  1, "Virtual interrupt pending (Pentium+)")
 REG(id,               ID,               23, 21,  1, "Identification (Pentium+)")
 
-REG(pseudo_flags,     PSEUDO_FLAGS,     24,  0, 128, "")
 REG(less,             LESS,             24,  0,  1, "")
 REG(less_or_equal,    LESS_OR_EQUAL,    24,  1,  1, "")
-// below == cf
 REG(below_or_equal,   BELOW_OR_EQUAL,   24,  2,  1, "")
 
 REG(fpu_status_word,  FPU_STATUS_WORD,  25,  0, 16, "x87 FPU Status Word")

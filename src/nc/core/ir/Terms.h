@@ -313,52 +313,6 @@ protected:
     void doCallOnChildren(const std::function<void(Term *)> &fun) override;
 };
 
-/**
- * Special kind of binary operator which is equal to its first argument, if the latter
- * is defined, and equal to the second argument otherwise. Almost like a phi-function.
- */
-class Choice: public Term {
-    std::unique_ptr<Term> preferredTerm_; ///< Preferred term (used if defined).
-    std::unique_ptr<Term> defaultTerm_; ///< Default term (used if preferred term is not defined).
-
-public:
-    /**
-     * Class constructor.
-     *
-     * \param preferredTerm Preferred term (used if defined).
-     * \param defaultTerm Default term (used if preferred term is not defined).
-     *
-     * \note Both terms must have the same size.
-     */
-    Choice(std::unique_ptr<Term> preferredTerm, std::unique_ptr<Term> defaultTerm);
-
-    /**
-     * \return Preferred term.
-     */
-    Term *preferredTerm() { return preferredTerm_.get(); }
-
-    /**
-     * \return Preferred term.
-     */
-    const Term *preferredTerm() const { return preferredTerm_.get(); }
-
-    /**
-     * \return Default term.
-     */
-    Term *defaultTerm() { return defaultTerm_.get(); }
-
-    /**
-     * \return Default term.
-     */
-    const Term *defaultTerm() const { return defaultTerm_.get(); }
-
-    void print(QTextStream &out) const override;
-
-protected:
-    std::unique_ptr<Term> doClone() const override;
-    void doCallOnChildren(const std::function<void(Term *)> &fun) override;
-};
-
 /*
  * Term implementation follows.
  */
@@ -369,7 +323,6 @@ const MemoryLocationAccess *Term::asMemoryLocationAccess() const { return as<Mem
 const Dereference *Term::asDereference() const { return as<Dereference>(); }
 const UnaryOperator *Term::asUnaryOperator() const { return as<UnaryOperator>(); }
 const BinaryOperator *Term::asBinaryOperator() const { return as<BinaryOperator>(); }
-const Choice *Term::asChoice() const { return as<Choice>(); }
 
 }}} // namespace nc::core::ir
 

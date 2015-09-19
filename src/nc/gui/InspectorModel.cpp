@@ -252,13 +252,6 @@ void expand(InspectorItem *item, const core::ir::Term *term, const core::Context
             item->addChild(tr("right"), binary->right());
             break;
         }
-        case core::ir::Term::CHOICE: {
-            auto *choice = term->asChoice();
-            item->addComment(tr("Choice"));
-            item->addChild(tr("preferred term"), choice->preferredTerm());
-            item->addChild(tr("default term"), choice->defaultTerm());
-            break;
-        }
         default: {
             item->addChild(tr("kind = %1").arg(term->kind()));
             break;

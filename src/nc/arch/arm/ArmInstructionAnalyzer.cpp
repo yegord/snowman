@@ -41,7 +41,6 @@ NC_DEFINE_REGISTER_EXPRESSION(ArmRegisters, n)
 NC_DEFINE_REGISTER_EXPRESSION(ArmRegisters, c)
 NC_DEFINE_REGISTER_EXPRESSION(ArmRegisters, v)
 
-NC_DEFINE_REGISTER_EXPRESSION(ArmRegisters, pseudo_flags)
 NC_DEFINE_REGISTER_EXPRESSION(ArmRegisters, less)
 NC_DEFINE_REGISTER_EXPRESSION(ArmRegisters, less_or_equal)
 NC_DEFINE_REGISTER_EXPRESSION(ArmRegisters, below_or_equal)
@@ -135,22 +134,22 @@ private:
             _[jump(~v, bodyBasicBlock, directSuccessor)];
             break;
         case ARM_CC_HI:
-            _[jump(~choice(below_or_equal, ~c | z), bodyBasicBlock, directSuccessor)];
+            _[jump(~below_or_equal, bodyBasicBlock, directSuccessor)];
             break;
         case ARM_CC_LS:
-            _[jump(choice(below_or_equal, ~c | z), bodyBasicBlock, directSuccessor)];
+            _[jump( below_or_equal, bodyBasicBlock, directSuccessor)];
             break;
         case ARM_CC_GE:
-            _[jump(~choice(less, ~(n == v)), bodyBasicBlock, directSuccessor)];
+            _[jump(~less, bodyBasicBlock, directSuccessor)];
             break;
         case ARM_CC_LT:
-            _[jump(choice(less, ~(n == v)), bodyBasicBlock, directSuccessor)];
+            _[jump( less, bodyBasicBlock, directSuccessor)];
             break;
         case ARM_CC_GT:
-            _[jump(~choice(less_or_equal, z | ~(n == v)), bodyBasicBlock, directSuccessor)];
+            _[jump(~less_or_equal, bodyBasicBlock, directSuccessor)];
             break;
         case ARM_CC_LE:
-            _[jump(choice(less_or_equal, z | ~(n == v)), bodyBasicBlock, directSuccessor)];
+            _[jump( less_or_equal, bodyBasicBlock, directSuccessor)];
             break;
         default:
             unreachable();
@@ -180,7 +179,10 @@ private:
                         n ^= signed_(operand(0)) < constant(0),
                         z ^= operand(0) == constant(0),
                         c ^= intrinsic(),
-                        v ^= intrinsic()
+                        v ^= intrinsic(),
+                        less ^= ~(n == v),
+                        less_or_equal ^= less | z,
+                        below_or_equal ^= ~c | z
                     ];
                 }
             }
@@ -193,7 +195,10 @@ private:
                     _[
                         n ^= signed_(operand(0)) < constant(0),
                         z ^= operand(0) == constant(0),
-                        c ^= intrinsic()
+                        c ^= intrinsic(),
+                        less ^= ~(n == v),
+                        less_or_equal ^= less | z,
+                        below_or_equal ^= ~c | z
                     ];
                 }
             }
@@ -242,7 +247,10 @@ private:
                     _[
                         n ^= signed_(operand(0)) < constant(0),
                         z ^= operand(0) == constant(0),
-                        c ^= intrinsic()
+                        c ^= intrinsic(),
+                        less ^= ~(n == v),
+                        less_or_equal ^= less | z,
+                        below_or_equal ^= ~c | z
                     ];
                 }
             }
@@ -331,7 +339,10 @@ private:
                 _[
                     n ^= signed_(operand(0)) < constant(0),
                     z ^= operand(0) == constant(0),
-                    c ^= intrinsic()
+                    c ^= intrinsic(),
+                    less ^= ~(n == v),
+                    less_or_equal ^= less | z,
+                    below_or_equal ^= ~c | z
                 ];
             }
             break;
@@ -342,7 +353,10 @@ private:
                 _[
                     n ^= signed_(operand(0)) < constant(0),
                     z ^= operand(0) == constant(0),
-                    c ^= intrinsic()
+                    c ^= intrinsic(),
+                    less ^= ~(n == v),
+                    less_or_equal ^= less | z,
+                    below_or_equal ^= ~c | z
                 ];
             }
             break;
@@ -353,7 +367,10 @@ private:
                 _[
                     n ^= signed_(operand(0)) < constant(0),
                     z ^= operand(0) == constant(0),
-                    c ^= intrinsic()
+                    c ^= intrinsic(),
+                    less ^= ~(n == v),
+                    less_or_equal ^= less | z,
+                    below_or_equal ^= ~c | z
                 ];
             }
             break;
@@ -365,7 +382,10 @@ private:
                     _[
                         n ^= signed_(operand(0)) < constant(0),
                         z ^= operand(0) == constant(0),
-                        c ^= intrinsic()
+                        c ^= intrinsic(),
+                        less ^= ~(n == v),
+                        less_or_equal ^= less | z,
+                        below_or_equal ^= ~c | z
                     ];
                 }
             }
@@ -378,7 +398,10 @@ private:
                     _[
                         n ^= signed_(operand(0)) < constant(0),
                         z ^= operand(0) == constant(0),
-                        c ^= intrinsic()
+                        c ^= intrinsic(),
+                        less ^= ~(n == v),
+                        less_or_equal ^= less | z,
+                        below_or_equal ^= ~c | z
                     ];
                 }
             }
@@ -411,7 +434,10 @@ private:
                         n ^= signed_(operand(0)) < constant(0),
                         z ^= operand(0) == constant(0),
                         c ^= intrinsic(),
-                        v ^= intrinsic()
+                        v ^= intrinsic(),
+                        less ^= ~(n == v),
+                        less_or_equal ^= less | z,
+                        below_or_equal ^= ~c | z
                     ];
                 }
             }
@@ -465,7 +491,10 @@ private:
                         n ^= signed_(operand(0)) < constant(0),
                         z ^= operand(0) == constant(0),
                         c ^= intrinsic(),
-                        v ^= intrinsic()
+                        v ^= intrinsic(),
+                        less ^= ~(n == v),
+                        less_or_equal ^= less | z,
+                        below_or_equal ^= ~c | z
                     ];
                 }
             }
@@ -475,7 +504,10 @@ private:
             _[
                 n ^= signed_(operand(0) & operand(1)) < constant(0),
                 z ^= (operand(0) & operand(1)) == constant(0),
-                c ^= intrinsic()
+                c ^= intrinsic(),
+                less ^= ~(n == v),
+                less_or_equal ^= less | z,
+                below_or_equal ^= ~c | z
             ];
             break;
         }

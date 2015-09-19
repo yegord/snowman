@@ -188,9 +188,6 @@ void DataflowAnalyzer::execute(const Statement *statement, ReachingDefinitions &
                 case Term::WRITE:
                     handleWrite(touch->term(), computeMemoryLocation(touch->term(), definitions), definitions);
                     break;
-                case Term::KILL:
-                    handleKill(computeMemoryLocation(touch->term(), definitions), definitions);
-                    break;
                 default:
                     unreachable();
             }
@@ -265,20 +262,6 @@ Value *DataflowAnalyzer::computeValue(const Term *term, const ReachingDefinition
             return computeValue(term->asUnaryOperator(), definitions);
         case Term::BINARY_OPERATOR:
             return computeValue(term->asBinaryOperator(), definitions);
-        case Term::CHOICE: {
-            auto choice = term->asChoice();
-            auto value = dataflow().getValue(choice);
-            auto preferredValue = computeValue(choice->preferredTerm(), definitions);
-            auto defaultValue = computeValue(choice->defaultTerm(), definitions);
-
-            if (!dataflow().getDefinitions(choice->preferredTerm()).empty()) {
-                *value = *preferredValue;
-            } else {
-                *value = *defaultValue;
-            }
-
-            return value;
-        }
         default: {
             log_.warning(tr("%1: Unknown term kind: %2.").arg(Q_FUNC_INFO).arg(term->kind()));
             return dataflow().getValue(term);

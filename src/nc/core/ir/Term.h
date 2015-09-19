@@ -43,7 +43,6 @@ namespace ir {
 class Constant;
 class Intrinsic;
 class BinaryOperator;
-class Choice;
 class Dereference;
 class MemoryLocationAccess;
 class UnaryOperator;
@@ -67,7 +66,6 @@ public:
         DEREFERENCE, ///< Dereference.
         UNARY_OPERATOR, ///< Unary operator.
         BINARY_OPERATOR, ///< Binary operator.
-        CHOICE ///< Choice between two terms.
     };
 
     /**
@@ -76,7 +74,6 @@ public:
     enum AccessType {
         READ,      ///< Term is read.
         WRITE,     ///< Term is written.
-        KILL       ///< Term is killed.
     };
 
 private:
@@ -131,11 +128,6 @@ public:
     bool isWrite() const { return accessType() == WRITE; }
 
     /**
-     * \return True if term is used for killing, false otherwise.
-     */
-    bool isKill() const { return accessType() == KILL; }
-
-    /**
      * \return If the term stands in the left hand side of an assignment,
      *         returns the right hand size of this assignment. Otherwise,
      *         nullptr is returned.
@@ -175,7 +167,6 @@ public:
     inline const Dereference *asDereference() const;
     inline const UnaryOperator *asUnaryOperator() const;
     inline const BinaryOperator *asBinaryOperator() const;
-    inline const Choice *asChoice() const;
 
 protected:
     /**
@@ -212,6 +203,5 @@ NC_REGISTER_TERM_CLASS(nc::core::ir::MemoryLocationAccess, nc::core::ir::Term::M
 NC_REGISTER_TERM_CLASS(nc::core::ir::Dereference,          nc::core::ir::Term::DEREFERENCE)
 NC_REGISTER_TERM_CLASS(nc::core::ir::UnaryOperator,        nc::core::ir::Term::UNARY_OPERATOR)
 NC_REGISTER_TERM_CLASS(nc::core::ir::BinaryOperator,       nc::core::ir::Term::BINARY_OPERATOR)
-NC_REGISTER_TERM_CLASS(nc::core::ir::Choice,               nc::core::ir::Term::CHOICE)
 
 /* vim:set et sts=4 sw=4: */

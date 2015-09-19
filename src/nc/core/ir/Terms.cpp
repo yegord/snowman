@@ -236,27 +236,6 @@ void BinaryOperator::print(QTextStream &out) const {
     out << ' ' << *right() << ')';
 }
 
-Choice::Choice(std::unique_ptr<Term> preferredTerm, std::unique_ptr<Term> defaultTerm):
-    Term(CHOICE, preferredTerm->size()), preferredTerm_(std::move(preferredTerm)), defaultTerm_(std::move(defaultTerm))
-{
-    assert(preferredTerm_ != nullptr);
-    assert(defaultTerm_ != nullptr);
-    assert(preferredTerm_->size() == defaultTerm_->size());
-}
-
-std::unique_ptr<Term> Choice::doClone() const {
-    return std::make_unique<Choice>(preferredTerm()->clone(), defaultTerm()->clone());
-}
-
-void Choice::doCallOnChildren(const std::function<void(Term *)> &fun) {
-    fun(preferredTerm());
-    fun(defaultTerm());
-}
-
-void Choice::print(QTextStream &out) const {
-    out << "choice(" << *preferredTerm() << " over " << *defaultTerm() << ')';
-}
-
 } // namespace ir
 } // namespace core
 } // namespace nc

@@ -65,12 +65,6 @@ const Term *getFirstCopy(const Term *term, const Dataflow &dataflow) {
                 definitions.chunks().front().definitions().size() == 1)
             {
                 term = definitions.chunks().front().definitions().front();
-            } else if (auto choice = term->as<Choice>()) {
-                if (!dataflow.getDefinitions(choice->preferredTerm()).empty()) {
-                    term = choice->preferredTerm();
-                } else {
-                    term = choice->defaultTerm();
-                }
             } else {
                 break;
             }

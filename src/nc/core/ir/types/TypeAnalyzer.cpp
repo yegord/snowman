@@ -202,8 +202,6 @@ void TypeAnalyzer::analyze(const Term *term) {
         case Term::BINARY_OPERATOR:
             analyze(term->asBinaryOperator());
             break;
-        case Term::CHOICE:
-            break;
         default:
             unreachable();
             break;

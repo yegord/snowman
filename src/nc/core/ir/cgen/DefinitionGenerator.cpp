@@ -863,14 +863,6 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::doMakeExpression(const T
         case Term::BINARY_OPERATOR: {
             return doMakeExpression(term->asBinaryOperator());
         }
-        case Term::CHOICE: {
-            const Choice *choice = term->asChoice();
-            if (!dataflow_.getDefinitions(choice->preferredTerm()).empty()) {
-                return makeExpression(choice->preferredTerm());
-            } else {
-                return makeExpression(choice->defaultTerm());
-            }
-        }
         default: {
             unreachable();
             return nullptr;
@@ -1264,14 +1256,6 @@ bool DefinitionGenerator::canBeMoved(const Term *term, const Statement *destinat
             auto binary = term->asBinaryOperator();
             return canBeMoved(binary->left(), destination) &&
                    canBeMoved(binary->right(), destination);
-        }
-        case Term::CHOICE: {
-            auto choice = term->asChoice();
-            if (!dataflow_.getDefinitions(choice->preferredTerm()).empty()) {
-                return canBeMoved(choice->preferredTerm(), destination);
-            } else {
-                return canBeMoved(choice->defaultTerm(), destination);
-            }
         }
     }
     unreachable();

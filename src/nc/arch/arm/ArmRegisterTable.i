@@ -125,7 +125,6 @@ REG(q13,        Q13,        13, 128 * 13, 128, "")
 REG(q14,        Q14,        13, 128 * 14, 128, "")
 REG(q15,        Q15,        13, 128 * 15, 128, "")
 
-REG(pseudo_flags,     PSEUDO_FLAGS,     14,  0, 128, "")
 REG(less,             LESS,             14,  0,  1, "")
 REG(less_or_equal,    LESS_OR_EQUAL,    14,  1,  1, "")
 REG(below_or_equal,   BELOW_OR_EQUAL,   14,  2,  1, "")
