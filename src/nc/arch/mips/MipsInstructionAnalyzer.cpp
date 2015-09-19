@@ -916,11 +916,19 @@ class MipsInstructionAnalyzerImpl {
             auto taken = delayslotCallback(block)[
                              jump(operand(op_count - 1))
                          ];
-            _[
-                jump(~(operand(0) == operand(op_count - 2)),
-                     taken.basicBlock(),
-                     directSuccessorButOne())
-            ];
+			if(op_count == 2){ /* BNEZL */
+	            _[
+    	            jump(~(operand(0) == constant(0)),
+        	             taken.basicBlock(),
+            	         directSuccessorButOne())
+            	];
+			} else {
+	            _[
+    	            jump(~(operand(0) == operand(op_count - 2)),
+        	             taken.basicBlock(),
+            	         directSuccessorButOne())
+            	];
+			}
             break;
         }
         case MIPS_INS_BNE: {
