@@ -328,6 +328,7 @@ class MipsInstructionAnalyzerImpl {
             _[operand(0) ^= zero_extend(core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 6)))];
             break;
         }
+   		case MIPS_INS_LWC1: /* Fall-through - FPU */
         case MIPS_INS_LW: {
             auto operand0 = operand(0);
             _[operand0 ^= core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 32))];
@@ -517,6 +518,7 @@ class MipsInstructionAnalyzerImpl {
             _[core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 16)) ^= truncate(operand(0), 16)];
             break;
         }
+        case MIPS_INS_SWC1: /* Fall-through - FPU */
         case MIPS_INS_SW: {
             _[core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 32)) ^= operand(0)];
             break;
@@ -814,21 +816,33 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_MADD: {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
-            auto operand2 = operand(2);
-            _[
-                regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64)),
-                operand0 ^= regizter(MipsRegisters::lo())
-            ];
+            if (op_count == 3){
+            	auto operand2 = operand(2);
+            	_[
+                	regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (sign_extend(std::move(operand1), 64) * sign_extend(std::move(operand2), 64)),
+                	operand0 ^= regizter(MipsRegisters::lo())
+            	];
+            } else {
+            	_[
+                	regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
+            	];
+            }
             break;
         }
         case MIPS_INS_MADDU: {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
-            auto operand2 = operand(2);
-            _[
-                regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64)),
-                operand0 ^= regizter(MipsRegisters::lo())
-            ];
+           	if (op_count == 3){
+            	auto operand2 = operand(2);
+            	_[
+                	regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (zero_extend(std::move(operand1), 64) * zero_extend(std::move(operand2), 64)),
+                	operand0 ^= regizter(MipsRegisters::lo())
+            	];
+            } else {
+            	_[
+                	regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
+            	];
+           	}
             break;
         }
         case MIPS_INS_MSUB: {
@@ -847,18 +861,16 @@ class MipsInstructionAnalyzerImpl {
             ];
             break;
         }
-#if 0 /* Not correctly implemented in capstone. */
         case MIPS_INS_MUL: {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
             auto operand2 = operand(2);
             _[
-                regizter(MipsRegisters::hilo()) ^= (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64)),
+                regizter(MipsRegisters::hilo()) ^= (sign_extend(std::move(operand1), 64) * sign_extend(std::move(operand2), 64)),
                 operand0 ^= regizter(MipsRegisters::lo())
             ];
             break;
         }
-#endif
         case MIPS_INS_MULT: {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
