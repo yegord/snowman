@@ -1023,6 +1023,7 @@ class MipsInstructionAnalyzerImpl {
                      taken.basicBlock(),
                      directSuccessorButOne())
             ];
+        	break;
         }
         case MIPS_INS_BLTZ: {
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
