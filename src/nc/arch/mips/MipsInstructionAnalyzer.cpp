@@ -148,9 +148,6 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_ABS: {
-             auto move = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
-                           operand(0) ^= operand(1)
-            ];
             MipsExpressionFactoryCallback negative(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             MipsExpressionFactoryCallback positive(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             _[
@@ -158,7 +155,7 @@ class MipsInstructionAnalyzerImpl {
                      (negative[operand(0) ^= -(operand(1)), jump(directSuccessor())]).basicBlock(),
                      (positive[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock())
             ];
-            return move.basicBlock();
+            return MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
         }
         case MIPS_INS_ADD: /* Fall-through */
         case MIPS_INS_ADDI: {
@@ -222,26 +219,22 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_MOVN: {
-            auto move = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
-                           operand(0) ^= operand(1)
-                        ];
+             MipsExpressionFactoryCallback movn(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             _[
                 jump(operand(2),
-                     move.basicBlock(),
+                     (movn[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock(),
                      directSuccessor())
             ];
-            return move.basicBlock();
+            return MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
         }
         case MIPS_INS_MOVZ: {
-            auto move = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
-                            operand(0) ^= operand(1)
-                        ];
+            MipsExpressionFactoryCallback movz(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             _[
                 jump(operand(2),
                      directSuccessor(),
-                     move.basicBlock())
+                      (movz[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock())
             ];
-            return move.basicBlock();
+            return MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
         }
         case MIPS_INS_SEB: {
             _[operand(0) ^= sign_extend(operand(1, 8))];
@@ -344,9 +337,6 @@ class MipsInstructionAnalyzerImpl {
             auto offset = (ea & constant(3));
             auto memval = *(ea & constant(-4));
 
-            auto move = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
-                           operand(0) ^= operand(1)
-                        ];
             MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
@@ -423,8 +413,7 @@ class MipsInstructionAnalyzerImpl {
                 ];
                 //_[rt ^= ((memval & (constant(0xffffff00) << signed_(offset))) | ((unsigned_(rt) >> (constant(8) * offset)) & constant(0xffffffff)) >> (constant(4) - offset)))];
             }
-             return move.basicBlock();
-            //break;
+            return MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
         }
         case MIPS_INS_LWR: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
@@ -433,9 +422,6 @@ class MipsInstructionAnalyzerImpl {
             auto offset = (ea & constant(3));
             auto memval = *(ea & constant(-4));
 
-            auto move = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
-                           operand(0) ^= operand(1)
-                        ];
             MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
@@ -518,8 +504,7 @@ class MipsInstructionAnalyzerImpl {
                                                     directSuccessor())].basicBlock())].basicBlock())].basicBlock())
                 ];
             }
-             return move.basicBlock();
-            //break;
+            return MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
         }
         case MIPS_INS_SB: {
             _[core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 8)) ^= truncate(operand(0), 8)];
@@ -541,9 +526,6 @@ class MipsInstructionAnalyzerImpl {
             //auto memval = *(ea & constant(-4));
             auto memval = operand(0);
 
-            auto move = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
-                           operand(0) ^= operand(1)
-                        ];
             MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
@@ -619,8 +601,7 @@ class MipsInstructionAnalyzerImpl {
                                                     directSuccessor())].basicBlock())].basicBlock())].basicBlock())
                 ];
             }
-             return move.basicBlock();
-            //break;
+            return MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
         }
         case MIPS_INS_SWR: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
@@ -629,9 +610,6 @@ class MipsInstructionAnalyzerImpl {
             //auto memval = *(ea & constant(-4));
             auto memval = operand(0);
 
-            auto move = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction)[
-                           operand(0) ^= operand(1)
-                        ];
             MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
@@ -708,8 +686,7 @@ class MipsInstructionAnalyzerImpl {
                                                     directSuccessor())].basicBlock())].basicBlock())].basicBlock())
                 ];
             }
-             return move.basicBlock();
-            //break;
+            return MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
         }
 #if 0
         /* Kudos to hlide  */
