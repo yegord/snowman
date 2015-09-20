@@ -214,6 +214,7 @@ class MipsInstructionAnalyzerImpl {
             _[operand(0) ^= (operand(1) << constant(16))];
             break;
         }
+        case MIPS_INS_MOV: /* Fall-through - FPU */
         case MIPS_INS_MOVE: {
             _[operand(0) ^= operand(1)];
             break;
