@@ -324,6 +324,7 @@ class MipsInstructionAnalyzerImpl {
             _[operand(0) ^= zero_extend(core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 6)))];
             break;
         }
+   		case MIPS_INS_LDC1: /* Fall-through - FPU - double */
    		case MIPS_INS_LWC1: /* Fall-through - FPU */
         case MIPS_INS_LW: {
             auto operand0 = operand(0);
@@ -514,6 +515,7 @@ class MipsInstructionAnalyzerImpl {
             _[core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 16)) ^= truncate(operand(0), 16)];
             break;
         }
+   		case MIPS_INS_SDC1: /* Fall-through - FPU - double */
         case MIPS_INS_SWC1: /* Fall-through - FPU */
         case MIPS_INS_SW: {
             _[core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 32)) ^= operand(0)];
