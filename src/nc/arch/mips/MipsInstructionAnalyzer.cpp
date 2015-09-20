@@ -232,7 +232,7 @@ class MipsInstructionAnalyzerImpl {
             _[
                 jump(operand(2),
                      directSuccessor(),
-                      (movz[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock())
+                     (movz[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock())
             ];
             return MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
         }
@@ -1117,8 +1117,9 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_JALR:
         case MIPS_INS_JAL: {
             auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
-            auto taken = delayslotCallback(block);
-            taken[call(operand(0)), jump(directSuccessorButOne())];
+            auto taken = delayslotCallback(block)[
+            	call(operand(0)), jump(directSuccessorButOne())
+            ];
             _[jump(taken.basicBlock())];
             break;
         }
