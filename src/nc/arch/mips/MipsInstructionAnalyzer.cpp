@@ -274,7 +274,7 @@ class MipsInstructionAnalyzerImpl {
             _[operand(0) ^= zero_extend(unsigned_(operand(1)) < unsigned_(operand(2)))];
             break;
         }
-        case MIPS_INS_ROTR:	 /* Fall-through */
+        case MIPS_INS_ROTR:	/* Fall-through */
         case MIPS_INS_ROTRV: {
             auto operand1 = operand(1);
             auto operand2 = operand(2);
@@ -321,7 +321,7 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_LHU: {
-            _[operand(0) ^= zero_extend(core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 6)))];
+            _[operand(0) ^= zero_extend(core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 16)))];
             break;
         }
    		case MIPS_INS_LDC1: /* Fall-through - FPU - double */
