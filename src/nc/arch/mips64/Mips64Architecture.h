@@ -12,7 +12,7 @@ namespace arch {
 namespace mips64 {
 
 /**
- * 32-bit MIPS Architecture.
+ * 64-bit MIPS Architecture.
  */
 class Mips64Architecture: public nc::core::arch::Architecture {
     ByteOrder byteOrder_;
