@@ -44,7 +44,7 @@ o32CallingConvention::o32CallingConvention(const MipsArchitecture *architecture_
  
 	/* FP registers */
     addReturnValueLocation(MipsRegisters::f0()->memoryLocation());
-    addReturnValueLocation(MipsRegisters::f1()->memoryLocation());
+    addReturnValueLocation(MipsRegisters::f2()->memoryLocation());
     
     /* Regular registers */
     /*addNonVolatileRegisterLocation(MipsRegisters::s0()->memoryLocation());

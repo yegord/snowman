@@ -52,7 +52,7 @@ n32CallingConvention::n32CallingConvention(const Mips64Architecture *architectur
  
 	/* FP registers */
     addReturnValueLocation(Mips64Registers::f0()->memoryLocation());
-    addReturnValueLocation(Mips64Registers::f1()->memoryLocation());
+    addReturnValueLocation(Mips64Registers::f2()->memoryLocation());
     
     /* Regular registers */
     /*addNonVolatileRegisterLocation(Mips64Registers::s0()->memoryLocation());
