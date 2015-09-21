@@ -9,23 +9,23 @@
 
 namespace nc {
 namespace arch {
-namespace mips {
+namespace mips64 {
 
-class MipsArchitecture;
-class MipsInstructionAnalyzerImpl;
+class Mips64Architecture;
+class Mips64InstructionAnalyzerImpl;
 
-class MipsInstructionAnalyzer: public core::irgen::InstructionAnalyzer {
-    std::unique_ptr<MipsInstructionAnalyzerImpl> impl_;
+class Mips64InstructionAnalyzer: public core::irgen::InstructionAnalyzer {
+    std::unique_ptr<Mips64InstructionAnalyzerImpl> impl_;
 
 public:
-    MipsInstructionAnalyzer(const MipsArchitecture *architecture);
+    Mips64InstructionAnalyzer(const Mips64Architecture *architecture);
 
-    ~MipsInstructionAnalyzer();
+    ~Mips64InstructionAnalyzer();
 
 protected:
     virtual void doCreateStatements(const core::arch::Instruction *instruction, core::ir::Program *program) override;
 };
 
-}}} // namespace nc::arch::mips
+}}} // namespace nc::arch::mips64
 
 /* vim:set et sts=4 sw=4: */

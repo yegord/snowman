@@ -7,19 +7,19 @@
 
 #include <nc/core/arch/Registers.h>
 
-namespace nc { namespace arch { namespace mips {
+namespace nc { namespace arch { namespace mips64 {
 
 /**
  * Container class for MIPS registers.
  */
-class MipsRegisters: public core::arch::StaticRegisters<MipsRegisters> {
+class Mips64Registers: public core::arch::StaticRegisters<Mips64Registers> {
 public:
-    MipsRegisters();
+    Mips64Registers();
 
-#define REGISTER_TABLE <nc/arch/mips/MipsRegisterTable.i>
+#define REGISTER_TABLE <nc/arch/mips64/Mips64RegisterTable.i>
 #include <nc/core/arch/Registers.i>
 };
 
-}}} // namespace nc::arch::mips
+}}} // namespace nc::arch::mips64
 
 /* vim:set et sts=4 sw=4: */

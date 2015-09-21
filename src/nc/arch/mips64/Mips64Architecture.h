@@ -9,12 +9,12 @@
 
 namespace nc {
 namespace arch {
-namespace mips {
+namespace mips64 {
 
 /**
  * 32-bit MIPS Architecture.
  */
-class MipsArchitecture: public nc::core::arch::Architecture {
+class Mips64Architecture: public nc::core::arch::Architecture {
     ByteOrder byteOrder_;
 
 public:
@@ -24,9 +24,9 @@ public:
      * \param byteOrder Byte order of the main memory.
      */
     explicit
-    MipsArchitecture(ByteOrder byteOrder);
+    Mips64Architecture(ByteOrder byteOrder);
 
-    virtual ~MipsArchitecture();
+    virtual ~Mips64Architecture();
 
     /**
      * \return Byte order of the main memory.
@@ -39,6 +39,6 @@ public:
     std::unique_ptr<core::irgen::InstructionAnalyzer> createInstructionAnalyzer() const override;
 };
 
-}}} // namespace nc::arch::mips
+}}} // namespace nc::arch::mips64
 
 /* vim:set et sts=4 sw=4: */

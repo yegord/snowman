@@ -1,21 +1,21 @@
 /* The file is part of Snowman decompiler. */
 /* See doc/licenses.asciidoc for the licensing information. */
 
-#include "MipsDisassembler.h"
+#include "Mips64Disassembler.h"
 
 #include <nc/common/make_unique.h>
 
-#include "MipsArchitecture.h"
-#include "MipsInstruction.h"
+#include "Mips64Architecture.h"
+#include "Mips64Instruction.h"
 
 namespace nc {
 namespace arch {
-namespace mips {
+namespace mips64 {
 
-MipsDisassembler::MipsDisassembler(const MipsArchitecture *architecture):
+Mips64Disassembler::Mips64Disassembler(const Mips64Architecture *architecture):
     core::arch::Disassembler(architecture)
 {
-    mode_ = CS_MODE_MIPS32;
+    mode_ = CS_MODE_MIPS64;
     if (architecture->byteOrder() == ByteOrder::LittleEndian) {
         mode_ |= CS_MODE_LITTLE_ENDIAN;
     } else if (architecture->byteOrder() == ByteOrder::BigEndian) {
@@ -24,18 +24,18 @@ MipsDisassembler::MipsDisassembler(const MipsArchitecture *architecture):
     capstone_ = std::make_unique<core::arch::Capstone>(CS_ARCH_MIPS, mode_);
 }
 
-MipsDisassembler::~MipsDisassembler() {}
+Mips64Disassembler::~Mips64Disassembler() {}
 
-std::shared_ptr<core::arch::Instruction> MipsDisassembler::disassembleSingleInstruction(ByteAddr pc, const void *buffer, ByteSize size) {
+std::shared_ptr<core::arch::Instruction> Mips64Disassembler::disassembleSingleInstruction(ByteAddr pc, const void *buffer, ByteSize size) {
     if (auto instr = capstone_->disassemble(pc, buffer, size, 1)) {
         /* Instructions must be aligned to their size. */
         if ((instr->address & (instr->size - 1)) == 0) {
-            return std::make_shared<MipsInstruction>(mode_, instr->address, instr->size, buffer);
+            return std::make_shared<Mips64Instruction>(mode_, instr->address, instr->size, buffer);
         }
     }
     return nullptr;
 }
 
-}}} // namespace nc::arch::mips
+}}} // namespace nc::arch::mips64
 
 /* vim:set et sts=4 sw=4: */

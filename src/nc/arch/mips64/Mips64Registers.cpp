@@ -1,15 +1,15 @@
 /* The file is part of Snowman decompiler. */
 /* See doc/licenses.asciidoc for the licensing information. */
 
-#include "MipsRegisters.h"
+#include "Mips64Registers.h"
 
-namespace nc { namespace arch { namespace mips {
+namespace nc { namespace arch { namespace mips64 {
 
-MipsRegisters::MipsRegisters() {
-#define REGISTER_TABLE <nc/arch/mips/MipsRegisterTable.i>
+Mips64Registers::Mips64Registers() {
+#define REGISTER_TABLE <nc/arch/mips64/Mips64RegisterTable.i>
 #include <nc/core/arch/RegistersConstructor.i>
 }
 
-}}} // namespace nc::arch::mips
+}}} // namespace nc::arch::mips64
 
 /* vim:set et sts=4 sw=4: */

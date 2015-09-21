@@ -7,77 +7,86 @@
 #include <nc/core/ir/Statements.h>
 #include <nc/core/ir/Terms.h>
 
-#include "MipsArchitecture.h"
-#include "MipsRegisters.h"
+#include "Mips64Architecture.h"
+#include "Mips64Registers.h"
 
 namespace nc {
 namespace arch {
-namespace mips {
+namespace mips64 {
 
-o32CallingConvention::o32CallingConvention(const MipsArchitecture *architecture_):
-    core::ir::calling::Convention(QLatin1String("o32"))
+n32CallingConvention::n32CallingConvention(const Mips64Architecture *architecture_):
+    core::ir::calling::Convention(QLatin1String("n32"))
 {
-    setStackPointer(MipsRegisters::sp()->memoryLocation());
+    setStackPointer(Mips64Registers::sp()->memoryLocation());
 
     setFirstArgumentOffset(0);
     setArgumentAlignment(architecture_->bitness());
 
 	/* Regular registers */
     std::vector<core::ir::MemoryLocation> args;
-    args.push_back(MipsRegisters::a0()->memoryLocation());
-    args.push_back(MipsRegisters::a1()->memoryLocation());
-    args.push_back(MipsRegisters::a2()->memoryLocation());
-    args.push_back(MipsRegisters::a3()->memoryLocation());
+    args.push_back(Mips64Registers::a0()->memoryLocation());
+    args.push_back(Mips64Registers::a1()->memoryLocation());
+    args.push_back(Mips64Registers::a2()->memoryLocation());
+    args.push_back(Mips64Registers::a3()->memoryLocation());
+    args.push_back(Mips64Registers::t0()->memoryLocation());
+    args.push_back(Mips64Registers::t1()->memoryLocation());
+    args.push_back(Mips64Registers::t2()->memoryLocation());
+    args.push_back(Mips64Registers::t3()->memoryLocation());
     addArgumentGroup(std::move(args));
 
 	/* FP registers */
     std::vector<core::ir::MemoryLocation> fpArgs;
-    fpArgs.push_back(MipsRegisters::f12()->memoryLocation());
-    fpArgs.push_back(MipsRegisters::f13()->memoryLocation());
-	fpArgs.push_back(MipsRegisters::f14()->memoryLocation());
+    fpArgs.push_back(Mips64Registers::f12()->memoryLocation());
+    fpArgs.push_back(Mips64Registers::f13()->memoryLocation());
+	fpArgs.push_back(Mips64Registers::f14()->memoryLocation());
+	fpArgs.push_back(Mips64Registers::f15()->memoryLocation());
+	fpArgs.push_back(Mips64Registers::f16()->memoryLocation());
+	fpArgs.push_back(Mips64Registers::f17()->memoryLocation());
+	fpArgs.push_back(Mips64Registers::f18()->memoryLocation());
+	fpArgs.push_back(Mips64Registers::f19()->memoryLocation());
     addArgumentGroup(std::move(fpArgs));
 
 	/* Regular registers */
-    addReturnValueLocation(MipsRegisters::v0()->memoryLocation());
-    addReturnValueLocation(MipsRegisters::v1()->memoryLocation());
+    addReturnValueLocation(Mips64Registers::v0()->memoryLocation());
+    addReturnValueLocation(Mips64Registers::v1()->memoryLocation());
  
 	/* FP registers */
-    addReturnValueLocation(MipsRegisters::f0()->memoryLocation());
-    addReturnValueLocation(MipsRegisters::f1()->memoryLocation());
+    addReturnValueLocation(Mips64Registers::f0()->memoryLocation());
+    addReturnValueLocation(Mips64Registers::f1()->memoryLocation());
     
     /* Regular registers */
-    /*addNonVolatileRegisterLocation(MipsRegisters::s0()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::s1()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::s2()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::s3()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::s4()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::s5()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::s6()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::s7()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::fp()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::sp()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::ra()->memoryLocation());*/
-    addNonVolatileRegisterLocation(MipsRegisters::gp()->memoryLocation());
+    /*addNonVolatileRegisterLocation(Mips64Registers::s0()->memoryLocation());
+    addNonVolatileRegisterLocation(Mips64Registers::s1()->memoryLocation());
+    addNonVolatileRegisterLocation(Mips64Registers::s2()->memoryLocation());
+    addNonVolatileRegisterLocation(Mips64Registers::s3()->memoryLocation());
+    addNonVolatileRegisterLocation(Mips64Registers::s4()->memoryLocation());
+    addNonVolatileRegisterLocation(Mips64Registers::s5()->memoryLocation());
+    addNonVolatileRegisterLocation(Mips64Registers::s6()->memoryLocation());
+    addNonVolatileRegisterLocation(Mips64Registers::s7()->memoryLocation());
+    addNonVolatileRegisterLocation(Mips64Registers::fp()->memoryLocation());
+    addNonVolatileRegisterLocation(Mips64Registers::sp()->memoryLocation());
+    addNonVolatileRegisterLocation(Mips64Registers::ra()->memoryLocation());*/
+    addNonVolatileRegisterLocation(Mips64Registers::gp()->memoryLocation());
     
     /* FP registers */
-	/*addNonVolatileRegisterLocation(MipsRegisters::f20()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::f21()->memoryLocation());
-	addNonVolatileRegisterLocation(MipsRegisters::f22()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::f23()->memoryLocation());
-	addNonVolatileRegisterLocation(MipsRegisters::f24()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::f25()->memoryLocation());
-	addNonVolatileRegisterLocation(MipsRegisters::f26()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::f27()->memoryLocation());
-	addNonVolatileRegisterLocation(MipsRegisters::f28()->memoryLocation());
-    addNonVolatileRegisterLocation(MipsRegisters::f29()->memoryLocation());
-	addNonVolatileRegisterLocation(MipsRegisters::f30()->memoryLocation());*/
+	/*addNonVolatileRegisterLocation(Mips64Registers::f20()->memoryLocation());
+    addNonVolatileRegisterLocation(Mips64Registers::f21()->memoryLocation());
+	addNonVolatileRegisterLocation(Mips64Registers::f22()->memoryLocation());
+    addNonVolatileRegisterLocation(Mips64Registers::f23()->memoryLocation());
+	addNonVolatileRegisterLocation(Mips64Registers::f24()->memoryLocation());
+    addNonVolatileRegisterLocation(Mips64Registers::f25()->memoryLocation());
+	addNonVolatileRegisterLocation(Mips64Registers::f26()->memoryLocation());
+    addNonVolatileRegisterLocation(Mips64Registers::f27()->memoryLocation());
+	addNonVolatileRegisterLocation(Mips64Registers::f28()->memoryLocation());
+    addNonVolatileRegisterLocation(Mips64Registers::f29()->memoryLocation());
+	addNonVolatileRegisterLocation(Mips64Registers::f30()->memoryLocation());*/
 
     addEnterStatement(std::make_unique<core::ir::Assignment>(
-        std::make_unique<core::ir::MemoryLocationAccess>(MipsRegisters::ra()->memoryLocation()),
-        std::make_unique<core::ir::Intrinsic>(core::ir::Intrinsic::RETURN_ADDRESS, MipsRegisters::ra()->size())
+        std::make_unique<core::ir::MemoryLocationAccess>(Mips64Registers::ra()->memoryLocation()),
+        std::make_unique<core::ir::Intrinsic>(core::ir::Intrinsic::RETURN_ADDRESS, Mips64Registers::ra()->size())
     ));
 }
 
-}}} // namespace nc::arch::mips
+}}} // namespace nc::arch::mips64
 
 /* vim:set et sts=4 sw=4: */

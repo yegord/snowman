@@ -1,7 +1,7 @@
 /* The file is part of Snowman decompiler. */
 /* See doc/licenses.asciidoc for the licensing information. */
 
-#include "MipsInstructionAnalyzer.h"
+#include "Mips64InstructionAnalyzer.h"
 
 #include <QCoreApplication>
 
@@ -19,48 +19,48 @@
 
 #include <nc/core/arch/Instructions.h>
 
-#include "MipsArchitecture.h"
-#include "MipsInstruction.h"
-#include "MipsRegisters.h"
+#include "Mips64Architecture.h"
+#include "Mips64Instruction.h"
+#include "Mips64Registers.h"
 
 namespace nc {
 namespace arch {
-namespace mips {
+namespace mips64 {
 
 namespace {
 
-class MipsExpressionFactory: public core::irgen::expressions::ExpressionFactory<MipsExpressionFactory> {
+class Mips64ExpressionFactory: public core::irgen::expressions::ExpressionFactory<Mips64ExpressionFactory> {
   public:
-    MipsExpressionFactory(const core::arch::Architecture *architecture):
-        core::irgen::expressions::ExpressionFactory<MipsExpressionFactory>(architecture) {
+    Mips64ExpressionFactory(const core::arch::Architecture *architecture):
+        core::irgen::expressions::ExpressionFactory<Mips64ExpressionFactory>(architecture) {
     }
 };
 
-typedef core::irgen::expressions::ExpressionFactoryCallback<MipsExpressionFactory> MipsExpressionFactoryCallback;
+typedef core::irgen::expressions::ExpressionFactoryCallback<Mips64ExpressionFactory> Mips64ExpressionFactoryCallback;
 
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, sp)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, gp)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, ra)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, hilo)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, lo)
-NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, hi)
+NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, sp)
+NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, gp)
+NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, ra)
+NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, hilo)
+NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, lo)
+NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, hi)
 
 
 } // anonymous namespace
 
-class MipsInstructionAnalyzerImpl {
-    Q_DECLARE_TR_FUNCTIONS(MipsInstructionAnalyzerImpl)
+class Mips64InstructionAnalyzerImpl {
+    Q_DECLARE_TR_FUNCTIONS(Mips64InstructionAnalyzerImpl)
 
-    const MipsArchitecture *architecture_;
+    const Mips64Architecture *architecture_;
     core::arch::Capstone capstone_;
-    MipsExpressionFactory factory_;
+    Mips64ExpressionFactory factory_;
     core::ir::Program *program_;
-    const MipsInstruction *instruction_;
-    const cs_mips *detail_;
+    const Mips64Instruction *instruction_;
+    const cs_mips64 *detail_;
     const core::arch::Instructions *instructions_;
 
   public:
-    MipsInstructionAnalyzerImpl(const MipsArchitecture *architecture):
+    Mips64InstructionAnalyzerImpl(const Mips64Architecture *architecture):
         architecture_(architecture), capstone_(CS_ARCH_MIPS, CS_MODE_MIPS32), factory_(architecture) {
         assert(architecture_ != nullptr);
     }
@@ -69,38 +69,38 @@ class MipsInstructionAnalyzerImpl {
         instructions_ = instructions;
     }
 
-    void createStatements(const MipsInstruction *instruction, core::ir::Program *program) {
+    void createStatements(const Mips64Instruction *instruction, core::ir::Program *program) {
         assert(instruction != nullptr);
         assert(program != nullptr);
 
         program_ = program;
         instruction_ = instruction;
 
-        MipsExpressionFactory factory(architecture_);
-        MipsExpressionFactoryCallback _(factory, program->getBasicBlockForInstruction(instruction), instruction);
+        Mips64ExpressionFactory factory(architecture_);
+        Mips64ExpressionFactoryCallback _(factory, program->getBasicBlockForInstruction(instruction), instruction);
 
         createStatements(_, instruction, program, nullptr);
     }
 
   private:
 
-    const MipsInstruction *getDelayslotInstruction(const MipsInstruction *instruction) {
-        auto delayslotInstruction = checked_cast<const MipsInstruction *>(instructions_->get(instruction->endAddr()).get());
+    const Mips64Instruction *getDelayslotInstruction(const Mips64Instruction *instruction) {
+        auto delayslotInstruction = checked_cast<const Mips64Instruction *>(instructions_->get(instruction->endAddr()).get());
         if (!delayslotInstruction) {
             throw core::irgen::InvalidInstructionException(tr("Cannot find a delay slot at 0x%1.").arg(delayslotInstruction->endAddr(), 0, 16));
         }
         return delayslotInstruction;
     };
 
-    core::ir::BasicBlock *createStatements(MipsExpressionFactoryCallback & _, const MipsInstruction *instruction, core::ir::Program *program, const MipsInstruction *delayslotOwner) {
+    core::ir::BasicBlock *createStatements(Mips64ExpressionFactoryCallback & _, const Mips64Instruction *instruction, core::ir::Program *program, const Mips64Instruction *delayslotOwner) {
 
         auto instr_ = disassemble(instruction);
         if (instr_ == nullptr)
             return nullptr;
 
-        detail_ = &instr_->detail->mips;
+        detail_ = &instr_->detail->mips64;
 
-        auto delayslotCallback = [&](MipsExpressionFactoryCallback &callback) -> MipsExpressionFactoryCallback & {
+        auto delayslotCallback = [&](Mips64ExpressionFactoryCallback &callback) -> Mips64ExpressionFactoryCallback & {
             auto detail = detail_;
             if (auto delayslotInstruction = getDelayslotInstruction(instruction)) {
                 callback.setBasicBlock(createStatements(callback, delayslotInstruction, program, instruction));
@@ -133,7 +133,7 @@ class MipsInstructionAnalyzerImpl {
          * The $zero-register always holds the value of zero (0).
          */
         _[
-            regizter(MipsRegisters::zero()) ^= constant(0)
+            regizter(Mips64Registers::zero()) ^= constant(0)
         ];
 
         /* Describing semantics */
@@ -148,14 +148,14 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_ABS: {
-            MipsExpressionFactoryCallback negative(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback positive(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback negative(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback positive(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             _[
                 jump((signed_(operand(1)) < constant(0)),
                      (negative[operand(0) ^= -(operand(1)), jump(directSuccessor())]).basicBlock(),
                      (positive[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock())
             ];
-            return MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
+            return Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
         }
         case MIPS_INS_ADD: /* Fall-through */
         case MIPS_INS_ADDI: {
@@ -220,22 +220,22 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_MOVN: {
-             MipsExpressionFactoryCallback movn(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+             Mips64ExpressionFactoryCallback movn(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             _[
                 jump(operand(2),
                      (movn[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock(),
                      directSuccessor())
             ];
-            return MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
+            return Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
         }
         case MIPS_INS_MOVZ: {
-            MipsExpressionFactoryCallback movz(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback movz(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             _[
                 jump(operand(2),
                      directSuccessor(),
                      (movz[operand(0) ^= operand(1), jump(directSuccessor())]).basicBlock())
             ];
-            return MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
+            return Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
         }
         case MIPS_INS_SEB: {
             _[operand(0) ^= sign_extend(operand(1, 8))];
@@ -339,13 +339,13 @@ class MipsInstructionAnalyzerImpl {
             auto offset = (ea & constant(3));
             auto memval = *(ea & constant(-4));
 
-            MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
 #if 0
             uint32
             CPU::lwl(uint32 regval, uint32 memval, uint8 offset) {
@@ -415,7 +415,7 @@ class MipsInstructionAnalyzerImpl {
                 ];
                 //_[rt ^= ((memval & (constant(0xffffff00) << signed_(offset))) | ((unsigned_(rt) >> (constant(8) * offset)) & constant(0xffffffff)) >> (constant(4) - offset)))];
             }
-            return MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
+            return Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
         }
         case MIPS_INS_LWR: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
@@ -424,13 +424,13 @@ class MipsInstructionAnalyzerImpl {
             auto offset = (ea & constant(3));
             auto memval = *(ea & constant(-4));
 
-            MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
 
 #if 0
             uint32
@@ -506,7 +506,7 @@ class MipsInstructionAnalyzerImpl {
                                                     directSuccessor())].basicBlock())].basicBlock())].basicBlock())
                 ];
             }
-            return MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
+            return Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
         }
         case MIPS_INS_SB: {
             _[core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 8)) ^= truncate(operand(0), 8)];
@@ -529,13 +529,13 @@ class MipsInstructionAnalyzerImpl {
             //auto memval = *(ea & constant(-4));
             auto memval = operand(0);
 
-            MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
 #if 0
             uint32
             CPU::swl(uint32 regval, uint32 memval, uint8 offset) {
@@ -604,7 +604,7 @@ class MipsInstructionAnalyzerImpl {
                                                     directSuccessor())].basicBlock())].basicBlock())].basicBlock())
                 ];
             }
-            return MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
+            return Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
         }
         case MIPS_INS_SWR: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
@@ -613,13 +613,13 @@ class MipsInstructionAnalyzerImpl {
             //auto memval = *(ea & constant(-4));
             auto memval = operand(0);
 
-            MipsExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
-            MipsExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _case0(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _then1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _case1(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _then2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _case2(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _then3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
+            Mips64ExpressionFactoryCallback _case3(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
 
 #if 0
             uint32
@@ -689,7 +689,7 @@ class MipsInstructionAnalyzerImpl {
                                                     directSuccessor())].basicBlock())].basicBlock())].basicBlock())
                 ];
             }
-            return MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
+            return Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
         }
 #if 0
         /* Kudos to hlide  */
@@ -727,28 +727,28 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_DIV: {
             if (op_count == 2)
                 _[
-                    regizter(MipsRegisters::hi()) ^= signed_(operand(0)) % signed_(operand(1)),
-                    regizter(MipsRegisters::lo()) ^= signed_(operand(0)) / signed_(operand(1))
+                    regizter(Mips64Registers::hi()) ^= signed_(operand(0)) % signed_(operand(1)),
+                    regizter(Mips64Registers::lo()) ^= signed_(operand(0)) / signed_(operand(1))
                 ];
             else
                 _[
-                    regizter(MipsRegisters::hi()) ^= signed_(operand(1)) % signed_(operand(2)),
-                    regizter(MipsRegisters::lo()) ^= signed_(operand(1)) / signed_(operand(2)),
-                    operand(0) ^= regizter(MipsRegisters::lo())
+                    regizter(Mips64Registers::hi()) ^= signed_(operand(1)) % signed_(operand(2)),
+                    regizter(Mips64Registers::lo()) ^= signed_(operand(1)) / signed_(operand(2)),
+                    operand(0) ^= regizter(Mips64Registers::lo())
                 ];
             break;
         }
         case MIPS_INS_DIVU: {
             if (op_count == 2)
                 _[
-                    regizter(MipsRegisters::hi()) ^= unsigned_(operand(0)) % unsigned_(operand(1)),
-                    regizter(MipsRegisters::lo()) ^= unsigned_(operand(0)) / unsigned_(operand(1))
+                    regizter(Mips64Registers::hi()) ^= unsigned_(operand(0)) % unsigned_(operand(1)),
+                    regizter(Mips64Registers::lo()) ^= unsigned_(operand(0)) / unsigned_(operand(1))
                 ];
             else
                 _[
-                    regizter(MipsRegisters::hi()) ^= unsigned_(operand(1)) % unsigned_(operand(2)),
-                    regizter(MipsRegisters::lo()) ^= unsigned_(operand(1)) / unsigned_(operand(2)),
-                    operand(0) ^= regizter(MipsRegisters::lo())
+                    regizter(Mips64Registers::hi()) ^= unsigned_(operand(1)) % unsigned_(operand(2)),
+                    regizter(Mips64Registers::lo()) ^= unsigned_(operand(1)) / unsigned_(operand(2)),
+                    operand(0) ^= regizter(Mips64Registers::lo())
                 ];
             break;
         }
@@ -769,28 +769,28 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_MFHI: {
             auto operand0 = operand(0);
             _[
-                std::move(operand0) ^= regizter(MipsRegisters::hi())
+                std::move(operand0) ^= regizter(Mips64Registers::hi())
             ];
             break;
         }
         case MIPS_INS_MTHI: {
             auto operand0 = operand(0);
             _[
-                regizter(MipsRegisters::hi()) ^= std::move(operand0)
+                regizter(Mips64Registers::hi()) ^= std::move(operand0)
             ];
             break;
         }
         case MIPS_INS_MFLO: {
             auto operand0 = operand(0);
             _[
-                std::move(operand0) ^= regizter(MipsRegisters::lo())
+                std::move(operand0) ^= regizter(Mips64Registers::lo())
             ];
             break;
         }
         case MIPS_INS_MTLO: {
             auto operand0 = operand(0);
             _[
-                regizter(MipsRegisters::lo()) ^= std::move(operand0)
+                regizter(Mips64Registers::lo()) ^= std::move(operand0)
             ];
             break;
         }
@@ -799,7 +799,7 @@ class MipsInstructionAnalyzerImpl {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
             _[
-                regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
+                regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
             ];
             break;
         }
@@ -807,7 +807,7 @@ class MipsInstructionAnalyzerImpl {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
             _[
-                regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
+                regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
             ];
             break;
         }
@@ -818,12 +818,12 @@ class MipsInstructionAnalyzerImpl {
             if (op_count == 3){
             	auto operand2 = operand(2);
             	_[
-                	regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (sign_extend(std::move(operand1), 64) * sign_extend(std::move(operand2), 64)),
-                	operand0 ^= regizter(MipsRegisters::lo())
+                	regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (sign_extend(std::move(operand1), 64) * sign_extend(std::move(operand2), 64)),
+                	operand0 ^= regizter(Mips64Registers::lo())
             	];
             } else {
             	_[
-                	regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
+                	regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
             	];
             }
             break;
@@ -834,12 +834,12 @@ class MipsInstructionAnalyzerImpl {
            	if (op_count == 3){
             	auto operand2 = operand(2);
             	_[
-                	regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (zero_extend(std::move(operand1), 64) * zero_extend(std::move(operand2), 64)),
-                	operand0 ^= regizter(MipsRegisters::lo())
+                	regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (zero_extend(std::move(operand1), 64) * zero_extend(std::move(operand2), 64)),
+                	operand0 ^= regizter(Mips64Registers::lo())
             	];
             } else {
             	_[
-                	regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) + (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
+                	regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
             	];
            	}
             break;
@@ -848,7 +848,7 @@ class MipsInstructionAnalyzerImpl {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
             _[
-                regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) - (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
+                regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) - (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
             ];
             break;
         }
@@ -856,7 +856,7 @@ class MipsInstructionAnalyzerImpl {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
             _[
-                regizter(MipsRegisters::hilo()) ^= regizter(MipsRegisters::hilo()) - (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
+                regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) - (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
             ];
             break;
         }
@@ -865,8 +865,8 @@ class MipsInstructionAnalyzerImpl {
             auto operand1 = operand(1);
             auto operand2 = operand(2);
             _[
-                regizter(MipsRegisters::hilo()) ^= (sign_extend(std::move(operand1), 64) * sign_extend(std::move(operand2), 64)),
-                operand0 ^= regizter(MipsRegisters::lo())
+                regizter(Mips64Registers::hilo()) ^= (sign_extend(std::move(operand1), 64) * sign_extend(std::move(operand2), 64)),
+                operand0 ^= regizter(Mips64Registers::lo())
             ];
             break;
         }
@@ -874,7 +874,7 @@ class MipsInstructionAnalyzerImpl {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
             _[
-                regizter(MipsRegisters::hilo()) ^= (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
+                regizter(Mips64Registers::hilo()) ^= (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
             ];
             break;
         }
@@ -882,12 +882,12 @@ class MipsInstructionAnalyzerImpl {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
             _[
-                regizter(MipsRegisters::hilo()) ^= (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
+                regizter(Mips64Registers::hilo()) ^= (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
             ];
             break;
         }
         case MIPS_INS_BEQ: {
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              jump(operand(op_count - 1))
                          ];
@@ -899,7 +899,7 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_BEQL: {
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              jump(operand(op_count - 1))
                          ];
@@ -911,7 +911,7 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_BNEL: {
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              jump(operand(op_count - 1))
                          ];
@@ -931,7 +931,7 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_BNE: {
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              jump(operand(op_count - 1))
                          ];
@@ -943,7 +943,7 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_BGEZL: {
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              jump(operand(1))
                          ];
@@ -955,7 +955,7 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_BGEZ: {
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              jump(operand(1))
                          ];
@@ -968,7 +968,7 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_BGEZALL: {
             /* This is a conditional call */
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              call(operand(1)), jump(directSuccessorButOne())
                          ];
@@ -981,7 +981,7 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_BGEZAL: {
             /* This is a conditional call */
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              call(operand(1)), jump(directSuccessorButOne())
                          ];
@@ -993,7 +993,7 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_BGTZL: {
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              jump(operand(1))
                          ];
@@ -1005,7 +1005,7 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_BGTZ: {
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              jump(operand(1))
                          ];
@@ -1017,7 +1017,7 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_BLTZL: {
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              jump(operand(1))
                          ];
@@ -1029,7 +1029,7 @@ class MipsInstructionAnalyzerImpl {
         	break;
         }
         case MIPS_INS_BLTZ: {
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              jump(operand(1))
                          ];
@@ -1042,7 +1042,7 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_BLTZALL: {
             /* This is a conditional call */
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              call(operand(1)), jump(directSuccessorButOne())
                          ];
@@ -1055,7 +1055,7 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_BLTZAL: {
             /* This is a conditional call */
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              call(operand(1)), jump(directSuccessorButOne())
                          ];
@@ -1067,7 +1067,7 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_BLEZL: {
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              jump(operand(1))
                          ];
@@ -1079,7 +1079,7 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_BLEZ: {
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              jump(operand(1))
                          ];
@@ -1091,7 +1091,7 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_BEQZ: {
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              jump(operand(1))
                          ];
@@ -1103,7 +1103,7 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_BNEZ: {
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
                              jump(operand(1))
                          ];
@@ -1117,7 +1117,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_BAL: /* Fall-through */
         case MIPS_INS_JALR:
         case MIPS_INS_JAL: {
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block)[
             	call(operand(0)), jump(directSuccessorButOne())
             ];
@@ -1127,7 +1127,7 @@ class MipsInstructionAnalyzerImpl {
         case MIPS_INS_J: /* Fall-through */
         case MIPS_INS_JR:
         case MIPS_INS_B: {
-            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
             auto taken = delayslotCallback(block);
             if(getOperandRegister(0) == MIPS_REG_RA) {
                 taken[jump(return_address())];
@@ -1146,7 +1146,7 @@ class MipsInstructionAnalyzerImpl {
         return _.basicBlock();
     }
 
-    core::arch::CapstoneInstructionPtr disassemble(const MipsInstruction *instruction) {
+    core::arch::CapstoneInstructionPtr disassemble(const Mips64Instruction *instruction) {
         capstone_.setMode(instruction->csMode());
         return capstone_.disassemble(instruction->addr(), instruction->bytes(), instruction->size());
     }
@@ -1165,7 +1165,7 @@ class MipsInstructionAnalyzerImpl {
         }
     }
 
-    mips_op_type getOperandType(std::size_t index) const {
+    mips64_op_type getOperandType(std::size_t index) const {
         if (index >= detail_->op_count) {
             throw core::irgen::InvalidInstructionException(tr("There is no operand %1.").arg(index));
         }
@@ -1202,31 +1202,31 @@ class MipsInstructionAnalyzerImpl {
     }
 
 
-    std::unique_ptr<core::ir::Dereference> createDereference(const cs_mips_op &operand, SmallBitSize sizeHint) const {
+    std::unique_ptr<core::ir::Dereference> createDereference(const cs_mips64_op &operand, SmallBitSize sizeHint) const {
         return std::make_unique<core::ir::Dereference>(
                    createDereferenceAddress(operand, sizeHint), core::ir::MemoryDomain::MEMORY, sizeHint);
     }
 
-    std::unique_ptr<core::ir::Dereference> createDereferenceAddress(const cs_mips_op &operand, SmallBitSize sizeHint) const {
+    std::unique_ptr<core::ir::Dereference> createDereferenceAddress(const cs_mips64_op &operand, SmallBitSize sizeHint) const {
         if (operand.type != MIPS_OP_MEM) {
             throw core::irgen::InvalidInstructionException(tr("Expected the operand to be a memory operand"));
         }
 
             if (operand.mem.disp) {
-                return std::make_unique<core::ir::Dereference>(std::make_unique<core::ir::BinaryOperator>(core::ir::BinaryOperator::ADD, MipsInstructionAnalyzer::createTerm(getRegister(operand.mem.base)), std::make_unique<core::ir::Constant>(SizedValue(32, operand.mem.disp)), 32), core::ir::MemoryDomain::MEMORY, sizeHint);
+                return std::make_unique<core::ir::Dereference>(std::make_unique<core::ir::BinaryOperator>(core::ir::BinaryOperator::ADD, Mips64InstructionAnalyzer::createTerm(getRegister(operand.mem.base)), std::make_unique<core::ir::Constant>(SizedValue(32, operand.mem.disp)), 32), core::ir::MemoryDomain::MEMORY, sizeHint);
             } else {
-                return std::make_unique<core::ir::Dereference>(MipsInstructionAnalyzer::createTerm(getRegister(operand.mem.base)), core::ir::MemoryDomain::MEMORY, sizeHint);
+                return std::make_unique<core::ir::Dereference>(Mips64InstructionAnalyzer::createTerm(getRegister(operand.mem.base)), core::ir::MemoryDomain::MEMORY, sizeHint);
             }
     }
 
     static std::unique_ptr<core::ir::Term> createRegisterAccess(int reg) {
-        return MipsInstructionAnalyzer::createTerm(getRegister(reg));
+        return Mips64InstructionAnalyzer::createTerm(getRegister(reg));
     }
 
     static const core::arch::Register *getRegister(int reg) {
         switch (reg) {
 #define REG(uppercase, lowercase) \
-            case MIPS_REG_##uppercase: return MipsRegisters::lowercase();
+            case MIPS_REG_##uppercase: return Mips64Registers::lowercase();
             REG(ZERO,	zero)
             REG(AT,		at)
             REG(V0,		v0)
@@ -1307,17 +1307,17 @@ class MipsInstructionAnalyzerImpl {
 };
 
 
-MipsInstructionAnalyzer::MipsInstructionAnalyzer(const MipsArchitecture *architecture):
-    impl_(std::make_unique<MipsInstructionAnalyzerImpl>(architecture)) {
+Mips64InstructionAnalyzer::Mips64InstructionAnalyzer(const Mips64Architecture *architecture):
+    impl_(std::make_unique<Mips64InstructionAnalyzerImpl>(architecture)) {
 }
 
-MipsInstructionAnalyzer::~MipsInstructionAnalyzer() {}
+Mips64InstructionAnalyzer::~Mips64InstructionAnalyzer() {}
 
-void MipsInstructionAnalyzer::doCreateStatements(const core::arch::Instruction *instruction, core::ir::Program *program) {
+void Mips64InstructionAnalyzer::doCreateStatements(const core::arch::Instruction *instruction, core::ir::Program *program) {
     impl_->setInstructions(instructions());
-    impl_->createStatements(checked_cast<const MipsInstruction *>(instruction), program);
+    impl_->createStatements(checked_cast<const Mips64Instruction *>(instruction), program);
 }
 
-}}} // namespace nc::arch::mips
+}}} // namespace nc::arch::mips64
 
 /* vim:set et sts=4 sw=4: */

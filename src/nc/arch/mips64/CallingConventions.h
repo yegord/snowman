@@ -9,15 +9,15 @@
 
 namespace nc {
 namespace arch {
-namespace mips {
+namespace mips64 {
 
-class MipsArchitecture;
+class Mips64Architecture;
 
-class o32CallingConvention: public core::ir::calling::Convention {
+class n32CallingConvention: public core::ir::calling::Convention {
 public:
-    o32CallingConvention(const MipsArchitecture *architecture_);
+    n32CallingConvention(const Mips64Architecture *architecture_);
 };
 
-}}} // namespace nc::arch::mips
+}}} // namespace nc::arch::mips64
 
 /* vim:set et sts=4 sw=4: */
