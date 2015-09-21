@@ -329,13 +329,13 @@ class Mips64InstructionAnalyzerImpl {
    		case MIPS_INS_LWC1: /* Fall-through - FPU */
         case MIPS_INS_LW: {
             auto operand0 = operand(0);
-            _[operand0 ^= core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 32))];
+            _[operand0 ^= core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 64))];
             break;
         }
         case MIPS_INS_LWL: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
             auto rt = operand(0);
-            auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 32));
+            auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 64));
             auto offset = (ea & constant(3));
             auto memval = *(ea & constant(-4));
 
@@ -420,7 +420,7 @@ class Mips64InstructionAnalyzerImpl {
         case MIPS_INS_LWR: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
             auto rt = operand(0);
-            auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 32));
+            auto ea = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 64));
             auto offset = (ea & constant(3));
             auto memval = *(ea & constant(-4));
 
@@ -519,12 +519,12 @@ class Mips64InstructionAnalyzerImpl {
    		case MIPS_INS_SDC1: /* Fall-through - FPU - double */
         case MIPS_INS_SWC1: /* Fall-through - FPU */
         case MIPS_INS_SW: {
-            _[core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 32)) ^= operand(0)];
+            _[core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 64)) ^= operand(0)];
             break;
         }
         case MIPS_INS_SWL: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
-            auto rt = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 32));
+            auto rt = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 64));
             auto offset = (rt & constant(3));
             //auto memval = *(ea & constant(-4));
             auto memval = operand(0);
@@ -608,7 +608,7 @@ class Mips64InstructionAnalyzerImpl {
         }
         case MIPS_INS_SWR: {
             auto isBE = (instruction->csMode() & CS_MODE_BIG_ENDIAN);
-            auto rt = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 32));
+            auto rt = core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 64));
             auto offset = (rt & constant(3));
             //auto memval = *(ea & constant(-4));
             auto memval = operand(0);
@@ -1213,7 +1213,7 @@ class Mips64InstructionAnalyzerImpl {
         }
 
             if (operand.mem.disp) {
-                return std::make_unique<core::ir::Dereference>(std::make_unique<core::ir::BinaryOperator>(core::ir::BinaryOperator::ADD, Mips64InstructionAnalyzer::createTerm(getRegister(operand.mem.base)), std::make_unique<core::ir::Constant>(SizedValue(32, operand.mem.disp)), 32), core::ir::MemoryDomain::MEMORY, sizeHint);
+                return std::make_unique<core::ir::Dereference>(std::make_unique<core::ir::BinaryOperator>(core::ir::BinaryOperator::ADD, Mips64InstructionAnalyzer::createTerm(getRegister(operand.mem.base)), std::make_unique<core::ir::Constant>(SizedValue(64, operand.mem.disp)), 64), core::ir::MemoryDomain::MEMORY, sizeHint);
             } else {
                 return std::make_unique<core::ir::Dereference>(Mips64InstructionAnalyzer::createTerm(getRegister(operand.mem.base)), core::ir::MemoryDomain::MEMORY, sizeHint);
             }

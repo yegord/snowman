@@ -90,7 +90,7 @@ REG(f29,	F29,	1,	29 * 64,	64, "Float point register")
 REG(f30,	F30,	1,	30 * 64,	64, "Float point register")
 REG(f31,	F31,	1,	31 * 64,	64, "Float point register")
 
-REG(hilo,   HILO, 	2,  0  * 64,	64, "Pair of 64-bits == 64 bits")
-REG(lo,     LO, 	2,  0  * 32,	32, "Low half result")
-REG(hi,     HI, 	2,  1  * 32,	32, "High half result")
+REG(hilo,   HILO, 	2,  0  * 128,	128, "Pair of 64-bits == 128 bits")
+REG(lo,     LO, 	2,  0  * 64,	64, "Low half result")
+REG(hi,     HI, 	2,  1  * 64,	64, "High half result")
 /* vim:set et sts=4 sw=4: */
