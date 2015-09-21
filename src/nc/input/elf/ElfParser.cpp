@@ -165,6 +165,7 @@ private:
         byteOrder_.convertFrom(ehdr_.e_shoff);
         byteOrder_.convertFrom(ehdr_.e_shnum);
         byteOrder_.convertFrom(ehdr_.e_shstrndx);
+		byteOrder_.convertFrom(ehdr_.e_flags);
 
         switch (ehdr_.e_machine) {
             case EM_386:
@@ -186,11 +187,15 @@ private:
                     if ((ehdr_.e_flags & 0x00FF0000) == 0x00A20000) { // E_MIPS_ALLEGREX
                         image_->platform().setArchitecture(QLatin1String("allegrex"));
                     }
-                    else {
+                    else if(!(ehdr_.e_flags & EF_MIPS_ABI2)) {
                         image_->platform().setArchitecture(QLatin1String("mips-le"));
+                    } else {
+                    	image_->platform().setArchitecture(QLatin1String("mips64-le"));
                     }
-                } else {
+                } else if(!(ehdr_.e_flags & EF_MIPS_ABI2)) {
                     image_->platform().setArchitecture(QLatin1String("mips-be"));
+                } else {
+                	image_->platform().setArchitecture(QLatin1String("mips64-be"));
                 }
                 break;
             default:

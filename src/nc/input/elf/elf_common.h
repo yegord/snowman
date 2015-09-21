@@ -738,6 +738,18 @@ typedef struct {
 #define	R_IA_64_DTPREL64LSB	0xb7	/* word64 LSB	@dtprel(S + A) */
 #define	R_IA_64_LTOFF_DTPREL22	0xba	/* imm22	@ltoff(@dtprel(S+A)) */
 
+
+
+/* Flags in the e_flags field of the header */
+#define EF_MIPS_NOREORDER		0x00000001
+#define EF_MIPS_PIC				0x00000002
+#define EF_MIPS_CPIC			0x00000004
+#define EF_MIPS_ABI2			0x00000020
+#define EF_MIPS_OPTIONS_FIRST	0x00000080
+#define EF_MIPS_32BITMODE		0x00000100
+#define EF_MIPS_ABI				0x0000f000
+#define EF_MIPS_ARCH			0xf0000000
+
 #define	R_MIPS_NONE	0	/* No reloc */
 #define	R_MIPS_16	1	/* Direct 16 bit */
 #define	R_MIPS_32	2	/* Direct 32 bit */

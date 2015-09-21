@@ -56,12 +56,12 @@ class Mips64InstructionAnalyzerImpl {
     Mips64ExpressionFactory factory_;
     core::ir::Program *program_;
     const Mips64Instruction *instruction_;
-    const cs_mips64 *detail_;
+    const cs_mips *detail_;
     const core::arch::Instructions *instructions_;
 
   public:
     Mips64InstructionAnalyzerImpl(const Mips64Architecture *architecture):
-        architecture_(architecture), capstone_(CS_ARCH_MIPS, CS_MODE_MIPS32), factory_(architecture) {
+        architecture_(architecture), capstone_(CS_ARCH_MIPS, CS_MODE_MIPS64), factory_(architecture) {
         assert(architecture_ != nullptr);
     }
 
@@ -98,7 +98,7 @@ class Mips64InstructionAnalyzerImpl {
         if (instr_ == nullptr)
             return nullptr;
 
-        detail_ = &instr_->detail->mips64;
+        detail_ = &instr_->detail->mips;
 
         auto delayslotCallback = [&](Mips64ExpressionFactoryCallback &callback) -> Mips64ExpressionFactoryCallback & {
             auto detail = detail_;
@@ -1165,7 +1165,7 @@ class Mips64InstructionAnalyzerImpl {
         }
     }
 
-    mips64_op_type getOperandType(std::size_t index) const {
+    mips_op_type getOperandType(std::size_t index) const {
         if (index >= detail_->op_count) {
             throw core::irgen::InvalidInstructionException(tr("There is no operand %1.").arg(index));
         }
@@ -1174,7 +1174,7 @@ class Mips64InstructionAnalyzerImpl {
         return operand.type;
     }
 
-    core::irgen::expressions::TermExpression operand(std::size_t index, SmallBitSize sizeHint = 32) const {
+    core::irgen::expressions::TermExpression operand(std::size_t index, SmallBitSize sizeHint = 64) const {
         return core::irgen::expressions::TermExpression(createTermForOperand(index, sizeHint));
     }
 
@@ -1202,12 +1202,12 @@ class Mips64InstructionAnalyzerImpl {
     }
 
 
-    std::unique_ptr<core::ir::Dereference> createDereference(const cs_mips64_op &operand, SmallBitSize sizeHint) const {
+    std::unique_ptr<core::ir::Dereference> createDereference(const cs_mips_op &operand, SmallBitSize sizeHint) const {
         return std::make_unique<core::ir::Dereference>(
                    createDereferenceAddress(operand, sizeHint), core::ir::MemoryDomain::MEMORY, sizeHint);
     }
 
-    std::unique_ptr<core::ir::Dereference> createDereferenceAddress(const cs_mips64_op &operand, SmallBitSize sizeHint) const {
+    std::unique_ptr<core::ir::Dereference> createDereferenceAddress(const cs_mips_op &operand, SmallBitSize sizeHint) const {
         if (operand.type != MIPS_OP_MEM) {
             throw core::irgen::InvalidInstructionException(tr("Expected the operand to be a memory operand"));
         }
