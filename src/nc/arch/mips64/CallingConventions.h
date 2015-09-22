@@ -13,9 +13,9 @@ namespace mips64 {
 
 class Mips64Architecture;
 
-class n32CallingConvention: public core::ir::calling::Convention {
+class n32n64CallingConvention: public core::ir::calling::Convention {
 public:
-    n32CallingConvention(const Mips64Architecture *architecture_);
+    n32n64CallingConvention(const Mips64Architecture *architecture_);
 };
 
 }}} // namespace nc::arch::mips64

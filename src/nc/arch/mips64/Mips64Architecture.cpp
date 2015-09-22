@@ -33,7 +33,7 @@ Mips64Architecture::Mips64Architecture(ByteOrder byteOrder):
     static core::MasterAnalyzer masterAnalyzer;
     setMasterAnalyzer(&masterAnalyzer);
 
-    addCallingConvention(std::make_unique<n32CallingConvention>(this));
+    addCallingConvention(std::make_unique<n32n64CallingConvention>(this));
 }
 
 Mips64Architecture::~Mips64Architecture() {}
@@ -45,7 +45,7 @@ ByteOrder Mips64Architecture::getByteOrder(core::ir::Domain domain) const {
 bool Mips64Architecture::isGlobalMemory(const core::ir::MemoryLocation &memoryLocation) const {
 	/* Check if the register is non-volatile like $gp. */
 	bool nonVolatileRegister = false;
-	foreach (const auto &nonVolatileMemoryLocation, this->getCallingConvention(QLatin1String("n32"))->nonVolatileRegisterLocations()) {
+	foreach (const auto &nonVolatileMemoryLocation, this->getCallingConvention(QLatin1String("n32n64"))->nonVolatileRegisterLocations()) {
       	if(memoryLocation == nonVolatileMemoryLocation){
       		nonVolatileRegister = true;
       		break;

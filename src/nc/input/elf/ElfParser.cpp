@@ -187,12 +187,12 @@ private:
                     if ((ehdr_.e_flags & 0x00FF0000) == 0x00A20000) { // E_MIPS_ALLEGREX
                         image_->platform().setArchitecture(QLatin1String("allegrex"));
                     }
-                    else if(!(ehdr_.e_flags & EF_MIPS_ABI2)) {
+                    else if(!(ehdr_.e_flags & EF_MIPS_ABI2) && ehdr_.e_ident[EI_CLASS] != ELFCLASS64) {
                         image_->platform().setArchitecture(QLatin1String("mips-le"));
                     } else {
                     	image_->platform().setArchitecture(QLatin1String("mips64-le"));
                     }
-                } else if(!(ehdr_.e_flags & EF_MIPS_ABI2)) {
+                } else if(!(ehdr_.e_flags & EF_MIPS_ABI2) && ehdr_.e_ident[EI_CLASS] != ELFCLASS64) {
                     image_->platform().setArchitecture(QLatin1String("mips-be"));
                 } else {
                 	image_->platform().setArchitecture(QLatin1String("mips64-be"));

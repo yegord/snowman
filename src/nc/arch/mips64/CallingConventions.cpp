@@ -14,8 +14,8 @@ namespace nc {
 namespace arch {
 namespace mips64 {
 
-n32CallingConvention::n32CallingConvention(const Mips64Architecture *architecture_):
-    core::ir::calling::Convention(QLatin1String("n32"))
+n32n64CallingConvention::n32n64CallingConvention(const Mips64Architecture *architecture_):
+    core::ir::calling::Convention(QLatin1String("n32n64"))
 {
     setStackPointer(Mips64Registers::sp()->memoryLocation());
 
