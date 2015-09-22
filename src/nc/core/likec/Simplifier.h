@@ -32,7 +32,6 @@ class Return;
 class Statement;
 class Switch;
 class Tree;
-class TreeNode;
 class Typecast;
 class UnaryOperator;
 class VariableDeclaration;
@@ -45,7 +44,6 @@ class Simplifier {
 public:
     explicit Simplifier(Tree &tree);
 
-    std::unique_ptr<TreeNode> simplify(std::unique_ptr<TreeNode> node);
     std::unique_ptr<CompilationUnit> simplify(std::unique_ptr<CompilationUnit> node);
 
 private:

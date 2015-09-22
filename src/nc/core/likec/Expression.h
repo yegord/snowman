@@ -40,8 +40,6 @@ namespace likec {
 
 /**
  * Base class for different kinds of expressions.
- *
- * Expression is a statement.
  */
 class Expression: public TreeNode {
     NC_BASE_CLASS(Expression, expressionKind)
@@ -60,6 +58,7 @@ public:
         TYPECAST,               ///< (t)a.
         UNARY_OPERATOR,         ///< Unary operator.
         VARIABLE_IDENTIFIER,    ///< Identifier of a variable.
+        UNDECLARED_IDENTIFIER   ///< An identifier never declared.
     };
 
     /**
@@ -82,7 +81,7 @@ public:
     void setTerm(const ir::Term *term) {
         assert(term != nullptr);
         assert(term_ == nullptr); /* Must be used for initialization only. */
-        
+
         term_ = term;
     }
 

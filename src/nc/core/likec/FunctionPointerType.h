@@ -41,8 +41,7 @@ class FunctionPointerType: public Type {
     std::vector<const Type *> argumentTypes_; ///< Types of function arguments.
     bool variadic_; ///< True, if function has variable number of arguments.
 
-    public: 
-
+public:
     /**
      * Class constructor.
      *
@@ -50,7 +49,7 @@ class FunctionPointerType: public Type {
      * \param[in] returnType Function return type.
      * \param[in] variadic Whether function has variable number of arguments.
      */
-    FunctionPointerType(BitSize size, const Type *returnType = 0, bool variadic = false):
+    FunctionPointerType(BitSize size, const Type *returnType = nullptr, bool variadic = false):
         Type(size, FUNCTION_POINTER), returnType_(returnType), variadic_(variadic)
     {}
 
@@ -88,7 +87,7 @@ class FunctionPointerType: public Type {
      *
      * \param[in] variadic Whether function has variable number of arguments.
      */
-    void setEllipsis(bool variadic) { variadic_ = variadic; }
+    void setVariadic(bool variadic) { variadic_ = variadic; }
 
     virtual void print(QTextStream &out) const override;
 };

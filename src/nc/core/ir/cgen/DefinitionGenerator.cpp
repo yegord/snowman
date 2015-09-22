@@ -82,7 +82,9 @@
 #include <nc/core/likec/Switch.h>
 #include <nc/core/likec/Tree.h>
 #include <nc/core/likec/Typecast.h>
+#include <nc/core/likec/Types.h>
 #include <nc/core/likec/UnaryOperator.h>
+#include <nc/core/likec/UndeclaredIdentifier.h>
 #include <nc/core/likec/VariableIdentifier.h>
 #include <nc/core/likec/While.h>
 
@@ -823,23 +825,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::doMakeExpression(const T
             return makeConstant(term, term->asConstant()->value());
         }
         case Term::INTRINSIC: {
-            auto intrinsic = term->as<Intrinsic>();
-            QString name;
-            switch (intrinsic->intrinsicKind()) {
-                case Intrinsic::UNDEFINED:
-                    name = QLatin1String("undefined");
-                    break;
-                case Intrinsic::ZERO_STACK_OFFSET:
-                    name = QLatin1String("zero stack offset");
-                    break;
-                case Intrinsic::RETURN_ADDRESS:
-                    name = QLatin1String("return address");
-                    break;
-                default:
-                    name = QLatin1String("intrinsic");
-                    break;
-            }
-            return std::make_unique<likec::CallOperator>(std::make_unique<likec::String>(name));
+            return doMakeExpression(term->as<Intrinsic>());
         }
         case Term::MEMORY_LOCATION_ACCESS: {
             assert(!"The term must belong to a variable.");
@@ -1010,6 +996,30 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::doMakeExpression(const B
             unreachable();
             return nullptr;
     }
+}
+
+std::unique_ptr<likec::Expression> DefinitionGenerator::doMakeExpression(const Intrinsic *intrinsic) {
+    switch (intrinsic->intrinsicKind()) {
+        case Intrinsic::UNDEFINED:
+            return makeIntrinsicCall(
+                QLatin1String("__undefined"),
+                parent().makeType(parent().types().getType(intrinsic)));
+        case Intrinsic::ZERO_STACK_OFFSET:
+            return makeIntrinsicCall(
+                QLatin1String("__zero_stack_offset"),
+                parent().tree().makePointerType(parent().tree().pointerSize(), parent().tree().makeVoidType()));
+        case Intrinsic::RETURN_ADDRESS:
+            return makeIntrinsicCall(
+                QLatin1String("__return_address"),
+                parent().tree().makePointerType(parent().tree().pointerSize(), parent().tree().makeVoidType()));
+    }
+    return makeIntrinsicCall(QLatin1String("__intrinsic"), parent().makeType(parent().types().getType(intrinsic)));
+}
+
+std::unique_ptr<likec::Expression> DefinitionGenerator::makeIntrinsicCall(QLatin1String name,
+                                                                          const likec::Type *returnType) {
+    return std::make_unique<likec::CallOperator>(std::make_unique<likec::UndeclaredIdentifier>(
+        QLatin1String(name), std::make_unique<likec::FunctionPointerType>(parent().tree().pointerSize(), returnType)));
 }
 
 std::unique_ptr<likec::Expression> DefinitionGenerator::makeConstant(const Term *term, const SizedValue &value) {

@@ -15,6 +15,7 @@
 #include "Tree.h"
 #include "Typecast.h"
 #include "UnaryOperator.h"
+#include "UndeclaredIdentifier.h"
 #include "Utils.h"
 #include "VariableIdentifier.h"
 
@@ -44,6 +45,8 @@ const Type *TypeCalculator::getType(const Expression *node) {
             return getType(node->as<UnaryOperator>());
         case Expression::VARIABLE_IDENTIFIER:
             return getType(node->as<VariableIdentifier>());
+        case Expression::UNDECLARED_IDENTIFIER:
+            return getType(node->as<UndeclaredIdentifier>());
     }
     unreachable();
 }
@@ -128,6 +131,10 @@ const Type *TypeCalculator::getType(const UnaryOperator *node) {
 
 const Type *TypeCalculator::getType(const VariableIdentifier *node) {
     return node->declaration()->type();
+}
+
+const Type *TypeCalculator::getType(const UndeclaredIdentifier *node) {
+    return node->type();
 }
 
 const Type *TypeCalculator::getBinaryOperatorType(int operatorKind, const Expression *left, const Expression *right) {

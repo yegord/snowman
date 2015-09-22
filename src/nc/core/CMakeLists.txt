@@ -234,6 +234,8 @@ set(SOURCES
     likec/Types.h
     likec/UnaryOperator.cpp
     likec/UnaryOperator.h
+    likec/UndeclaredIdentifier.cpp
+    likec/UndeclaredIdentifier.h
     likec/Utils.cpp
     likec/Utils.h
     likec/VariableDeclaration.cpp

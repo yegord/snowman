@@ -22,7 +22,6 @@
 #include "StructType.h"
 #include "Switch.h"
 #include "Tree.h"
-#include "TreeNode.h"
 #include "Typecast.h"
 #include "Types.h"
 #include "UnaryOperator.h"
@@ -53,20 +52,6 @@ std::unique_ptr<T> as(std::unique_ptr<U> ptr) {
 } // anonymous namespace
 
 Simplifier::Simplifier(Tree &tree) : tree_(tree), typeCalculator_(tree) {
-}
-
-std::unique_ptr<TreeNode> Simplifier::simplify(std::unique_ptr<TreeNode> node) {
-    switch (node->nodeKind()) {
-        case TreeNode::COMPILATION_UNIT:
-            return simplify(as<CompilationUnit>(std::move(node)));
-        case TreeNode::DECLARATION:
-            return simplify(as<Declaration>(std::move(node)));
-        case TreeNode::EXPRESSION:
-            return simplify(as<Expression>(std::move(node)));
-        case TreeNode::STATEMENT:
-            return simplify(as<Statement>(std::move(node)));
-    }
-    unreachable();
 }
 
 std::unique_ptr<CompilationUnit> Simplifier::simplify(std::unique_ptr<CompilationUnit> node) {
@@ -130,6 +115,8 @@ std::unique_ptr<Expression> Simplifier::simplify(std::unique_ptr<Expression> nod
         case Expression::UNARY_OPERATOR:
             return simplify(as<UnaryOperator>(std::move(node)));
         case Expression::VARIABLE_IDENTIFIER:
+            return std::move(node);
+        case Expression::UNDECLARED_IDENTIFIER:
             return std::move(node);
     }
     unreachable();

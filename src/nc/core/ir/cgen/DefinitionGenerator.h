@@ -50,6 +50,7 @@ class BinaryOperator;
 class BasicBlock;
 class CFG;
 class Dominators;
+class Intrinsic;
 class Jump;
 class JumpTarget;
 class Statement;
@@ -259,7 +260,7 @@ private:
      *
      * \param[in] term Term to create expression from.
      *
-     * \return Valid pointer to created LikeC expression.
+     * \return Valid pointer to the created LikeC expression.
      */
     std::unique_ptr<likec::Expression> makeExpression(const Term *term);
 
@@ -268,27 +269,45 @@ private:
      *
      * \param[in] term Term to create expression from.
      *
-     * \return Valid pointer to created LikeC expression.
+     * \return Valid pointer to the created LikeC expression.
      */
     std::unique_ptr<likec::Expression> doMakeExpression(const Term *term);
 
     /**
-     * Actually creates a LikeC expression for given UnaryOperator.
+     * Actually creates a LikeC expression for a given UnaryOperator.
      *
      * \param[in] unary Term to create expression from.
      *
-     * \return Valid pointer to created LikeC expression.
+     * \return Valid pointer to the created LikeC expression.
      */
     std::unique_ptr<likec::Expression> doMakeExpression(const UnaryOperator *unary);
 
     /**
-     * Actually creates a LikeC expression for given BinaryOperator.
+     * Actually creates a LikeC expression for a given BinaryOperator.
      *
      * \param[in] binary Term to create expression from.
      *
-     * \return Valid pointer to created LikeC expression.
+     * \return Valid pointer to the created LikeC expression.
      */
     std::unique_ptr<likec::Expression> doMakeExpression(const BinaryOperator *binary);
+
+    /**
+     * Actually creates a LikeC expression for a given Intrinsic.
+     *
+     * \param[in] intrinsic Term to create expression from.
+     *
+     * \return Valid pointer to the created LikeC expression.
+     */
+    std::unique_ptr<likec::Expression> doMakeExpression(const Intrinsic *intrinsic);
+
+    /**
+     * \param[in] name Name of an intrinsic function.
+     * \param[in] returnType Valid pointer to a LikeC type.
+     *
+     * \return Valid pointer to a LikeC call expression calling an intrinsic
+     *         with the given name and return type without arguments.
+     */
+    std::unique_ptr<likec::Expression> makeIntrinsicCall(QLatin1String name, const likec::Type *returnType);
 
     /**
      * Creates an integer constant with given value from given term.

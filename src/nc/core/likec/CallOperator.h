@@ -86,7 +86,7 @@ public:
 
 protected:
     void doCallOnChildren(const std::function<void(TreeNode *)> &fun) override;
-    virtual void doPrint(PrintContext &context) const override;
+    void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

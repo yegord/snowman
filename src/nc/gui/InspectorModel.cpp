@@ -56,6 +56,7 @@
 #include <nc/core/likec/Tree.h>
 #include <nc/core/likec/Typecast.h>
 #include <nc/core/likec/UnaryOperator.h>
+#include <nc/core/likec/UndeclaredIdentifier.h>
 #include <nc/core/likec/VariableIdentifier.h>
 #include <nc/core/likec/While.h>
 
@@ -369,6 +370,13 @@ void expand(InspectorItem *item, const core::likec::Expression *expression) {
             auto identifier = expression->as<core::likec::VariableIdentifier>();
             item->addComment(tr("Variable Identifier"));
             item->addChild(tr("declaration"), identifier->declaration());
+            break;
+        }
+        case core::likec::Expression::UNDECLARED_IDENTIFIER: {
+            auto intrinsic = expression->as<core::likec::UndeclaredIdentifier>();
+            item->addComment(tr("Undeclared Identifier"));
+            item->addChild(tr("name = %1").arg(intrinsic->name()));
+            item->addChild(tr("type = %1").arg(intrinsic->type()->toString()));
             break;
         }
         default: {
