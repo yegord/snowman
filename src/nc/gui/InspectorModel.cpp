@@ -373,10 +373,10 @@ void expand(InspectorItem *item, const core::likec::Expression *expression) {
             break;
         }
         case core::likec::Expression::UNDECLARED_IDENTIFIER: {
-            auto intrinsic = expression->as<core::likec::UndeclaredIdentifier>();
+            auto identifier = expression->as<core::likec::UndeclaredIdentifier>();
             item->addComment(tr("Undeclared Identifier"));
-            item->addChild(tr("name = %1").arg(intrinsic->name()));
-            item->addChild(tr("type = %1").arg(intrinsic->type()->toString()));
+            item->addChild(tr("name = %1").arg(identifier->name()));
+            item->addChild(tr("type = %1").arg(identifier->type()->toString()));
             break;
         }
         default: {

@@ -1,6 +1,8 @@
 /* The file is part of Snowman decompiler. */
 /* See doc/licenses.asciidoc for the licensing information. */
 
+#pragma once
+
 #include <nc/config.h>
 
 #include <memory>
@@ -8,7 +10,7 @@
 #include <QLatin1String>
 
 #include "Expression.h"
-#include "Types.h"
+#include "Type.h"
 
 namespace nc {
 namespace core {
@@ -24,8 +26,8 @@ class UndeclaredIdentifier: public Expression {
 
 public:
     /**
-     * \param name Name of the identifier function.
-     * \param type Valid pointer to the type of the intrinsic function.
+     * \param name Name of the identifier.
+     * \param type Valid pointer to the type of the identifier.
      */
     UndeclaredIdentifier(QLatin1String name, std::unique_ptr<Type> type)
         : Expression(Expression::UNDECLARED_IDENTIFIER), name_(std::move(name)), type_(std::move(type)) {}
@@ -36,7 +38,7 @@ public:
     const QLatin1String &name() const { return name_; }
 
     /**
-     * \return Valid pointer to the type of the intrinsic function.
+     * \return Valid pointer to the type of the identifier.
      */
     const Type *type() const { return type_.get(); }
 
@@ -51,4 +53,4 @@ protected:
 NC_SUBCLASS(nc::core::likec::Expression, nc::core::likec::UndeclaredIdentifier,
             nc::core::likec::Expression::UNDECLARED_IDENTIFIER)
 
-    /* vim:set et sts=4 sw=4: */
+/* vim:set et sts=4 sw=4: */

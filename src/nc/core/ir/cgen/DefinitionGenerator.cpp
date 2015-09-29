@@ -1019,7 +1019,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::doMakeExpression(const I
 std::unique_ptr<likec::Expression> DefinitionGenerator::makeIntrinsicCall(QLatin1String name,
                                                                           const likec::Type *returnType) {
     return std::make_unique<likec::CallOperator>(std::make_unique<likec::UndeclaredIdentifier>(
-        QLatin1String(name), std::make_unique<likec::FunctionPointerType>(parent().tree().pointerSize(), returnType)));
+        name, std::make_unique<likec::FunctionPointerType>(parent().tree().pointerSize(), returnType)));
 }
 
 std::unique_ptr<likec::Expression> DefinitionGenerator::makeConstant(const Term *term, const SizedValue &value) {
