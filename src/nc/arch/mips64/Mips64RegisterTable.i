@@ -94,6 +94,12 @@ REG(hilo,   HILO, 	2,  0  * 128,	128, "Pair of 64-bits == 128 bits")
 REG(lo,     LO, 	2,  0  * 64,	64, "Low half result")
 REG(hi,     HI, 	2,  1  * 64,	64, "High half result")
 
-REG(cp1flags,	CP1FLAGS, 	3,  0  * 8,	8, "8 bits co-processor flag")
 REG(fcc0,	FCC0, 	3,  0  * 1,	1, "1 bits co-processor flag")
+REG(fcc1,	FCC1, 	3,  1  * 1,	1, "1 bits co-processor flag")
+REG(fcc2,	FCC2, 	3,  2  * 1,	1, "1 bits co-processor flag")
+REG(fcc3,	FCC3, 	3,  3  * 1,	1, "1 bits co-processor flag")
+REG(fcc4,	FCC4, 	3,  4  * 1,	1, "1 bits co-processor flag")
+REG(fcc5,	FCC5, 	3,  5  * 1,	1, "1 bits co-processor flag")
+REG(fcc6,	FCC6, 	3,  6  * 1,	1, "1 bits co-processor flag")
+REG(fcc7,	FCC7, 	3,  7  * 1,	1, "1 bits co-processor flag")
 /* vim:set et sts=4 sw=4: */

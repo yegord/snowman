@@ -44,8 +44,6 @@ NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, ra)
 NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, hilo)
 NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, lo)
 NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, hi)
-NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, fcc0)
-NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, cp1flags)
 
 } // anonymous namespace
 
@@ -1128,7 +1126,7 @@ class Mips64InstructionAnalyzerImpl {
         	if(op_count == 2){
 			 	_[regizter(Mips64Registers::fcc0()) ^= (signed_(operand(0)) <= signed_(operand(1)))];
         	} else {
-        	 	_[cp1flags ^= zero_extend((constant(1) << operand(0)) & (operand(0) * (signed_(operand(1)) <= signed_(operand(2)))), 8)];
+        	 	_[operand(0) ^= (signed_(operand(1)) <= signed_(operand(2)))];
         	}
         	break;
         }
@@ -1136,7 +1134,7 @@ class Mips64InstructionAnalyzerImpl {
         	if(op_count == 2){
 			 	_[regizter(Mips64Registers::fcc0()) ^= (signed_(operand(0)) < signed_(operand(1)))];
         	} else {
-        	 	_[cp1flags ^= zero_extend((constant(1) << operand(0)) & (operand(0) * (signed_(operand(1)) < signed_(operand(2)))), 8)];
+        	 	_[operand(0) ^= (signed_(operand(1)) < signed_(operand(2)))];
         	}
         	break;
         }
@@ -1144,7 +1142,7 @@ class Mips64InstructionAnalyzerImpl {
         	if(op_count == 2){
 			 	_[regizter(Mips64Registers::fcc0()) ^= (operand(0) == operand(1))];
         	} else {
-        	 	_[cp1flags ^= zero_extend((constant(1) << operand(0)) & (operand(0) * (operand(1) == operand(2))), 8)];
+        	 	_[operand(0) ^= (operand(1) == operand(2))];
         	}
         	break;
         }
@@ -1161,7 +1159,7 @@ class Mips64InstructionAnalyzerImpl {
                 ];
             } else {
             	_[
-            		jump(~(cp1flags & (constant(1) << operand(0))),
+            		jump(~(operand(0)),
                    	taken.basicBlock(),
                     directSuccessor())
 				];
@@ -1181,7 +1179,7 @@ class Mips64InstructionAnalyzerImpl {
                 ];
             } else {
             	_[
-            		jump(~(cp1flags & (constant(1) << operand(0))),
+            		jump(~(operand(0)),
                    	taken.basicBlock(),
                     directSuccessorButOne())
                 ];
@@ -1201,7 +1199,7 @@ class Mips64InstructionAnalyzerImpl {
                 ];
             } else {
             	_[
-            		jump((cp1flags & (constant(1) << operand(0))),
+            		jump(operand(0),
                    	taken.basicBlock(),
                     directSuccessor())
                 ];
@@ -1221,7 +1219,7 @@ class Mips64InstructionAnalyzerImpl {
                 ];
             } else {
             	_[
-            		jump((cp1flags & (constant(1) << operand(0))),
+            		jump(operand(0),
                    	taken.basicBlock(),
                     directSuccessorButOne())
                 ];
@@ -1414,6 +1412,14 @@ class Mips64InstructionAnalyzerImpl {
             REG(LO,		lo)
 
             REG(FCC0,	fcc0)
+            REG(FCC1,	fcc1)
+            REG(FCC2,	fcc2)
+            REG(FCC3,	fcc3)
+            REG(FCC4,	fcc4)
+            REG(FCC5,	fcc5)
+            REG(FCC6,	fcc6)
+            REG(FCC7,	fcc7)
+
 #undef REG
 
         default:
