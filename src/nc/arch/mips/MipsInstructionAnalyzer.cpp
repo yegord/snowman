@@ -1114,12 +1114,27 @@ class MipsInstructionAnalyzerImpl {
             ];
             break;
         }
-        case MIPS_INS_CEQI: /* Fall-through - FPU */
-        case MIPS_INS_CEQ: {
+        case MIPS_INS_C_LE: {
         	if(op_count == 2){
-			 	_[cp1flags ^= (operand(0) == operand(1))];
+			 	_[cp1flags ^= zero_extend((signed_(operand(0)) <= signed_(operand(1))), 8)];
         	} else {
-        	 	_[cp1flags ^= (constant(1) << operand(0)) & (operand(0) * (operand(1) == operand(2)))];
+        	 	_[cp1flags ^= zero_extend((constant(1) << operand(0)) & (operand(0) * (signed_(operand(1)) <= signed_(operand(2)))), 8)];
+        	}
+        	break;
+        }
+        case MIPS_INS_C_LT: {
+        	if(op_count == 2){
+			 	_[cp1flags ^= zero_extend((signed_(operand(0)) < signed_(operand(1))), 8)];
+        	} else {
+        	 	_[cp1flags ^= zero_extend((constant(1) << operand(0)) & (operand(0) * (signed_(operand(1)) < signed_(operand(2)))), 8)];
+        	}
+        	break;
+        }
+        case MIPS_INS_C_EQ: {
+        	if(op_count == 2){
+			 	_[cp1flags ^= zero_extend((operand(0) == operand(1)), 8)];
+        	} else {
+        	 	_[cp1flags ^= zero_extend((constant(1) << operand(0)) & (operand(0) * (operand(1) == operand(2))), 8)];
         	}
         	break;
         }
