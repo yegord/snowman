@@ -44,6 +44,7 @@ NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, ra)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, hilo)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, lo)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, hi)
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, fcc0)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, cp1flags)
 
 } // anonymous namespace
@@ -1116,7 +1117,7 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_C_LE: {
         	if(op_count == 2){
-			 	_[cp1flags ^= zero_extend((signed_(operand(0)) <= signed_(operand(1))), 8)];
+			 	_[regizter(MipsRegisters::fcc0()) ^= (signed_(operand(0)) <= signed_(operand(1)))];
         	} else {
         	 	_[cp1flags ^= zero_extend((constant(1) << operand(0)) & (operand(0) * (signed_(operand(1)) <= signed_(operand(2)))), 8)];
         	}
@@ -1124,7 +1125,7 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_C_LT: {
         	if(op_count == 2){
-			 	_[cp1flags ^= zero_extend((signed_(operand(0)) < signed_(operand(1))), 8)];
+			 	_[regizter(MipsRegisters::fcc0()) ^= (signed_(operand(0)) < signed_(operand(1)))];
         	} else {
         	 	_[cp1flags ^= zero_extend((constant(1) << operand(0)) & (operand(0) * (signed_(operand(1)) < signed_(operand(2)))), 8)];
         	}
@@ -1132,7 +1133,7 @@ class MipsInstructionAnalyzerImpl {
         }
         case MIPS_INS_C_EQ: {
         	if(op_count == 2){
-			 	_[cp1flags ^= zero_extend((operand(0) == operand(1)), 8)];
+			 	_[regizter(MipsRegisters::fcc0()) ^= (operand(0) == operand(1))];
         	} else {
         	 	_[cp1flags ^= zero_extend((constant(1) << operand(0)) & (operand(0) * (operand(1) == operand(2))), 8)];
         	}
@@ -1145,7 +1146,7 @@ class MipsInstructionAnalyzerImpl {
                          ];
             if(op_count == 1){
             	_[
-            		jump(~cp1flags,
+            		jump(~regizter(MipsRegisters::fcc0()),
                    	taken.basicBlock(),
                     directSuccessor())
                 ];
@@ -1165,7 +1166,7 @@ class MipsInstructionAnalyzerImpl {
                          ];
             if(op_count == 1){
             	_[
-            		jump(~cp1flags,
+            		jump(~regizter(MipsRegisters::fcc0()),
                    	taken.basicBlock(),
                     directSuccessorButOne())
                 ];
@@ -1185,7 +1186,7 @@ class MipsInstructionAnalyzerImpl {
                          ];
             if(op_count == 1){
             	_[
-            		jump(cp1flags,
+            		jump(regizter(MipsRegisters::fcc0()),
                    	taken.basicBlock(),
                     directSuccessor())
                 ];
@@ -1205,7 +1206,7 @@ class MipsInstructionAnalyzerImpl {
                          ];
             if(op_count == 1){
             	_[
-            		jump(cp1flags,
+            		jump(regizter(MipsRegisters::fcc0()),
                    	taken.basicBlock(),
                     directSuccessorButOne())
                 ];
@@ -1402,6 +1403,8 @@ class MipsInstructionAnalyzerImpl {
 
             REG(HI,		hi)
             REG(LO,		lo)
+
+            REG(FCC0,	fcc0)
 #undef REG
 
         default:

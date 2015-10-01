@@ -44,6 +44,7 @@ NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, ra)
 NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, hilo)
 NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, lo)
 NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, hi)
+NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, fcc0)
 NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, cp1flags)
 
 } // anonymous namespace
@@ -1125,7 +1126,7 @@ class Mips64InstructionAnalyzerImpl {
         }
         case MIPS_INS_C_LE: {
         	if(op_count == 2){
-			 	_[cp1flags ^= zero_extend((signed_(operand(0)) <= signed_(operand(1))), 8)];
+			 	_[regizter(Mips64Registers::fcc0()) ^= (signed_(operand(0)) <= signed_(operand(1)))];
         	} else {
         	 	_[cp1flags ^= zero_extend((constant(1) << operand(0)) & (operand(0) * (signed_(operand(1)) <= signed_(operand(2)))), 8)];
         	}
@@ -1133,7 +1134,7 @@ class Mips64InstructionAnalyzerImpl {
         }
         case MIPS_INS_C_LT: {
         	if(op_count == 2){
-			 	_[cp1flags ^= zero_extend((signed_(operand(0)) < signed_(operand(1))), 8)];
+			 	_[regizter(Mips64Registers::fcc0()) ^= (signed_(operand(0)) < signed_(operand(1)))];
         	} else {
         	 	_[cp1flags ^= zero_extend((constant(1) << operand(0)) & (operand(0) * (signed_(operand(1)) < signed_(operand(2)))), 8)];
         	}
@@ -1141,7 +1142,7 @@ class Mips64InstructionAnalyzerImpl {
         }
         case MIPS_INS_C_EQ: {
         	if(op_count == 2){
-			 	_[cp1flags ^= zero_extend((operand(0) == operand(1)), 8)];
+			 	_[regizter(Mips64Registers::fcc0()) ^= (operand(0) == operand(1))];
         	} else {
         	 	_[cp1flags ^= zero_extend((constant(1) << operand(0)) & (operand(0) * (operand(1) == operand(2))), 8)];
         	}
@@ -1154,7 +1155,7 @@ class Mips64InstructionAnalyzerImpl {
                          ];
             if(op_count == 1){
             	_[
-            		jump(~cp1flags,
+            		jump(~regizter(Mips64Registers::fcc0()),
                    	taken.basicBlock(),
                     directSuccessor())
                 ];
@@ -1174,7 +1175,7 @@ class Mips64InstructionAnalyzerImpl {
                          ];
             if(op_count == 1){
             	_[
-            		jump(~cp1flags,
+            		jump(~regizter(Mips64Registers::fcc0()),
                    	taken.basicBlock(),
                     directSuccessorButOne())
                 ];
@@ -1194,7 +1195,7 @@ class Mips64InstructionAnalyzerImpl {
                          ];
             if(op_count == 1){
             	_[
-            		jump(cp1flags,
+            		jump(regizter(Mips64Registers::fcc0()),
                    	taken.basicBlock(),
                     directSuccessor())
                 ];
@@ -1214,7 +1215,7 @@ class Mips64InstructionAnalyzerImpl {
                          ];
             if(op_count == 1){
             	_[
-            		jump(cp1flags,
+            		jump(regizter(Mips64Registers::fcc0()),
                    	taken.basicBlock(),
                     directSuccessorButOne())
                 ];
@@ -1411,6 +1412,8 @@ class Mips64InstructionAnalyzerImpl {
 
             REG(HI,		hi)
             REG(LO,		lo)
+
+            REG(FCC0,	fcc0)
 #undef REG
 
         default:

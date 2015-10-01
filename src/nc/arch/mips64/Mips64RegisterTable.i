@@ -95,4 +95,5 @@ REG(lo,     LO, 	2,  0  * 64,	64, "Low half result")
 REG(hi,     HI, 	2,  1  * 64,	64, "High half result")
 
 REG(cp1flags,	CP1FLAGS, 	3,  0  * 8,	8, "8 bits co-processor flag")
+REG(fcc0,	FCC0, 	3,  0  * 1,	1, "1 bits co-processor flag")
 /* vim:set et sts=4 sw=4: */
