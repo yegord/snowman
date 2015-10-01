@@ -44,7 +44,7 @@ NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, ra)
 NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, hilo)
 NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, lo)
 NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, hi)
-
+NC_DEFINE_REGISTER_EXPRESSION(Mips64Registers, cp1flags)
 
 } // anonymous namespace
 
@@ -1123,6 +1123,95 @@ class Mips64InstructionAnalyzerImpl {
             ];
             break;
         }
+        case MIPS_INS_CEQI: /* Fall-through - FPU */
+        case MIPS_INS_CEQ: {
+        	if(op_count == 2){
+			 	_[cp1flags ^= (operand(0) == operand(1))];
+        	} else {
+        	 	_[cp1flags ^= (constant(1) << operand(0)) & (operand(0) * (operand(1) == operand(2)))];
+        	}
+        	break;
+        }
+        case MIPS_INS_BC1F: {
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(op_count - 1))
+                         ];
+            if(op_count == 1){
+            	_[
+            		jump(~cp1flags,
+                   	taken.basicBlock(),
+                    directSuccessor())
+                ];
+            } else {
+            	_[
+            		jump(~(cp1flags & (constant(1) << operand(0))),
+                   	taken.basicBlock(),
+                    directSuccessor())
+				];
+            }
+            break;
+        }
+        case MIPS_INS_BC1FL: {
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(op_count - 1))
+                         ];
+            if(op_count == 1){
+            	_[
+            		jump(~cp1flags,
+                   	taken.basicBlock(),
+                    directSuccessorButOne())
+                ];
+            } else {
+            	_[
+            		jump(~(cp1flags & (constant(1) << operand(0))),
+                   	taken.basicBlock(),
+                    directSuccessorButOne())
+                ];
+            }
+            break;
+        }
+        case MIPS_INS_BC1T: {
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(op_count - 1))
+                         ];
+            if(op_count == 1){
+            	_[
+            		jump(cp1flags,
+                   	taken.basicBlock(),
+                    directSuccessor())
+                ];
+            } else {
+            	_[
+            		jump((cp1flags & (constant(1) << operand(0))),
+                   	taken.basicBlock(),
+                    directSuccessor())
+                ];
+            }
+            break;
+        }
+        case MIPS_INS_BC1TL: {
+            auto block = Mips64ExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(op_count - 1))
+                         ];
+            if(op_count == 1){
+            	_[
+            		jump(cp1flags,
+                   	taken.basicBlock(),
+                    directSuccessorButOne())
+                ];
+            } else {
+            	_[
+            		jump((cp1flags & (constant(1) << operand(0))),
+                   	taken.basicBlock(),
+                    directSuccessorButOne())
+                ];
+            }
+            break;
+        }
         case MIPS_INS_BAL: /* Fall-through */
         case MIPS_INS_JALR:
         case MIPS_INS_JAL: {
@@ -1230,7 +1319,7 @@ class Mips64InstructionAnalyzerImpl {
 
     static std::unique_ptr<core::ir::Term> createRegisterAccess(int reg) {
         return Mips64InstructionAnalyzer::createTerm(getRegister(reg));
-    }
+    }	
 
     static const core::arch::Register *getRegister(int reg) {
         switch (reg) {

@@ -44,7 +44,7 @@ NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, ra)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, hilo)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, lo)
 NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, hi)
-
+NC_DEFINE_REGISTER_EXPRESSION(MipsRegisters, cp1flags)
 
 } // anonymous namespace
 
@@ -1112,6 +1112,95 @@ class MipsInstructionAnalyzerImpl {
                      taken.basicBlock(),
                      directSuccessor())
             ];
+            break;
+        }
+        case MIPS_INS_CEQI: /* Fall-through - FPU */
+        case MIPS_INS_CEQ: {
+        	if(op_count == 2){
+			 	_[cp1flags ^= (operand(0) == operand(1))];
+        	} else {
+        	 	_[cp1flags ^= (constant(1) << operand(0)) & (operand(0) * (operand(1) == operand(2)))];
+        	}
+        	break;
+        }
+        case MIPS_INS_BC1F: {
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(op_count - 1))
+                         ];
+            if(op_count == 1){
+            	_[
+            		jump(~cp1flags,
+                   	taken.basicBlock(),
+                    directSuccessor())
+                ];
+            } else {
+            	_[
+            		jump(~(cp1flags & (constant(1) << operand(0))),
+                   	taken.basicBlock(),
+                    directSuccessor())
+				];
+            }
+            break;
+        }
+        case MIPS_INS_BC1FL: {
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(op_count - 1))
+                         ];
+            if(op_count == 1){
+            	_[
+            		jump(~cp1flags,
+                   	taken.basicBlock(),
+                    directSuccessorButOne())
+                ];
+            } else {
+            	_[
+            		jump(~(cp1flags & (constant(1) << operand(0))),
+                   	taken.basicBlock(),
+                    directSuccessorButOne())
+                ];
+            }
+            break;
+        }
+        case MIPS_INS_BC1T: {
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(op_count - 1))
+                         ];
+            if(op_count == 1){
+            	_[
+            		jump(cp1flags,
+                   	taken.basicBlock(),
+                    directSuccessor())
+                ];
+            } else {
+            	_[
+            		jump((cp1flags & (constant(1) << operand(0))),
+                   	taken.basicBlock(),
+                    directSuccessor())
+                ];
+            }
+            break;
+        }
+        case MIPS_INS_BC1TL: {
+            auto block = MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), instruction);
+            auto taken = delayslotCallback(block)[
+                             jump(operand(op_count - 1))
+                         ];
+            if(op_count == 1){
+            	_[
+            		jump(cp1flags,
+                   	taken.basicBlock(),
+                    directSuccessorButOne())
+                ];
+            } else {
+            	_[
+            		jump((cp1flags & (constant(1) << operand(0))),
+                   	taken.basicBlock(),
+                    directSuccessorButOne())
+                ];
+            }
             break;
         }
         case MIPS_INS_BAL: /* Fall-through */
