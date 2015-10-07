@@ -116,9 +116,32 @@ static const uint32_t SECTION_ATTRIBUTES = 0xffffff00;
 
 static const uint32_t S_REGULAR = 0;
 static const uint32_t S_ZEROFILL = 1;
+static const uint32_t S_CSTRING_LITERALS = 2;
+static const uint32_t S_4BYTE_LITERALS = 3;
+static const uint32_t S_8BYTE_LITERALS = 4;
+static const uint32_t S_LITERAL_POINTERS = 5;
+static const uint32_t S_NON_LAZY_SYMBOL_POINTERS = 6;
+static const uint32_t S_LAZY_SYMBOL_POINTERS = 7;
+static const uint32_t S_SYMBOL_STUBS = 8;
+static const uint32_t S_MOD_INIT_FUNC_POINTERS = 9;
+static const uint32_t S_MOD_TERM_FUNC_POINTERS = 10;
+static const uint32_t S_COALESCED = 11;
+static const uint32_t S_GB_ZEROFILL = 12;
+static const uint32_t S_INTERPOSING = 13;
+static const uint32_t S_16BYTE_LITERALS = 14;
+static const uint32_t S_DTRACE_DOF = 15;
+static const uint32_t S_LAZY_DYLIB_SYMBOL_POINTERS = 16;
+static const uint32_t S_THREAD_LOCAL_REGULAR = 17;
+static const uint32_t S_THREAD_LOCAL_ZEROFILL = 18;
+static const uint32_t S_THREAD_LOCAL_VARIABLES = 19;
+static const uint32_t S_THREAD_LOCAL_VARIABLE_POINTERS = 20;
+static const uint32_t S_THREAD_LOCAL_INIT_FUNCTION_POINTERS = 21;
 
 static const uint32_t S_ATTR_SOME_INSTRUCTIONS = 0x00000400;
 static const uint32_t S_ATTR_PURE_INSTRUCTIONS = 0x80000000;
+
+static const uint32_t INDIRECT_SYMBOL_LOCAL = 0x80000000;
+static const uint32_t INDIRECT_SYMBOL_ABS = 0x40000000;
 
 struct symtab_command {
     uint32_t cmd;
@@ -127,6 +150,29 @@ struct symtab_command {
     uint32_t nsyms;
     uint32_t stroff;
     uint32_t strsize;
+};
+
+struct dysymtab_command {
+    uint32_t cmd;
+    uint32_t cmdsize;
+    uint32_t ilocalsym;
+    uint32_t nlocalsym;
+    uint32_t iextdefsym;
+    uint32_t nextdefsym;
+    uint32_t iundefsym;
+    uint32_t nundefsym;
+    uint32_t tocoff;
+    uint32_t ntoc;
+    uint32_t modtaboff;
+    uint32_t nmodtab;
+    uint32_t extrefsymoff;
+    uint32_t nextrefsyms;
+    uint32_t indirectsymoff;
+    uint32_t nindirectsyms;
+    uint32_t extreloff;
+    uint32_t nextrel;
+    uint32_t locreloff;
+    uint32_t nlocrel;
 };
 
 struct nlist {
