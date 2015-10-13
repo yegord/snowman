@@ -759,6 +759,7 @@ class MipsInstructionAnalyzerImpl {
             break;
         }
         /* Co-processor 1 is the FPU. */
+        case MIPS_INS_CVT: /* Dummy for now - FIXME */
         case MIPS_INS_MFC1: {
             _[
                 operand(0) ^= operand(1)
