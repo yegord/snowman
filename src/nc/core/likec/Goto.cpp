@@ -24,20 +24,12 @@
 
 #include "Goto.h"
 
-#include "PrintContext.h"
-
 namespace nc {
 namespace core {
 namespace likec {
 
 void Goto::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
     fun(destination_.get());
-}
-
-void Goto::doPrint(PrintContext &context) const {
-    context.out() << "goto ";
-    destination_->print(context);
-    context.out() << ';';
 }
 
 } // namespace likec

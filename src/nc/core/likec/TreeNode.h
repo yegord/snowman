@@ -27,19 +27,19 @@
 
 #include <functional>
 
+#include <nc/common/Printable.h>
 #include <nc/common/Subclass.h>
 
 namespace nc {
 namespace core {
 namespace likec {
 
-class PrintContext;
 class Tree;
 
 /**
  * Base class for tree nodes.
  */
-class TreeNode {
+class TreeNode: public PrintableBase<TreeNode> {
     NC_BASE_CLASS(TreeNode, nodeKind)
 
 public:
@@ -63,7 +63,7 @@ public:
     /**
      * Virtual destructor.
      */
-    virtual ~TreeNode() {}
+    virtual ~TreeNode();
 
     /**
      * Calls a given function on all the children of this node.
@@ -86,11 +86,11 @@ public:
     }
 
     /**
-     * Prints the tree node calling appropriate print callbacks.
+     * Prints the node into a stream.
      *
-     * \param[in] context Print context.
+     * \param out Output stream.
      */
-    void print(PrintContext &context) const;
+    void print(QTextStream &out) const;
 
 protected:
     /**
@@ -101,13 +101,6 @@ protected:
      * \param fun Valid function.
      */
     virtual void doCallOnChildren(const std::function<void(TreeNode *)> &fun);
-
-    /**
-     * Prints the tree node without calling any callbacks.
-     *
-     * \param[in] context Print context.
-     */
-    virtual void doPrint(PrintContext &context) const = 0;
 };
 
 } // namespace likec

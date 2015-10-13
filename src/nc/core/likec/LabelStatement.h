@@ -61,9 +61,6 @@ public:
      * \return Valid pointer to the label identifier.
      */
     LabelIdentifier *identifier() const { return identifier_.get(); }
-
-protected:
-    void doPrint(PrintContext &callback) const override;
 };
 
 } // namespace likec

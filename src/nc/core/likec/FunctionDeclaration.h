@@ -83,7 +83,7 @@ public:
     /**
      * Function arguments.
      */
-    const std::vector<std::unique_ptr<ArgumentDeclaration> > &arguments() const { return arguments_; }
+    const std::vector<std::unique_ptr<ArgumentDeclaration>> &arguments() const { return arguments_; }
 
     /**
      * Adds argument to the function.
@@ -104,8 +104,6 @@ public:
 
 protected:
     void doCallOnChildren(const std::function<void(TreeNode *)> &fun) override;
-    void doPrint(PrintContext &context) const override;
-    void printSignature(PrintContext &context) const;
 };
 
 } // namespace likec

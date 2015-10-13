@@ -56,9 +56,6 @@ public:
      * \return Reference count.
      */
     int referenceCount() const { return referenceCount_; }
-
-protected:
-    void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

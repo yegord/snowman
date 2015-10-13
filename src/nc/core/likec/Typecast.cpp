@@ -24,38 +24,12 @@
 
 #include "Typecast.h"
 
-#include <nc/common/make_unique.h>
-
-#include "PrintContext.h"
-#include "Types.h"
-#include "Tree.h"
-
 namespace nc {
 namespace core {
 namespace likec {
 
 void Typecast::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
     fun(operand_.get());
-}
-
-void Typecast::doPrint(PrintContext &context) const {
-    int precedence = this->precedence();
-    int operandPrecedence = operand()->precedence();
-
-    int absPrecedence = abs(precedence);
-    int absOperandPrecedence = abs(operandPrecedence);
-
-    bool operandInBraces = absOperandPrecedence > absPrecedence;
-
-    context.out() << '(' << *type() << ')';
-
-    if (operandInBraces) {
-        context.out() << '(';
-    }
-    operand()->print(context);
-    if (operandInBraces) {
-        context.out() << ')';
-    }
 }
 
 } // namespace likec

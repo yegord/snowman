@@ -26,8 +26,6 @@
 
 #include <nc/common/Foreach.h>
 
-#include "PrintContext.h"
-
 namespace nc {
 namespace core {
 namespace likec {
@@ -39,42 +37,6 @@ void Block::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
     foreach (const auto &statement, statements_) {
         fun(statement.get());
     }
-}
-
-void Block::doPrint(PrintContext &context) const {
-    context.out() << "{" << endl;
-    context.indentMore();
-
-    foreach (const auto &declaration, declarations_) {
-        context.outIndent();
-        declaration->print(context);
-        context.out() << endl;
-    }
-
-    if (!declarations_.empty() && !statements_.empty()) {
-        context.out() << endl;
-    }
-
-    foreach (const auto &statement, statements_) {
-        bool isCaseLabel =
-            statement->statementKind() == Statement::CASE_LABEL ||
-            statement->statementKind() == Statement::DEFAULT_LABEL;
-
-        if (isCaseLabel) {
-            context.indentLess();
-        }
-
-        context.outIndent();
-        statement->print(context);
-        context.out() << endl;
-
-        if (isCaseLabel) {
-            context.indentMore();
-        }
-    }
-
-    context.indentLess();
-    context.outIndent() << "}";
 }
 
 } // namespace likec

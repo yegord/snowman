@@ -214,6 +214,7 @@ std::unique_ptr<likec::Expression> CodeGenerator::makeInitialValue(const MemoryL
                 return std::make_unique<likec::IntegerConstant>(*value, integerType);
             } else {
                 return std::make_unique<likec::Typecast>(
+                    likec::Typecast::REINTERPRET_CAST,
                     type,
                     std::make_unique<likec::IntegerConstant>(*value, tree().makeIntegerType(type->size(), true)));
             }

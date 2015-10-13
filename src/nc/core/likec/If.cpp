@@ -26,8 +26,6 @@
 
 #include <nc/common/make_unique.h>
 
-#include "PrintContext.h"
-
 namespace nc {
 namespace core {
 namespace likec {
@@ -38,17 +36,6 @@ void If::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
 
     if (elseStatement_) {
         fun(elseStatement_.get());
-    }
-}
-
-void If::doPrint(PrintContext &context) const {
-    context.out() << "if (";
-    condition_->print(context);
-    context.out() << ") ";
-    printNestedStatement(thenStatement(), context);
-    if (elseStatement_) {
-        context.out() << " else ";
-        printNestedStatement(elseStatement(), context);
     }
 }
 

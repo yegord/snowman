@@ -41,7 +41,7 @@ class StructTypeDeclaration;
  * Structural type.
  */
 class StructType: public Type {
-    std::vector<std::unique_ptr<MemberDeclaration> > members_; ///< Members of struct.
+    std::vector<std::unique_ptr<MemberDeclaration>> members_; ///< Members of struct.
     const StructTypeDeclaration *typeDeclaration_; ///< Type declaration.
 
 public:
@@ -55,7 +55,9 @@ public:
     /**
      * \return Members of struct.
      */
-    const std::vector<std::unique_ptr<MemberDeclaration>> &members() const { return members_; }
+    const std::vector<const MemberDeclaration *> &members() const {
+        return reinterpret_cast<const std::vector<const MemberDeclaration *> &>(members_);
+    }
 
     /**
      * \return Type declaration.

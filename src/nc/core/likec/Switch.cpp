@@ -25,7 +25,6 @@
 #include "Switch.h"
 
 #include "Expression.h"
-#include "PrintContext.h"
 
 namespace nc {
 namespace core {
@@ -34,13 +33,6 @@ namespace likec {
 void Switch::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
     fun(body_.get());
     fun(expression_.get());
-}
-
-void Switch::doPrint(PrintContext &context) const {
-    context.out() << "switch (";
-    expression()->print(context);
-    context.out() << ") ";
-    printNestedStatement(body(), context);
 }
 
 } // namespace likec

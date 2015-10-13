@@ -60,9 +60,6 @@ public:
      * \return Declared structural type.
      */
     const StructType *type() const { return &type_; }
-
-protected:
-    void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

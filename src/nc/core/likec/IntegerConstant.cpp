@@ -24,8 +24,6 @@
 
 #include "IntegerConstant.h"
 
-#include "PrintContext.h"
-
 namespace nc {
 namespace core {
 namespace likec {
@@ -43,16 +41,6 @@ IntegerConstant::IntegerConstant(ConstantValue value, const IntegerType *type):
 void IntegerConstant::setValue(const SizedValue &value) {
     assert(value.size() == type_->size());
     value_ = value;
-}
-
-void IntegerConstant::doPrint(PrintContext &context) const {
-    SignedConstantValue val = value().size() > 1 ? value().signedValue() : value().value();
-
-    if ((0 <= val && val <= 100) || (-100 <= val && val < 0 && !type()->isUnsigned())) {
-        context.out() << val;
-    } else {
-        context.out() << hex << "0x" << value().value() << dec;
-    }
 }
 
 } // namespace likec

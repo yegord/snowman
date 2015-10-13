@@ -39,19 +39,34 @@ class Type;
  * Typecast.
  */
 class Typecast: public Expression {
+public:
+    enum CastKind {
+        C_STYLE_CAST,
+        STATIC_CAST,
+        REINTERPRET_CAST
+    };
+
+private:
+    CastKind castKind_; ///< Kind of cast.
     const Type *type_; ///< Type to cast to.
     std::unique_ptr<Expression> operand_; ///< Operand.
 
 public:
     /**
-     * Class constructor.
+     * Constructor.
      *
+     * \param[in] castKind Kind of cast.
      * \param[in] type Type to cast to.
      * \param[in] operand Expression to be casted.
      */
-    Typecast(const Type *type, std::unique_ptr<Expression> operand):
-        Expression(TYPECAST), type_(type), operand_(std::move(operand))
+    Typecast(CastKind castKind, const Type *type, std::unique_ptr<Expression> operand):
+        Expression(TYPECAST), castKind_(castKind), type_(type), operand_(std::move(operand))
     {}
+
+    /**
+     * \return Kind of the cast.
+     */
+    CastKind castKind() const { return castKind_; }
 
     /**
      * \return Type to cast to.
@@ -68,11 +83,8 @@ public:
      */
     const Expression *operand() const { return operand_.get(); }
 
-    int precedence() const override { return -3; }
-
 protected:
     void doCallOnChildren(const std::function<void(TreeNode *)> &fun) override;
-    void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

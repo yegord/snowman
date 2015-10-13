@@ -26,8 +26,8 @@
 
 #include <nc/common/Foreach.h>
 
-#include "PrintContext.h"
 #include "Simplifier.h"
+#include "TreePrinter.h"
 #include "Types.h"
 
 namespace nc {
@@ -41,9 +41,7 @@ void Tree::rewriteRoot() {
 }
 
 void Tree::print(QTextStream &out, PrintCallback<const TreeNode *> *callback) const {
-    PrintContext context(out, callback);
-
-    root()->print(context);
+    TreePrinter(out, callback).print(root());
 }
 
 const VoidType *Tree::makeVoidType() {

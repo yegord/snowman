@@ -37,9 +37,6 @@ namespace likec {
 class Break: public Statement {
 public:
     Break(): Statement(BREAK) {}
-
-protected:
-    void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

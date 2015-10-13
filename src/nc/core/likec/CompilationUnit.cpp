@@ -22,12 +22,9 @@
 // along with SmartDec decompiler.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <nc/config.h>
+#include "CompilationUnit.h"
 
 #include <nc/common/Foreach.h>
-
-#include "CompilationUnit.h"
-#include "PrintContext.h"
 
 namespace nc {
 namespace core {
@@ -36,17 +33,6 @@ namespace likec {
 void CompilationUnit::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
     foreach (const auto &declaration, declarations_) {
         fun(declaration.get());
-    }
-}
-
-void CompilationUnit::doPrint(PrintContext &context) const {
-    printComment(context);
-
-    foreach (const auto &declaration, declarations_) {
-        context.out() << endl;
-        context.outIndent();
-        declaration->print(context);
-        context.out() << endl;
     }
 }
 

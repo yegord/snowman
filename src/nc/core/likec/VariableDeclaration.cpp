@@ -24,9 +24,6 @@
 
 #include "VariableDeclaration.h"
 
-#include "PrintContext.h"
-#include "Type.h"
-
 namespace nc {
 namespace core {
 namespace likec {
@@ -37,18 +34,6 @@ void VariableDeclaration::doCallOnChildren(const std::function<void(TreeNode *)>
     if (initialValue_) {
         fun(initialValue_.get());
     }
-}
-
-void VariableDeclaration::doPrint(PrintContext &context) const {
-    printComment(context);
-
-    context.out() << *type() << ' ';
-    variableIdentifier()->print(context);
-    if (initialValue()) {
-        context.out() << " = ";
-        initialValue()->print(context);
-    }
-    context.out() << ';';
 }
 
 } // namespace likec

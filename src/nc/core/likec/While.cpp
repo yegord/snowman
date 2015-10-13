@@ -25,7 +25,6 @@
 #include "While.h"
 
 #include "Expression.h"
-#include "PrintContext.h"
 
 namespace nc {
 namespace core {
@@ -34,13 +33,6 @@ namespace likec {
 void While::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
     fun(body_.get());
     fun(condition_.get());
-}
-
-void While::doPrint(PrintContext &context) const {
-    context.out() << "while (";
-    condition()->print(context);
-    context.out() << ") ";
-    printNestedStatement(body(), context);
 }
 
 } // namespace likec

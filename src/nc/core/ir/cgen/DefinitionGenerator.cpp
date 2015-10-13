@@ -428,6 +428,7 @@ void DefinitionGenerator::makeStatements(const cflow::Node *node, likec::Block *
              * Generate the switch expression.
              */
             auto expression = std::make_unique<likec::Typecast>(
+                likec::Typecast::REINTERPRET_CAST,
                 newSwitchContext.valueType(),
                 makeExpression(witch->switchTerm()));
 
@@ -649,6 +650,7 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
                 std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::ASSIGN,
                     std::move(left),
                     std::make_unique<likec::Typecast>(
+                        likec::Typecast::REINTERPRET_CAST,
                         parent().makeType(parent().types().getType(assignment->left())),
                         std::move(right))));
         }
@@ -707,6 +709,7 @@ std::unique_ptr<likec::Statement> DefinitionGenerator::doMakeStatement(const Sta
                                     likec::BinaryOperator::ASSIGN,
                                     makeExpression(returnValueTerm),
                                     std::make_unique<likec::Typecast>(
+                                        likec::Typecast::REINTERPRET_CAST,
                                         parent().makeType(parent().types().getType(returnValueTerm)),
                                         std::move(callOperator))));
                         }
@@ -840,6 +843,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::doMakeExpression(const T
 
             return std::make_unique<likec::UnaryOperator>(likec::UnaryOperator::DEREFERENCE,
                 std::make_unique<likec::Typecast>(
+                    likec::Typecast::REINTERPRET_CAST,
                     tree().makePointerType(addressType->size(), parent().makeType(type)),
                     makeExpression(dereference->address())));
         }
@@ -862,35 +866,45 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::doMakeExpression(const U
     switch (unary->operatorKind()) {
         case UnaryOperator::NOT: {
             const types::Type *operandType = parent().types().getType(unary->operand());
-            return std::make_unique<likec::UnaryOperator>(likec::UnaryOperator::BITWISE_NOT,
+            return std::make_unique<likec::UnaryOperator>(
+                likec::UnaryOperator::BITWISE_NOT,
                 std::make_unique<likec::Typecast>(
+                    likec::Typecast::REINTERPRET_CAST,
                     tree().makeIntegerType(operandType->size(), operandType->isUnsigned()), std::move(operand)));
         }
         case UnaryOperator::NEGATION: {
             const types::Type *operandType = parent().types().getType(unary->operand());
-            return std::make_unique<likec::UnaryOperator>(likec::UnaryOperator::NEGATION,
+            return std::make_unique<likec::UnaryOperator>(
+                likec::UnaryOperator::NEGATION,
                 std::make_unique<likec::Typecast>(
+                    likec::Typecast::REINTERPRET_CAST,
                     tree().makeIntegerType(operandType->size(), operandType->isUnsigned()), std::move(operand)));
         }
         case UnaryOperator::SIGN_EXTEND: {
             return std::make_unique<likec::Typecast>(
-                tree().makeIntegerType(unary->size(), false),
-                std::make_unique<likec::Typecast>(
-                    tree().makeIntegerType(unary->operand()->size(), false), std::move(operand)));
+                likec::Typecast::STATIC_CAST, tree().makeIntegerType(unary->size(), false),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(unary->operand()->size(), false),
+                                                  std::move(operand)));
         }
         case UnaryOperator::ZERO_EXTEND: {
             return std::make_unique<likec::Typecast>(
-                tree().makeIntegerType(unary->size(), true),
-                std::make_unique<likec::Typecast>(
-                    tree().makeIntegerType(unary->operand()->size(), true), std::move(operand)));
+                likec::Typecast::STATIC_CAST, tree().makeIntegerType(unary->size(), true),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(unary->operand()->size(), true),
+                                                  std::move(operand)));
         }
         case UnaryOperator::TRUNCATE: {
             const types::Type *type = parent().types().getType(unary);
-            return std::make_unique<likec::Typecast>(parent().makeType(type), std::move(operand));
+            const types::Type *operandType = parent().types().getType(unary->operand());
+            return std::make_unique<likec::Typecast>(
+                likec::Typecast::STATIC_CAST, tree().makeIntegerType(unary->size(), type->isUnsigned()),
+                std::make_unique<likec::Typecast>(
+                    likec::Typecast::REINTERPRET_CAST,
+                    tree().makeIntegerType(unary->operand()->size(), operandType->isUnsigned()), std::move(operand)));
         }
         default:
             unreachable();
-            return nullptr;
     }
 }
 
@@ -903,69 +917,124 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::doMakeExpression(const B
 
     switch (binary->operatorKind()) {
         case BinaryOperator::AND:
-            return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::BITWISE_AND,
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(leftType->size(), leftType->isUnsigned()), std::move(left)),
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(rightType->size(), rightType->isUnsigned()), std::move(right)));
+            return std::make_unique<likec::BinaryOperator>(
+                likec::BinaryOperator::BITWISE_AND,
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(leftType->size(), leftType->isUnsigned()),
+                                                  std::move(left)),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(rightType->size(), rightType->isUnsigned()),
+                                                  std::move(right)));
 
         case BinaryOperator::OR:
-            return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::BITWISE_OR,
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(leftType->size(), leftType->isUnsigned()), std::move(left)),
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(rightType->size(), rightType->isUnsigned()), std::move(right)));
+            return std::make_unique<likec::BinaryOperator>(
+                likec::BinaryOperator::BITWISE_OR,
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(leftType->size(), leftType->isUnsigned()),
+                                                  std::move(left)),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(rightType->size(), rightType->isUnsigned()),
+                                                  std::move(right)));
 
         case BinaryOperator::XOR:
-            return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::BITWISE_XOR,
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(leftType->size(), leftType->isUnsigned()), std::move(left)),
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(rightType->size(), rightType->isUnsigned()), std::move(right)));
+            return std::make_unique<likec::BinaryOperator>(
+                likec::BinaryOperator::BITWISE_XOR,
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(leftType->size(), leftType->isUnsigned()),
+                                                  std::move(left)),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(rightType->size(), rightType->isUnsigned()),
+                                                  std::move(right)));
 
         case BinaryOperator::SHL:
-            return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::SHL,
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(leftType->size(), leftType->isUnsigned()), std::move(left)),
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(rightType->size(), rightType->isUnsigned()), std::move(right)));
+            return std::make_unique<likec::BinaryOperator>(
+                likec::BinaryOperator::SHL,
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(leftType->size(), leftType->isUnsigned()),
+                                                  std::move(left)),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(rightType->size(), rightType->isUnsigned()),
+                                                  std::move(right)));
 
         case BinaryOperator::SHR:
-            return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::SHR,
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(leftType->size(), true), std::move(left)),
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(rightType->size(), rightType->isUnsigned()), std::move(right)));
+            return std::make_unique<likec::BinaryOperator>(
+                likec::BinaryOperator::SHR,
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(leftType->size(), true), std::move(left)),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(rightType->size(), rightType->isUnsigned()),
+                                                  std::move(right)));
 
         case BinaryOperator::SAR:
-            return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::SHR,
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(leftType->size(), false), std::move(left)),
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(rightType->size(), rightType->isUnsigned()), std::move(right)));
+            return std::make_unique<likec::BinaryOperator>(
+                likec::BinaryOperator::SHR,
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(leftType->size(), false), std::move(left)),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(rightType->size(), rightType->isUnsigned()),
+                                                  std::move(right)));
 
         case BinaryOperator::ADD:
-            return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::ADD,
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(leftType->size(), leftType->isUnsigned()), std::move(left)),
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(rightType->size(), rightType->isUnsigned()), std::move(right)));
+            return std::make_unique<likec::BinaryOperator>(
+                likec::BinaryOperator::ADD,
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(leftType->size(), leftType->isUnsigned()),
+                                                  std::move(left)),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(rightType->size(), rightType->isUnsigned()),
+                                                  std::move(right)));
 
         case BinaryOperator::SUB:
-            return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::SUB,
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(leftType->size(), leftType->isUnsigned()), std::move(left)),
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(rightType->size(), rightType->isUnsigned()), std::move(right)));
+            return std::make_unique<likec::BinaryOperator>(
+                likec::BinaryOperator::SUB,
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(leftType->size(), leftType->isUnsigned()),
+                                                  std::move(left)),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(rightType->size(), rightType->isUnsigned()),
+                                                  std::move(right)));
 
         case BinaryOperator::MUL:
-            return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::MUL,
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(leftType->size(), leftType->isUnsigned()), std::move(left)),
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(rightType->size(), rightType->isUnsigned()), std::move(right)));
+            return std::make_unique<likec::BinaryOperator>(
+                likec::BinaryOperator::MUL,
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(leftType->size(), leftType->isUnsigned()),
+                                                  std::move(left)),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(rightType->size(), rightType->isUnsigned()),
+                                                  std::move(right)));
 
         case BinaryOperator::SIGNED_DIV:
-            return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::DIV,
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(leftType->size(), false), std::move(left)),
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(rightType->size(), false), std::move(right)));
+            return std::make_unique<likec::BinaryOperator>(
+                likec::BinaryOperator::DIV,
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(leftType->size(), false), std::move(left)),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(rightType->size(), false), std::move(right)));
 
         case BinaryOperator::SIGNED_REM:
-            return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::REM,
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(leftType->size(), false), std::move(left)),
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(rightType->size(), false), std::move(right)));
+            return std::make_unique<likec::BinaryOperator>(
+                likec::BinaryOperator::REM,
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(leftType->size(), false), std::move(left)),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(rightType->size(), false), std::move(right)));
 
         case BinaryOperator::UNSIGNED_DIV:
-            return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::DIV,
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(leftType->size(), true), std::move(left)),
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(rightType->size(), true), std::move(right)));
+            return std::make_unique<likec::BinaryOperator>(
+                likec::BinaryOperator::DIV,
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(leftType->size(), true), std::move(left)),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(rightType->size(), true), std::move(right)));
 
         case BinaryOperator::UNSIGNED_REM:
-            return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::REM,
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(leftType->size(), true), std::move(left)),
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(rightType->size(), true), std::move(right)));
+            return std::make_unique<likec::BinaryOperator>(
+                likec::BinaryOperator::REM,
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(leftType->size(), true), std::move(left)),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(rightType->size(), true), std::move(right)));
 
         case BinaryOperator::EQUAL:
             return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::EQ,
@@ -973,24 +1042,36 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::doMakeExpression(const B
                 std::move(right));
 
         case BinaryOperator::SIGNED_LESS:
-            return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::LT,
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(leftType->size(), false), std::move(left)),
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(rightType->size(), false), std::move(right)));
+            return std::make_unique<likec::BinaryOperator>(
+                likec::BinaryOperator::LT,
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(leftType->size(), false), std::move(left)),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(rightType->size(), false), std::move(right)));
 
         case BinaryOperator::SIGNED_LESS_OR_EQUAL:
-            return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::LEQ,
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(leftType->size(), false), std::move(left)),
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(rightType->size(), false), std::move(right)));
+            return std::make_unique<likec::BinaryOperator>(
+                likec::BinaryOperator::LEQ,
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(leftType->size(), false), std::move(left)),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(rightType->size(), false), std::move(right)));
 
         case BinaryOperator::UNSIGNED_LESS:
-            return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::LT,
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(leftType->size(), true), std::move(left)),
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(rightType->size(), true), std::move(right)));
+            return std::make_unique<likec::BinaryOperator>(
+                likec::BinaryOperator::LT,
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(leftType->size(), true), std::move(left)),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(rightType->size(), true), std::move(right)));
 
         case BinaryOperator::UNSIGNED_LESS_OR_EQUAL:
-            return std::make_unique<likec::BinaryOperator>(likec::BinaryOperator::LEQ,
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(leftType->size(), true), std::move(left)),
-                std::make_unique<likec::Typecast>(tree().makeIntegerType(rightType->size(), true), std::move(right)));
+            return std::make_unique<likec::BinaryOperator>(
+                likec::BinaryOperator::LEQ,
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(leftType->size(), true), std::move(left)),
+                std::make_unique<likec::Typecast>(likec::Typecast::REINTERPRET_CAST,
+                                                  tree().makeIntegerType(rightType->size(), true), std::move(right)));
 
         default:
             unreachable();
@@ -1089,6 +1170,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeVariableAccess(const
          * However, I am not sure whether they can be reliably handled in C at all.
          */
         auto variableAddress = std::make_unique<likec::Typecast>(
+            likec::Typecast::REINTERPRET_CAST,
             tree().makeIntegerType(tree().pointerSize(), false),
             std::make_unique<likec::UnaryOperator>(
                 likec::UnaryOperator::REFERENCE,
@@ -1109,6 +1191,7 @@ std::unique_ptr<likec::Expression> DefinitionGenerator::makeVariableAccess(const
         return std::make_unique<likec::UnaryOperator>(
             likec::UnaryOperator::DEREFERENCE,
             std::make_unique<likec::Typecast>(
+                likec::Typecast::REINTERPRET_CAST,
                 tree().makePointerType(parent().makeType(parent().types().getType(term))),
                 std::move(termAddress)));
     }

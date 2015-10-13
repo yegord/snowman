@@ -28,7 +28,6 @@
 #include <vector>
 #include <memory>
 
-#include "Commentable.h"
 #include "Declaration.h"
 
 namespace nc {
@@ -38,7 +37,7 @@ namespace likec {
 /**
  * Compilation unit.
  */
-class CompilationUnit: public TreeNode, public Commentable {
+class CompilationUnit: public TreeNode {
     std::vector<std::unique_ptr<Declaration>> declarations_; ///< Declarations.
 
 public:
@@ -71,7 +70,6 @@ public:
 
 protected:
     void doCallOnChildren(const std::function<void(TreeNode *)> &fun) override;
-    void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

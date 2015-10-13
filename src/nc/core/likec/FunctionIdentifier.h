@@ -66,9 +66,6 @@ public:
         assert(declaration != nullptr);
         declaration_ = declaration;
     }
-
-protected:
-    void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

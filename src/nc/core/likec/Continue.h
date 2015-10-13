@@ -37,9 +37,6 @@ namespace likec {
 class Continue: public Statement {
 public:
     Continue(): Statement(CONTINUE) {}
-
-protected:
-    void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

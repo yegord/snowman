@@ -154,26 +154,20 @@ set(SOURCES
     irgen/InstructionAnalyzer.h
     irgen/InvalidInstructionException.cpp
     irgen/InvalidInstructionException.h
-    likec/ArgumentDeclaration.cpp
     likec/ArgumentDeclaration.h
     likec/BinaryOperator.cpp
     likec/BinaryOperator.h
     likec/Block.cpp
     likec/Block.h
-    likec/Break.cpp
     likec/Break.h
     likec/CallOperator.cpp
     likec/CallOperator.h
-    likec/CaseLabel.cpp
     likec/CaseLabel.h
-    likec/Commentable.cpp
     likec/Commentable.h
     likec/CompilationUnit.cpp
     likec/CompilationUnit.h
-    likec/Continue.cpp
     likec/Continue.h
     likec/Declaration.h
-    likec/DefaultLabel.cpp
     likec/DefaultLabel.h
     likec/DoWhile.cpp
     likec/DoWhile.h
@@ -184,7 +178,6 @@ set(SOURCES
     likec/FunctionDeclaration.h
     likec/FunctionDefinition.cpp
     likec/FunctionDefinition.h
-    likec/FunctionIdentifier.cpp
     likec/FunctionIdentifier.h
     likec/FunctionPointerType.cpp
     likec/FunctionPointerType.h
@@ -192,32 +185,24 @@ set(SOURCES
     likec/Goto.h
     likec/If.cpp
     likec/If.h
-    likec/InlineAssembly.cpp
     likec/InlineAssembly.h
     likec/IntegerConstant.cpp
     likec/IntegerConstant.h
-    likec/LabelDeclaration.cpp
     likec/LabelDeclaration.h
     likec/LabelIdentifier.cpp
     likec/LabelIdentifier.h
-    likec/LabelStatement.cpp
     likec/LabelStatement.h
     likec/MemberAccessOperator.cpp
     likec/MemberAccessOperator.h
-    likec/MemberDeclaration.cpp
     likec/MemberDeclaration.h
-    likec/PrintContext.h
     likec/Return.cpp
     likec/Return.h
     likec/Simplifier.cpp
     likec/Simplifier.h
-    likec/Statement.cpp
     likec/Statement.h
-    likec/String.cpp
     likec/String.h
     likec/StructType.cpp
     likec/StructType.h
-    likec/StructTypeDeclaration.cpp
     likec/StructTypeDeclaration.h
     likec/Switch.cpp
     likec/Switch.h
@@ -225,6 +210,8 @@ set(SOURCES
     likec/Tree.h
     likec/TreeNode.cpp
     likec/TreeNode.h
+    likec/TreePrinter.cpp
+    likec/TreePrinter.h
     likec/Type.h
     likec/TypeCalculator.cpp
     likec/TypeCalculator.h
@@ -234,13 +221,11 @@ set(SOURCES
     likec/Types.h
     likec/UnaryOperator.cpp
     likec/UnaryOperator.h
-    likec/UndeclaredIdentifier.cpp
     likec/UndeclaredIdentifier.h
     likec/Utils.cpp
     likec/Utils.h
     likec/VariableDeclaration.cpp
     likec/VariableDeclaration.h
-    likec/VariableIdentifier.cpp
     likec/VariableIdentifier.h
     likec/While.cpp
     likec/While.h

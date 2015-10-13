@@ -56,9 +56,6 @@ public:
      * \return Label declaration.
      */
     const LabelDeclaration *declaration() const { return declaration_; }
-
-protected:
-    void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

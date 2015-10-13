@@ -25,7 +25,6 @@
 #include "ExpressionStatement.h"
 
 #include "Expression.h"
-#include "PrintContext.h"
 
 namespace nc {
 namespace core {
@@ -33,11 +32,6 @@ namespace likec {
 
 void ExpressionStatement::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
     fun(expression_.get());
-}
-
-void ExpressionStatement::doPrint(PrintContext &context) const {
-    expression_->print(context);
-    context.out() << ';';
 }
 
 } // namespace likec

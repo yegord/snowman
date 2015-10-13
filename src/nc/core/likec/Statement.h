@@ -89,15 +89,6 @@ public:
 
         statement_ = statement;
     }
-
-protected:
-    /**
-     * Prints nested statement doing appropriate indenting in case of blocks and usual statements.
-     *
-     * \param[in] statement Statement to print.
-     * \param[in] context Print context.
-     */
-    static void printNestedStatement(const Statement *statement, PrintContext &context);
 };
 
 } // namespace likec

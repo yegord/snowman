@@ -41,9 +41,6 @@ public:
      * \return Valid pointer to the type of the identifier.
      */
     const Type *type() const { return type_.get(); }
-
-protected:
-    void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

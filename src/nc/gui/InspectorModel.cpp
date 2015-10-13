@@ -269,7 +269,7 @@ void expand(InspectorItem *item, const core::likec::Declaration *declaration) {
         case core::likec::Declaration::FUNCTION_DEFINITION: {
             const core::likec::FunctionDefinition *functionDefinition = declaration->as<core::likec::FunctionDefinition>();
             item->addComment(tr("Function Definition"));
-            item->addChild(tr("block"), functionDefinition->block().get());
+            item->addChild(tr("block"), functionDefinition->block());
             break;
         }
         case core::likec::Declaration::LABEL_DECLARATION: {

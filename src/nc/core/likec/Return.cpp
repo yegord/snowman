@@ -25,7 +25,6 @@
 #include "Return.h"
 
 #include "Expression.h"
-#include "PrintContext.h"
 
 namespace nc {
 namespace core {
@@ -34,16 +33,6 @@ namespace likec {
 void Return::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
     if (returnValue_) {
         fun(returnValue_.get());
-    }
-}
-
-void Return::doPrint(PrintContext &context) const {
-    if (returnValue()) {
-        context.out() << "return ";
-        returnValue()->print(context);
-        context.out() << ";";
-    } else {
-        context.out() << "return;";
     }
 }
 

@@ -45,9 +45,6 @@ public:
     ArgumentDeclaration(const QString &identifier, const Type *type):
         VariableDeclaration(identifier, type)
     {}
-
-protected:
-    virtual void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

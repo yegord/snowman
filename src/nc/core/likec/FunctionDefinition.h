@@ -65,9 +65,7 @@ public:
     /**
      * \return Block of the function.
      */
-    const std::unique_ptr<const Block> &block() const {
-        return reinterpret_cast<const std::unique_ptr<const Block> &>(block_);
-    }
+    const Block *block() const { return block_.get(); }
 
     /**
      * \return Labels of the function.
@@ -83,7 +81,6 @@ public:
 
 protected:
     void doCallOnChildren(const std::function<void(TreeNode *)> &fun) override;
-    void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

@@ -25,7 +25,6 @@
 #include "DoWhile.h"
 
 #include "Expression.h"
-#include "PrintContext.h"
 
 namespace nc {
 namespace core {
@@ -34,14 +33,6 @@ namespace likec {
 void DoWhile::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
     fun(body_.get());
     fun(condition_.get());
-}
-
-void DoWhile::doPrint(PrintContext &context) const {
-    context.out() << "do ";
-    body()->print(context);
-    context.out() << " while (";
-    condition_->print(context);
-    context.out() << ");";
 }
 
 } // namespace likec

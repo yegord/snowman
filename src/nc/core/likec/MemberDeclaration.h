@@ -56,9 +56,6 @@ public:
      * \return Valid pointer to the type of this variable.
      */
     const Type *type() const { return type_; }
-
-protected:
-    void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

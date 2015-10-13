@@ -26,8 +26,6 @@
 
 #include <nc/common/Foreach.h>
 
-#include "PrintContext.h"
-
 namespace nc {
 namespace core {
 namespace likec {
@@ -40,13 +38,6 @@ void FunctionDefinition::doCallOnChildren(const std::function<void(TreeNode *)> 
     foreach (const auto &label, labels_) {
         fun(label.get());
     }
-}
-
-void FunctionDefinition::doPrint(PrintContext &context) const {
-    printComment(context);
-    printSignature(context);
-    context.out() << ' ';
-    block_->print(context);
 }
 
 } // namespace likec

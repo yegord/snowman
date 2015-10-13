@@ -48,7 +48,9 @@ ninja -C build/tests -k 100
 ---------------------------
 +
 Here, `-k 100` specifies that Ninja should stop only after 100 tests
-fail.
+fail. To run the decompiler only on the tests for which output checks
+are provided, add `check` target name to the above command line. To
+update correct outputs for all the tests, use `update` target.
 
 Adding Tests
 ------------
@@ -75,11 +77,6 @@ FAQ
 
     * *A:* It is really painful to write automatic generation of test
       cases in CMake language.
-
-    * *Q:* Some tests fail.
-
-    * *A:* I know, please fix the decompiler and
-      link:https://github.com/yegord/snowman/pulls[submit a patch].
 
 //////////////////////////////
 # vim:set et sts=4 sw=4 tw=72:

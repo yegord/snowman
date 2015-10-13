@@ -25,8 +25,6 @@
 #include "LabelIdentifier.h"
 
 #include "LabelDeclaration.h"
-#include "PrintContext.h"
-#include "Tree.h"
 
 namespace nc {
 namespace core {
@@ -36,10 +34,6 @@ LabelIdentifier::LabelIdentifier(LabelDeclaration *declaration):
     Expression(LABEL_IDENTIFIER), declaration_(declaration)
 {
     declaration_->incReferenceCount();
-}
-
-void LabelIdentifier::doPrint(PrintContext &context) const {
-    context.out() << declaration_->identifier();
 }
 
 } // namespace likec

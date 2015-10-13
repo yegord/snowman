@@ -24,57 +24,12 @@
 
 #include "MemberAccessOperator.h"
 
-#include <nc/common/Unreachable.h>
-
-#include "PrintContext.h"
-
-#include "BinaryOperator.h"
-#include "Typecast.h"
-#include "UnaryOperator.h"
-
 namespace nc {
 namespace core {
 namespace likec {
 
 void MemberAccessOperator::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
     fun(compound_.get());
-}
-
-int MemberAccessOperator::precedence() const {
-    switch (accessKind()) {
-        case ARROW:
-        case DOT:
-            return 2;
-    }
-    unreachable();
-}
-
-void MemberAccessOperator::doPrint(PrintContext &context) const {
-    bool braces = compound()->is<UnaryOperator>() ||
-                  compound()->is<BinaryOperator>() ||
-                  compound()->is<Typecast>();
-
-    if (braces) {
-        context.out() << "(";
-    }
-    compound_->print(context);
-    if (braces) {
-        context.out() << ")";
-    }
-
-    switch (accessKind()) {
-        case ARROW:
-            context.out() << "->";
-            break;
-        case DOT:
-            context.out() << '.';
-            break;
-        default:
-            unreachable();
-            break;
-    }
-    
-    context.out() << member_->identifier();
 }
 
 } // namespace likec

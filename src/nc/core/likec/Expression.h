@@ -84,16 +84,6 @@ public:
 
         term_ = term;
     }
-
-    /**
-     * \return Precedence of operator:
-     *  zero for non-operators,
-     *  positive values for left-to-right associative operators,
-     *  negative values for right-to-left associative operators.
-     *
-     * \see http://en.wikipedia.org/wiki/Operators_in_C_and_C%2B%2B#Operator_precedence
-     */
-    virtual int precedence() const { return 0; }
 };
 
 } // namespace likec

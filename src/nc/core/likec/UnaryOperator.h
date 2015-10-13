@@ -81,11 +81,8 @@ public:
      */
     const Expression *operand() const { return operand_.get(); }
 
-    int precedence() const override;
-
 protected:
     void doCallOnChildren(const std::function<void(TreeNode *)> &fun) override;
-    void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

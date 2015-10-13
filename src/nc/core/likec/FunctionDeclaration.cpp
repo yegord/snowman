@@ -27,7 +27,6 @@
 #include <nc/common/Foreach.h>
 
 #include "Tree.h"
-#include "PrintContext.h"
 
 namespace nc {
 namespace core {
@@ -58,37 +57,6 @@ void FunctionDeclaration::doCallOnChildren(const std::function<void(TreeNode *)>
     foreach (const auto &argument, arguments_) {
         fun(argument.get());
     }
-}
-
-void FunctionDeclaration::doPrint(PrintContext &context) const {
-    printComment(context);
-    printSignature(context);
-    context.out() << ';';
-}
-
-void FunctionDeclaration::printSignature(PrintContext &context) const {
-    context.out() << *type()->returnType() << ' ';
-    functionIdentifier()->print(context);
-    context.out() << '(';
-
-    bool comma = false;
-    foreach (const auto &argument, arguments_) {
-        if (comma) {
-            context.out() << ", ";
-        } else {
-            comma = true;
-        }
-        argument->print(context);
-    }
-
-    if (type()->variadic()) {
-        if (comma) {
-            context.out() << ", ";
-        }
-        context.out() << "...";
-    }
-    
-    context.out() << ')';
 }
 
 } /* namespace likec */

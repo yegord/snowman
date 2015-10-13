@@ -81,7 +81,6 @@ public:
         UNDEFINED,          ///< Undefined value, generally not a stack offset.
         ZERO_STACK_OFFSET,  ///< Undefined value, zero stack offset.
         RETURN_ADDRESS,     ///< Return address (e.g. saved by a call instruction).
-        USER = 1000         ///< First user intrinsic.
     };
 
     /**
@@ -185,7 +184,6 @@ public:
         SIGN_EXTEND, ///< Sign extend.
         ZERO_EXTEND, ///< Zero extend.
         TRUNCATE, ///< Truncate.
-        USER = 1000 ///< Base for user-defined operators.
     };
 
 private:
@@ -255,7 +253,6 @@ public:
         SIGNED_LESS_OR_EQUAL, ///< Integer signed less or equal.
         UNSIGNED_LESS, ///< Integer unsigned less.
         UNSIGNED_LESS_OR_EQUAL, ///< Integer unsigned less or equal.
-        USER = 1000 ///< Base for user-defined operators.
     };
 
 private:

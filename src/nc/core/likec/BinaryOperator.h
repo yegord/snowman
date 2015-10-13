@@ -109,11 +109,8 @@ class BinaryOperator: public Expression {
      */
     const Expression *right() const { return right_.get(); }
 
-    int precedence() const override;
-
 protected:
     void doCallOnChildren(const std::function<void(TreeNode *)> &fun) override;
-    void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

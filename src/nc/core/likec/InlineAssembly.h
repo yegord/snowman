@@ -53,9 +53,6 @@ public:
      * \return Assembler code.
      */
     const QString &code() const { return code_; }
-
-protected:
-    void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

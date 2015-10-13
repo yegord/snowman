@@ -24,86 +24,12 @@
 
 #include "UnaryOperator.h"
 
-#include <nc/common/Unreachable.h>
-
-#include "PrintContext.h"
-
 namespace nc {
 namespace core {
 namespace likec {
 
 void UnaryOperator::doCallOnChildren(const std::function<void(TreeNode *)> &fun) {
     fun(operand_.get());
-}
-
-int UnaryOperator::precedence() const {
-    switch (operatorKind()) {
-        case DEREFERENCE:
-        case REFERENCE:
-        case BITWISE_NOT:
-        case LOGICAL_NOT:
-        case NEGATION:
-        case PREFIX_INCREMENT:
-        case PREFIX_DECREMENT:
-            return -3;
-        default:
-            unreachable();
-            return 0;
-    }
-}
-
-void UnaryOperator::doPrint(PrintContext &context) const {
-    switch (operatorKind()) {
-        case DEREFERENCE:
-            context.out() << '*';
-            break;
-        case REFERENCE:
-            context.out() << '&';
-            break;
-        case BITWISE_NOT:
-            context.out() << '~';
-            break;
-        case LOGICAL_NOT:
-            context.out() << '!';
-            break;
-        case NEGATION:
-            context.out() << '-';
-            break;
-        case PREFIX_INCREMENT:
-            context.out() << "++";
-            break;
-        case PREFIX_DECREMENT:
-            context.out() << "--";
-            break;
-        default:
-            unreachable();
-            break;
-    }
-
-    int precedence = this->precedence();
-    int operandPrecedence = operand()->precedence();
-
-    int absPrecedence = abs(precedence);
-    int absOperandPrecedence = abs(operandPrecedence);
-
-    bool operandInBraces = absOperandPrecedence > absPrecedence;
-
-    /* Avoid too many minuses in a row. */
-    if (operatorKind() == NEGATION || operatorKind() == PREFIX_DECREMENT) {
-        if (auto unary = operand()->as<UnaryOperator>()) {
-            if (unary->operatorKind() == NEGATION || unary->operatorKind() == PREFIX_DECREMENT) {
-                operandInBraces = true;
-            }
-        }
-    }
-
-    if (operandInBraces) {
-        context.out() << '(';
-    }
-    operand()->print(context);
-    if (operandInBraces) {
-        context.out() << ')';
-    }
 }
 
 } // namespace likec

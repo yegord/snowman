@@ -24,25 +24,19 @@
 
 #include "TreeNode.h"
 
-#include "PrintContext.h"
+#include "TreePrinter.h"
 
 namespace nc {
 namespace core {
 namespace likec {
 
-void TreeNode::doCallOnChildren(const std::function<void(TreeNode *)> &) {}
+TreeNode::~TreeNode() {}
 
-void TreeNode::print(PrintContext &context) const {
-    if (context.callback()) {
-        context.callback()->onStartPrinting(this);
-    }
-
-    doPrint(context);
-    
-    if (context.callback()) {
-        context.callback()->onEndPrinting(this);
-    }
+void TreeNode::print(QTextStream &out) const {
+    TreePrinter(out, nullptr).print(this);
 }
+
+void TreeNode::doCallOnChildren(const std::function<void(TreeNode *)> &) {}
 
 } // namespace likec
 } // namespace core

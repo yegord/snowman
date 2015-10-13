@@ -75,9 +75,6 @@ public:
      * \return Type of the constant.
      */
     const IntegerType *type() const { return type_; }
-
-protected:
-    void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

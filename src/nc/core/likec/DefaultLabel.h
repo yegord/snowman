@@ -37,9 +37,6 @@ namespace likec {
 class DefaultLabel: public Statement {
 public:
     DefaultLabel(): Statement(DEFAULT_LABEL) {}
-
-protected:
-    void doPrint(PrintContext &callback) const override;
 };
 
 } // namespace likec

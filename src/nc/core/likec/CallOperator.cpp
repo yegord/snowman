@@ -26,8 +26,6 @@
 
 #include <nc/common/Foreach.h>
 
-#include "PrintContext.h"
-
 namespace nc {
 namespace core {
 namespace likec {
@@ -37,21 +35,6 @@ void CallOperator::doCallOnChildren(const std::function<void(TreeNode *)> &fun) 
     foreach(const auto &expression, arguments_) {
         fun(expression.get());
     }
-}
-
-void CallOperator::doPrint(PrintContext &context) const {
-    callee_->print(context);
-    context.out() << '(';
-    bool comma = false;
-    foreach (const auto &argument, arguments_) {
-        if (comma) {
-            context.out() << ", ";
-        } else {
-            comma = true;
-        }
-        argument->print(context);
-    }
-    context.out() << ')';
 }
 
 } // namespace likec

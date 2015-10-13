@@ -37,13 +37,24 @@ class UnaryOperator;
 class VariableDeclaration;
 class While;
 
+/**
+ * This class can simplify LikeC code.
+ */
 class Simplifier {
-    Tree &tree_;
     TypeCalculator typeCalculator_;
 
 public:
+    /**
+     * \param tree Tree whose nodes will be simplified.
+     */
     explicit Simplifier(Tree &tree);
 
+    /**
+     * \param node Valid pointer to a node.
+     *
+     * \return Pointer to the simplified node. Can be NULL, meaning
+     *         that node simplifies no nothing.
+     */
     std::unique_ptr<CompilationUnit> simplify(std::unique_ptr<CompilationUnit> node);
 
 private:
@@ -71,6 +82,12 @@ private:
     std::unique_ptr<Switch> simplify(std::unique_ptr<Switch> node);
     std::unique_ptr<Expression> simplifyBooleanExpression(std::unique_ptr<Expression> node);
 
+    /**
+     * Simplifies all the nodes in the given range.
+     * Removes nodes that simplify to nothing.
+     *
+     * \param range A range of nodes.
+     */
     template<class T>
     std::vector<T> simplify(std::vector<T> range);
 };

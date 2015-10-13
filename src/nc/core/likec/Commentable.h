@@ -31,18 +31,15 @@ namespace nc {
 namespace core {
 namespace likec {
 
-class PrintContext;
-
 /**
- * Class capable of storing and printing comments.
+ * Class capable of storing.
  *
  * Use it as the second base class for the tree nodes that can be commented.
  */
 class Commentable {
     QString comment_; ///< Comment.
 
-    public:
-
+public:
     /**
      * Constructor.
      *
@@ -66,13 +63,6 @@ class Commentable {
      * \param[in] comment New comment value.
      */
     void setComment(const QString &comment) { comment_ = comment; }
-
-    /**
-     * Prints the comment.
-     *
-     * \param[in] context Print context.
-     */
-    void printComment(PrintContext &context) const;
 };
 
 } // namespace likec

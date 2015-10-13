@@ -53,9 +53,6 @@ public:
      * \return Characters of the string.
      */
     const QString &characters() const { return characters_; }
-
-protected:
-    void doPrint(PrintContext &context) const override;
 };
 
 } // namespace likec

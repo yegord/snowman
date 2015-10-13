@@ -59,9 +59,6 @@ public:
      * \return Valid pointer to the case expression.
      */
     Expression *expression() const { return expression_.get(); }
-
-protected:
-    void doPrint(PrintContext &callback) const override;
 };
 
 } // namespace likec
