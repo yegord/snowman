@@ -24,13 +24,6 @@
 
 #include "BinaryOperator.h"
 
-#include <cstdlib>
-
-#include <nc/common/Unreachable.h>
-#include <cstdlib>
-
-#include "PrintContext.h"
-
 namespace nc {
 namespace core {
 namespace likec {
