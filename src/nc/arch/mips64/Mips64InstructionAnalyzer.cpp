@@ -308,6 +308,7 @@ class Mips64InstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_SLL: /* Fall-through */
+        case MIPS_INS_DSLL32:
         case MIPS_INS_SLLI:
         case MIPS_INS_SLLV: {
             if (getOperandType(2) == MIPS_OP_REG)
@@ -325,6 +326,7 @@ class Mips64InstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_SRA: /* Fall-through */
+        case MIPS_INS_DSRA32:
         case MIPS_INS_SRAI:
         case MIPS_INS_SRAV: {
             if (getOperandType(2) == MIPS_OP_REG)
@@ -342,6 +344,7 @@ class Mips64InstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_SRL: /* Fall-through */
+        case MIPS_INS_DSRL32:
         case MIPS_INS_SRLI:
         case MIPS_INS_SRLV: {
             if (getOperandType(2) == MIPS_OP_REG)
