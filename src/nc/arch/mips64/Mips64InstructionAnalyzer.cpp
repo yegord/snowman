@@ -166,6 +166,11 @@ class Mips64InstructionAnalyzerImpl {
             _[operand(0) ^= (operand(1) - operand(2))];
             break;
         }
+        case MIPS_INS_DSUB: /* Fall-through */
+        case MIPS_INS_DSUBU: {
+            _[operand(0) ^= (operand(1) - operand(2))];
+            break;
+        }
         case MIPS_INS_NEG: /* Fall-through */
         case MIPS_INS_NEGU: {
             _[operand(0) ^=  signed_(constant(0) - operand(1))];
@@ -193,6 +198,12 @@ class Mips64InstructionAnalyzerImpl {
         }
         case MIPS_INS_ADDU: /* Fall-through */
         case MIPS_INS_ADDIU: {
+            /*_[operand(0) ^= (operand(1) + signed_(operand(2)))];*/
+            _[operand(0) ^= (operand(1) + operand(2))];
+            break;
+        }
+        case MIPS_INS_DADDU: /* Fall-through */
+        case MIPS_INS_DADDIU: {
             /*_[operand(0) ^= (operand(1) + signed_(operand(2)))];*/
             _[operand(0) ^= (operand(1) + operand(2))];
             break;
@@ -329,6 +340,11 @@ class Mips64InstructionAnalyzerImpl {
         case MIPS_INS_LW: {
             auto operand0 = operand(0);
             _[operand0 ^= sign_extend(core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 32)))];
+            break;
+        }
+        case MIPS_INS_LWU: {
+            auto operand0 = operand(0);
+            _[operand0 ^= zero_extend(core::irgen::expressions::TermExpression(createDereferenceAddress(detail_->operands[1], 32)))];
             break;
         }
        case MIPS_INS_LD: {
