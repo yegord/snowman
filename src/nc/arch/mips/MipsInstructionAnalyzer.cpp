@@ -218,6 +218,7 @@ class MipsInstructionAnalyzerImpl {
             _[operand(0) ^= operand(1)];
             break;
         }
+        case MIPS_INS_MOVT: /* Fall-through */
         case MIPS_INS_MOVN: {
              MipsExpressionFactoryCallback movn(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             _[
@@ -227,6 +228,7 @@ class MipsInstructionAnalyzerImpl {
             ];
             return MipsExpressionFactoryCallback(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction).basicBlock();
         }
+        case MIPS_INS_MOVF: /* Fall-through */
         case MIPS_INS_MOVZ: {
             MipsExpressionFactoryCallback movz(factory_, program->createBasicBlock(), delayslotOwner ? delayslotOwner : instruction);
             _[
