@@ -285,11 +285,26 @@ class Mips64InstructionAnalyzerImpl {
             _[operand(0) ^= zero_extend(unsigned_(operand(1)) < unsigned_(operand(2)))];
             break;
         }
+        case MIPS_INS_DROTR:	/* Fall-through */
+        case MIPS_INS_DROTRV: {
+            auto operand1 = operand(1);
+            auto operand2 = operand(2);
+            _[operand(0) ^= ((unsigned_(operand1) >> operand2) | (operand1 << (constant(64) - operand2)))];
+            break;
+        }
         case MIPS_INS_ROTR:	/* Fall-through */
         case MIPS_INS_ROTRV: {
             auto operand1 = operand(1);
             auto operand2 = operand(2);
             _[operand(0) ^= ((unsigned_(operand1) >> operand2) | (operand1 << (constant(32) - operand2)))];
+            break;
+        }
+        case MIPS_INS_DSLL: /* Fall-through */
+        case MIPS_INS_DSLLV: {
+            if (getOperandType(2) == MIPS_OP_REG)
+                _[operand(0) ^= (operand(1) << zero_extend(operand(2, 6)))];
+            else
+                _[operand(0) ^= (operand(1) << operand(2))];
             break;
         }
         case MIPS_INS_SLL: /* Fall-through */
@@ -301,6 +316,14 @@ class Mips64InstructionAnalyzerImpl {
                 _[operand(0) ^= (operand(1) << operand(2))];
             break;
         }
+        case MIPS_INS_DSRA: /* Fall-through */
+        case MIPS_INS_DSRAV: {
+            if (getOperandType(2) == MIPS_OP_REG)
+                _[operand(0) ^= (signed_(operand(1)) >> zero_extend(operand(2, 6)))];
+            else
+                _[operand(0) ^= (signed_(operand(1)) >> operand(2))];
+            break;
+        }
         case MIPS_INS_SRA: /* Fall-through */
         case MIPS_INS_SRAI:
         case MIPS_INS_SRAV: {
@@ -308,6 +331,14 @@ class Mips64InstructionAnalyzerImpl {
                 _[operand(0) ^= (signed_(operand(1)) >> zero_extend(operand(2, 5)))];
             else
                 _[operand(0) ^= (signed_(operand(1)) >> operand(2))];
+            break;
+        }
+        case MIPS_INS_DSRL: /* Fall-through */
+        case MIPS_INS_DSRLV: {
+            if (getOperandType(2) == MIPS_OP_REG)
+                _[operand(0) ^= (unsigned_(operand(1)) >> zero_extend(operand(2, 6)))];
+            else
+                _[operand(0) ^= (unsigned_(operand(1)) >> operand(2))];
             break;
         }
         case MIPS_INS_SRL: /* Fall-through */
