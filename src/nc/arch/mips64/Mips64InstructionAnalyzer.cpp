@@ -782,6 +782,7 @@ class Mips64InstructionAnalyzerImpl {
             ];
             break;
         }
+        case MIPS_INS_DDIV: /* Fall-through */
         case MIPS_INS_DIV: {
             if (op_count == 2)
                 _[
@@ -796,6 +797,7 @@ class Mips64InstructionAnalyzerImpl {
                 ];
             break;
         }
+        case MIPS_INS_DDIVU: /* Fall-through */
         case MIPS_INS_DIVU: {
             if (op_count == 2)
                 _[
