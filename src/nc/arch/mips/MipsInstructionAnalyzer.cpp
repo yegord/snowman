@@ -213,6 +213,10 @@ class MipsInstructionAnalyzerImpl {
             _[operand(0) ^= (operand(1) << constant(16))];
             break;
         }
+        case MIPS_INS_EXT: {
+            _[operand(0) ^= (unsigned_(((operand(1) & constant(1) << operand(3)) - constant(1)) << operand(2)) >> operand(3))]; /* This migh not be correct: FIXME */
+            break;
+        } 
         case MIPS_INS_MOV: /* Fall-through - FPU */
         case MIPS_INS_MOVE: {
             _[operand(0) ^= operand(1)];
