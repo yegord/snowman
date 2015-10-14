@@ -33,9 +33,7 @@ o32CallingConvention::o32CallingConvention(const MipsArchitecture *architecture_
 	/* FP registers */
     std::vector<core::ir::MemoryLocation> fpArgs;
     fpArgs.push_back(MipsRegisters::f12()->memoryLocation());
-    fpArgs.push_back(MipsRegisters::f13()->memoryLocation());
 	fpArgs.push_back(MipsRegisters::f14()->memoryLocation());
-	fpArgs.push_back(MipsRegisters::f15()->memoryLocation());
     addArgumentGroup(std::move(fpArgs));
 
 	/* Regular registers */
