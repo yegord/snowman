@@ -314,13 +314,16 @@ class Mips64InstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_SLL: /* Fall-through */
-        case MIPS_INS_DSLL32:
         case MIPS_INS_SLLI:
         case MIPS_INS_SLLV: {
             if (getOperandType(2) == MIPS_OP_REG)
                 _[operand(0) ^= (operand(1) << zero_extend(operand(2, 5)))];
             else
                 _[operand(0) ^= (operand(1) << operand(2))];
+            break;
+        }
+	case MIPS_INS_DSLL32: {
+            _[operand(0) ^= (operand(1) << (operand(2) + constant(32)))];
             break;
         }
         case MIPS_INS_DSRA: /* Fall-through */
@@ -332,13 +335,16 @@ class Mips64InstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_SRA: /* Fall-through */
-        case MIPS_INS_DSRA32:
         case MIPS_INS_SRAI:
         case MIPS_INS_SRAV: {
             if (getOperandType(2) == MIPS_OP_REG)
                 _[operand(0) ^= (signed_(operand(1)) >> zero_extend(operand(2, 5)))];
             else
                 _[operand(0) ^= (signed_(operand(1)) >> operand(2))];
+            break;
+        }
+        case MIPS_INS_DSRA32: {
+            _[operand(0) ^= (signed_(operand(1)) >> (operand(2) + constant(32)))];
             break;
         }
         case MIPS_INS_DSRL: /* Fall-through */
@@ -350,13 +356,16 @@ class Mips64InstructionAnalyzerImpl {
             break;
         }
         case MIPS_INS_SRL: /* Fall-through */
-        case MIPS_INS_DSRL32:
         case MIPS_INS_SRLI:
         case MIPS_INS_SRLV: {
             if (getOperandType(2) == MIPS_OP_REG)
                 _[operand(0) ^= (unsigned_(operand(1)) >> zero_extend(operand(2, 5)))];
             else
                 _[operand(0) ^= (unsigned_(operand(1)) >> operand(2))];
+            break;
+        }
+        case MIPS_INS_DSRL32: {
+            _[operand(0) ^= (unsigned_(operand(1)) >> (operand(2) + constant(32)))];
             break;
         }
         case MIPS_INS_LB: {
