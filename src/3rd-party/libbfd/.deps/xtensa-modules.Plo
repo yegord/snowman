@@ -1,8 +1,0 @@
-xtensa-modules.lo: xtensa-modules.c ../include/ansidecl.h \
-  ../include/xtensa-isa.h ../include/xtensa-isa-internal.h
-
-../include/ansidecl.h:
-
-../include/xtensa-isa.h:
-
-../include/xtensa-isa-internal.h:
