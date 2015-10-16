@@ -1224,6 +1224,10 @@ class MipsInstructionAnalyzerImpl {
             }
             break;
         }
+       case MIPS_INS_SYSCALL: {
+            _[call(regizter(MipsRegisters::v0()))];
+            break;
+        }
         case MIPS_INS_BAL: /* Fall-through */
         case MIPS_INS_JALR:
         case MIPS_INS_JAL: {
