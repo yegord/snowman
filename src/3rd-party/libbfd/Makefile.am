@@ -17,13 +17,13 @@
 # <http://www.gnu.org/licenses/>.
 #
 
-AUTOMAKE_OPTIONS = 1.11 no-dist foreign
-ACLOCAL_AMFLAGS = -I . -I .. -I ../config
+AUTOMAKE_OPTIONS = 1.15 no-dist foreign
+ACLOCAL_AMFLAGS = -I . -I ./config
 
-INCDIR = $(srcdir)/../include
+INCDIR = $(srcdir)
 CSEARCH = -I. -I$(srcdir) -I$(INCDIR)
 
-SUBDIRS = doc po
+SUBDIRS = doc
 
 bfddocdir = doc
 
@@ -43,9 +43,8 @@ noinst_LTLIBRARIES = libbfd.la
 libbfd_la_LDFLAGS += -rpath $(rpath_bfdlibdir)
 endif
 
-WARN_CFLAGS = @WARN_CFLAGS@
 NO_WERROR = @NO_WERROR@
-AM_CFLAGS = $(WARN_CFLAGS)
+AM_CFLAGS =
 AM_CPPFLAGS = -DBINDIR='"$(bindir)"'
 if PLUGINS
 bfdinclude_HEADERS += $(INCDIR)/plugin-api.h
@@ -786,19 +785,6 @@ BUILT_SOURCES = $(BUILD_HFILES)
 
 HFILES = $(SOURCE_HFILES) $(BUILD_HFILES)
 
-SRC_POTFILES = $(SOURCE_CFILES) $(SOURCE_HFILES)
-BLD_POTFILES = $(BUILD_CFILES) $(BUILD_HFILES)
-
-po/SRC-POTFILES.in: @MAINT@ Makefile $(SRC_POTFILES)
-	for file in $(SRC_POTFILES); do echo $$file; done \
-	  | LC_ALL=C sort > tmp.src \
-	  && mv tmp.src $(srcdir)/po/SRC-POTFILES.in
-
-po/BLD-POTFILES.in: @MAINT@ Makefile $(BLD_POTFILES)
-	for file in $(BLD_POTFILES); do echo $$file; done \
-	  | LC_ALL=C sort > tmp.bld \
-	  && mv tmp.bld $(srcdir)/po/BLD-POTFILES.in
-
 all diststuff: info
 
 # Various kinds of .o files to put in libbfd.a:
@@ -818,7 +804,7 @@ stamp-ofiles: Makefile
 	  esac ; \
 	done ; \
 	echo $$f > tofiles
-	$(SHELL) $(srcdir)/../move-if-change tofiles ofiles
+	$(SHELL) $(srcdir)/move-if-change tofiles ofiles
 	touch stamp-ofiles
 
 ofiles: stamp-ofiles ; @true
@@ -846,7 +832,7 @@ stamp-lib: libbfd.la
 	if [ -f $$libtooldir/libbfd.a ]; then \
 	  cp $$libtooldir/libbfd.a libbfd.tmp; \
 	  $(RANLIB) libbfd.tmp; \
-	  $(SHELL) $(srcdir)/../move-if-change libbfd.tmp libbfd.a; \
+	  $(SHELL) $(srcdir)/move-if-change libbfd.tmp libbfd.a; \
 	else true; fi
 	touch stamp-lib
 
@@ -864,40 +850,25 @@ targmatch.h: config.bfd targmatch.sed
 # info from configure.
 
 targets.lo: targets.c Makefile
-if am__fastdepCC
-	$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $(TDEFAULTS) $(srcdir)/targets.c
-	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
-else
 if AMDEP
 	source='targets.c' object='$@' libtool=yes @AMDEPBACKSLASH@
 	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 endif
 	$(LTCOMPILE) -c -o $@ $(TDEFAULTS) $(srcdir)/targets.c
-endif
 
 archures.lo: archures.c Makefile
-if am__fastdepCC
-	$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $(TDEFAULTS) $(srcdir)/archures.c
-	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
-else
 if AMDEP
 	source='archures.c' object='$@' libtool=yes @AMDEPBACKSLASH@
 	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 endif
 	$(LTCOMPILE) -c -o $@ $(TDEFAULTS) $(srcdir)/archures.c
-endif
 
 dwarf2.lo: dwarf2.c Makefile
-if am__fastdepCC
-	$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ -DDEBUGDIR=\"$(DEBUGDIR)\" $(srcdir)/dwarf2.c
-	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
-else
 if AMDEP
 	source='dwarf2.c' object='$@' libtool=yes @AMDEPBACKSLASH@
 	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 endif
 	$(LTCOMPILE) -c -o $@ -DDEBUGDIR=\"$(DEBUGDIR)\" $(srcdir)/dwarf2.c
-endif
 
 elf32-target.h : elfxx-target.h
 	rm -f elf32-target.h
@@ -969,7 +940,7 @@ $(BFD_H): stmp-bfd-h ; @true
 stmp-bfd-h: bfd-in3.h
 	rm -f bfd-tmp.h
 	cp bfd-in3.h bfd-tmp.h
-	$(SHELL) $(srcdir)/../move-if-change bfd-tmp.h $(BFD_H)
+	$(SHELL) $(srcdir)/move-if-change bfd-tmp.h $(BFD_H)
 	rm -f bfd-tmp.h
 	touch stmp-bfd-h
 
@@ -985,11 +956,11 @@ LIBCOFF_H_FILES = libcoff-in.h coffcode.h
 headers:
 	(cd $(bfddocdir); $(MAKE) protos $(FLAGS_TO_PASS))
 	cp $(bfddocdir)/bfd.h bfd-in2.h-new
-	$(SHELL) $(srcdir)/../move-if-change bfd-in2.h-new $(srcdir)/bfd-in2.h
+	$(SHELL) $(srcdir)/move-if-change bfd-in2.h-new $(srcdir)/bfd-in2.h
 	cp $(bfddocdir)/libbfd.h libbfd.h-new
-	$(SHELL) $(srcdir)/../move-if-change libbfd.h-new $(srcdir)/libbfd.h
+	$(SHELL) $(srcdir)/move-if-change libbfd.h-new $(srcdir)/libbfd.h
 	cp $(bfddocdir)/libcoff.h libcoff.h-new
-	$(SHELL) $(srcdir)/../move-if-change libcoff.h-new $(srcdir)/libcoff.h
+	$(SHELL) $(srcdir)/move-if-change libcoff.h-new $(srcdir)/libcoff.h
 
 # We only rebuild the header files automatically if we have been
 # configured with --enable-maintainer-mode.
@@ -998,21 +969,21 @@ $(srcdir)/bfd-in2.h: @MAINT@ stmp-bin2-h ; @true
 stmp-bin2-h: $(BFD_H_FILES) $(BFD64_H_FILES)
 	(cd $(bfddocdir); $(MAKE) $(FLAGS_TO_PASS) bfd.h)
 	cp $(bfddocdir)/bfd.h bfd-in2.h-new
-	$(SHELL) $(srcdir)/../move-if-change bfd-in2.h-new $(srcdir)/bfd-in2.h
+	$(SHELL) $(srcdir)/move-if-change bfd-in2.h-new $(srcdir)/bfd-in2.h
 	touch stmp-bin2-h
 
 $(srcdir)/libbfd.h: @MAINT@ stmp-lbfd-h ; @true
 stmp-lbfd-h: $(LIBBFD_H_FILES)
 	(cd $(bfddocdir); $(MAKE) $(FLAGS_TO_PASS) libbfd.h)
 	cp $(bfddocdir)/libbfd.h libbfd.h-new
-	$(SHELL) $(srcdir)/../move-if-change libbfd.h-new $(srcdir)/libbfd.h
+	$(SHELL) $(srcdir)/move-if-change libbfd.h-new $(srcdir)/libbfd.h
 	touch stmp-lbfd-h
 
 $(srcdir)/libcoff.h: @MAINT@ stmp-lcoff-h ; @true
 stmp-lcoff-h: $(LIBCOFF_H_FILES)
 	(cd $(bfddocdir); $(MAKE) $(FLAGS_TO_PASS) libcoff.h)
 	cp $(bfddocdir)/libcoff.h libcoff.h-new
-	$(SHELL) $(srcdir)/../move-if-change libcoff.h-new $(srcdir)/libcoff.h
+	$(SHELL) $(srcdir)/move-if-change libcoff.h-new $(srcdir)/libcoff.h
 	touch stmp-lcoff-h
 
 MOSTLYCLEANFILES = ofiles stamp-ofiles
@@ -1045,15 +1016,12 @@ bfdver.h: $(srcdir)/version.h $(srcdir)/development.sh $(srcdir)/Makefile.in
 # Disable -Werror, if it has been enabled, since coffswap.h won't
 # compile with gcc 4.5 and above.
 coff-tic4x.lo: coff-tic4x.c
-@am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $< $(NO_WERROR)
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $< $(NO_WERROR)
 
 coff-tic54x.lo: coff-tic54x.c
-@am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $< $(NO_WERROR)
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $< $(NO_WERROR)

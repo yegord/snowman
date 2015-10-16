@@ -126,8 +126,6 @@ fi
 ACX_PKGVERSION([GNU Binutils])
 ACX_BUGURL([http://www.sourceware.org/bugzilla/])
 
-AM_BINUTILS_WARNINGS
-
 AC_CONFIG_HEADERS(config.h:config.in)
 
 # PR 14072
@@ -1166,29 +1164,7 @@ case ${want_mmap}+${ac_cv_func_mmap_fixed_mapped} in
 esac
 
 rm -f doc/config.status
-AC_CONFIG_FILES([Makefile doc/Makefile bfd-in3.h:bfd-in2.h po/Makefile.in:po/Make-in])
-
-dnl We need this duplication, even though we use AM_PO_SUBDIRS, because of
-dnl our two separate POTFILES.  Yuck.
-AC_CONFIG_COMMANDS([default],
-[[
-case "$srcdir" in
-  .) srcdirpre= ;;
-  *) srcdirpre='$(srcdir)/' ;;
-esac
-POFILES=
-GMOFILES=
-for lang in dummy $OBSOLETE_ALL_LINGUAS; do
-  if test $lang != dummy; then
-    POFILES="$POFILES $srcdirpre$lang.po"
-    GMOFILES="$GMOFILES $srcdirpre$lang.gmo"
-  fi
-done
-sed -e '/SRC-POTFILES =/r po/SRC-POTFILES' \
-    -e '/BLD-POTFILES =/r po/BLD-POTFILES' \
-    -e "s,@POFILES@,$POFILES," \
-    -e "s,@GMOFILES@,$GMOFILES," \
-    po/Makefile.in > po/Makefile]],[[]])
+AC_CONFIG_FILES([Makefile doc/Makefile bfd-in3.h:bfd-in2.h])
 
 dnl Required by html, pdf, install-pdf and install-html
 AC_SUBST(datarootdir)
