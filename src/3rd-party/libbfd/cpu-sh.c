@@ -22,7 +22,7 @@
 #include "sysdep.h"
 #include "bfd.h"
 #include "libbfd.h"
-#include "../opcodes/sh-opc.h"
+#include "opcode/sh-opc.h"
 
 #define SH_NEXT                            arch_info_struct + 0
 #define SH2_NEXT                           arch_info_struct + 1

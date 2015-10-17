@@ -27,7 +27,7 @@
 
    --davidm Mon Apr 13 22:14:02 1998 */
 
-#include "../opcodes/ia64-opc.h"
+#include "opcode/ia64-opc.h"
 
 #define NELEMS(a)  ((int) (sizeof (a) / sizeof ((a)[0])))
 

@@ -32,7 +32,7 @@
 #include "opcode/nds32.h"
 #include "elf32-nds32.h"
 #include "opcode/cgen.h"
-#include "../opcodes/nds32-opc.h"
+#include "opcode/nds32-opc.h"
 
 /* Relocation HOWTO functions.  */
 static bfd_reloc_status_type nds32_elf_ignore_reloc

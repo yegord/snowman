@@ -23,7 +23,7 @@
 #include "sysdep.h"
 #include "bfd.h"
 #include "elf-bfd.h"
-#include "../opcodes/sh64-opc.h"
+#include "opcode/sh64-opc.h"
 #include "elf32-sh64.h"
 
 /* Add a suffix for datalabel indirection symbols.  It must not match any

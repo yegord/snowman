@@ -26,7 +26,7 @@
 #include "elf-bfd.h"
 #include "elf/sh.h"
 #include "elf32-sh64.h"
-#include "../opcodes/sh64-opc.h"
+#include "opcode/sh64-opc.h"
 
 static bfd_boolean sh64_address_in_cranges
   (asection *cranges, bfd_vma, sh64_elf_crange *);
