@@ -38,7 +38,7 @@ available_tags=''
 # ### BEGIN LIBTOOL CONFIG
 
 # Whether or not to build shared libraries.
-build_libtool_libs=no
+build_libtool_libs=yes
 
 # Which release of libtool.m4 was used?
 macro_version=2.4.6
