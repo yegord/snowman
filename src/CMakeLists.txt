@@ -12,6 +12,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS YES)
 # Link against qtmain.lib automatically.
 cmake_policy(SET CMP0020 NEW)
 
+#Don't use the RPATH on OS X.
+set(CMAKE_MACOSX_RPATH 0)
+
 #
 # Include additional scripts.
 #
