@@ -270,7 +270,7 @@
 #cmakedefine HAVE_WINDOWS_H @HAVE_WINDOWS_H@
 
 /* Define to 1 if you have the <zlib.h> header file. */
-#define HAVE_ZLIB_H 1
+#cmakedefine HAVE_ZLIB_H @HAVE_ZLIB_H@
 
 /* Name of package */
 #cmakedefine PACKAGE @PACKAGE@
