@@ -6,268 +6,268 @@
 #define __CONFIG_H__ 1
 
 /* Name of host specific core header file to include in elf.c. */
-/* #undef CORE_HEADER */
+#cmakedefine CORE_HEADER
 
 /* Define to 1 if translation of program messages to the user's native
    language is requested. */
-/* #undef ENABLE_NLS */
+#cmakedefine ENABLE_NLS
 
 /* Define to 1 if you have the <alloca.h> header file. */
-/* #undef HAVE_ALLOCA_H */
+#cmakedefine HAVE_ALLOCA_H
 
 /* Define to 1 if you have the declaration of `basename', and to 0 if you
    don't. */
-/* #undef HAVE_DECL_BASENAME */
+#cmakedefine HAVE_DECL_BASENAME
 
 /* Define to 1 if you have the declaration of `ffs', and to 0 if you don't. */
-/* #undef HAVE_DECL_FFS */
+#cmakedefine HAVE_DECL_FFS
 
 /* Define to 1 if you have the declaration of `free', and to 0 if you don't.
    */
-/* #undef HAVE_DECL_FREE */
+#cmakedefine HAVE_DECL_FREE
 
 /* Define to 1 if you have the declaration of `fseeko', and to 0 if you don't.
    */
-/* #undef HAVE_DECL_FSEEKO */
+#cmakedefine HAVE_DECL_FSEEKO
 
 /* Define to 1 if you have the declaration of `fseeko64', and to 0 if you
    don't. */
-/* #undef HAVE_DECL_FSEEKO64 */
+#cmakedefine HAVE_DECL_FSEEKO64
 
 /* Define to 1 if you have the declaration of `ftello', and to 0 if you don't.
    */
-/* #undef HAVE_DECL_FTELLO */
+#cmakedefine HAVE_DECL_FTELLO
 
 /* Define to 1 if you have the declaration of `ftello64', and to 0 if you
    don't. */
-/* #undef HAVE_DECL_FTELLO64 */
+#cmakedefine HAVE_DECL_FTELLO64
 
 /* Define to 1 if you have the declaration of `getenv', and to 0 if you don't.
    */
-/* #undef HAVE_DECL_GETENV */
+#cmakedefine HAVE_DECL_GETENV
 
 /* Define to 1 if you have the declaration of `malloc', and to 0 if you don't.
    */
-/* #undef HAVE_DECL_MALLOC */
+#cmakedefine HAVE_DECL_MALLOC
 
 /* Define to 1 if you have the declaration of `realloc', and to 0 if you
    don't. */
-/* #undef HAVE_DECL_REALLOC */
+#cmakedefine HAVE_DECL_REALLOC
 
 /* Define to 1 if you have the declaration of `snprintf', and to 0 if you
    don't. */
-/* #undef HAVE_DECL_SNPRINTF */
+#cmakedefine HAVE_DECL_SNPRINTF
 
 /* Define to 1 if you have the declaration of `stpcpy', and to 0 if you don't.
    */
-/* #undef HAVE_DECL_STPCPY */
+#cmakedefine HAVE_DECL_STPCPY
 
 /* Define to 1 if you have the declaration of `strnlen', and to 0 if you
    don't. */
-/* #undef HAVE_DECL_STRNLEN */
+#cmakedefine HAVE_DECL_STRNLEN
 
 /* Define to 1 if you have the declaration of `strstr', and to 0 if you don't.
    */
-/* #undef HAVE_DECL_STRSTR */
+#cmakedefine HAVE_DECL_STRSTR
 
 /* Define to 1 if you have the declaration of `vsnprintf', and to 0 if you
    don't. */
-/* #undef HAVE_DECL_VSNPRINTF */
+#cmakedefine HAVE_DECL_VSNPRINTF
 
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */
-/* #undef HAVE_DIRENT_H */
+#cmakedefine HAVE_DIRENT_H
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
-/* #undef HAVE_DLFCN_H */
+#cmakedefine HAVE_DLFCN_H
 
 /* Define to 1 if you have the `fcntl' function. */
-/* #undef HAVE_FCNTL */
+#cmakedefine HAVE_FCNTL
 
 /* Define to 1 if you have the <fcntl.h> header file. */
-/* #undef HAVE_FCNTL_H */
+#cmakedefine HAVE_FCNTL_H
 
 /* Define to 1 if you have the `fdopen' function. */
-/* #undef HAVE_FDOPEN */
+#cmakedefine HAVE_FDOPEN
 
 /* Define to 1 if you have the `fileno' function. */
-/* #undef HAVE_FILENO */
+#cmakedefine HAVE_FILENO @HAVE_FILENO@
 
 /* Define to 1 if you have the `fopen64' function. */
-/* #undef HAVE_FOPEN64 */
+#cmakedefine HAVE_FOPEN64 @HAVE_FOPEN64@
 
 /* Define to 1 if you have the `fseeko' function. */
-#define HAVE_FSEEKO 1
+#cmakedefine HAVE_FSEEKO @HAVE_FSEEKO@
 
 /* Define to 1 if you have the `fseeko64' function. */
-/* #undef HAVE_FSEEKO64 */
+#cmakedefine HAVE_FSEEKO64 @HAVE_FSEEKO64@
 
 /* Define to 1 if you have the `ftello' function. */
-/* #undef HAVE_FTELLO */
+#cmakedefine HAVE_FTELLO
 
 /* Define to 1 if you have the `ftello64' function. */
-/* #undef HAVE_FTELLO64 */
+#cmakedefine HAVE_FTELLO64
 
 /* Define to 1 if you have the `getgid' function. */
-/* #undef HAVE_GETGID */
+#cmakedefine HAVE_GETGID
 
 /* Define to 1 if you have the `getpagesize' function. */
-/* #undef HAVE_GETPAGESIZE */
+#cmakedefine HAVE_GETPAGESIZE
 
 /* Define to 1 if you have the `getrlimit' function. */
-/* #undef HAVE_GETRLIMIT */
+#cmakedefine HAVE_GETRLIMIT
 
 /* Define to 1 if you have the `getuid' function. */
-/* #undef HAVE_GETUID */
+#cmakedefine HAVE_GETUID
 
 /* Define to 1 if you have the <inttypes.h> header file. */
-/* #undef HAVE_INTTYPES_H */
+#cmakedefine HAVE_INTTYPES_H
 
 /* Define if <sys/procfs.h> has lwpstatus_t. */
-/* #undef HAVE_LWPSTATUS_T */
+#cmakedefine HAVE_LWPSTATUS_T
 
 /* Define if <sys/procfs.h> has lwpstatus_t.pr_context. */
-/* #undef HAVE_LWPSTATUS_T_PR_CONTEXT */
+#cmakedefine HAVE_LWPSTATUS_T_PR_CONTEXT
 
 /* Define if <sys/procfs.h> has lwpstatus_t.pr_fpreg. */
 #undef HAVE_LWPSTATUS_T_PR_FPREG
 
 /* Define if <sys/procfs.h> has lwpstatus_t.pr_reg. */
-/* #undef HAVE_LWPSTATUS_T_PR_REG */
+#cmakedefine HAVE_LWPSTATUS_T_PR_REG
 
 /* Define if <sys/procfs.h> has lwpxstatus_t. */
-/* #undef HAVE_LWPXSTATUS_T */
+#cmakedefine HAVE_LWPXSTATUS_T
 
 /* Define to 1 if you have the `madvise' function. */
-/* #undef HAVE_MADVISE */
+#cmakedefine HAVE_MADVISE
 
 /* Define to 1 if you have the <memory.h> header file. */
-/* #undef HAVE_MEMORY_H */
+#cmakedefine HAVE_MEMORY_H
 
 /* Define to 1 if you have a working `mmap' system call. */
-/* #undef HAVE_MMAP */
+#cmakedefine HAVE_MMAP
 
 /* Define to 1 if you have the `mprotect' function. */
-/* #undef HAVE_MPROTECT */
+#cmakedefine HAVE_MPROTECT
 
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
-/* #undef HAVE_NDIR_H */
+#cmakedefine HAVE_NDIR_H
 
 /* Define if <sys/procfs.h> has prpsinfo32_t. */
-/* #undef HAVE_PRPSINFO32_T */
+#cmakedefine HAVE_PRPSINFO32_T
 
 /* Define if <sys/procfs.h> has prpsinfo32_t.pr_pid. */
-/* #undef HAVE_PRPSINFO32_T_PR_PID */
+#cmakedefine HAVE_PRPSINFO32_T_PR_PID
 
 /* Define if <sys/procfs.h> has prpsinfo_t. */
-/* #undef HAVE_PRPSINFO_T */
+#cmakedefine HAVE_PRPSINFO_T
 
 /* Define if <sys/procfs.h> has prpsinfo_t.pr_pid. */
-/* #undef HAVE_PRPSINFO_T_PR_PID */
+#cmakedefine HAVE_PRPSINFO_T_PR_PID
 
 /* Define if <sys/procfs.h> has prstatus32_t. */
-/* #undef HAVE_PRSTATUS32_T */
+#cmakedefine HAVE_PRSTATUS32_T
 
 /* Define if <sys/procfs.h> has prstatus32_t.pr_who. */
-/* #undef HAVE_PRSTATUS32_T_PR_WHO */
+#cmakedefine HAVE_PRSTATUS32_T_PR_WHO
 
 /* Define if <sys/procfs.h> has prstatus_t. */
-/* #undef HAVE_PRSTATUS_T */
+#cmakedefine HAVE_PRSTATUS_T
 
 /* Define if <sys/procfs.h> has prstatus_t.pr_who. */
-/* #undef HAVE_PRSTATUS_T_PR_WHO */
+#cmakedefine HAVE_PRSTATUS_T_PR_WHO
 
 /* Define if <sys/procfs.h> has psinfo32_t. */
-/* #undef HAVE_PSINFO32_T */
+#cmakedefine HAVE_PSINFO32_T
 
 /* Define if <sys/procfs.h> has psinfo32_t.pr_pid. */
-/* #undef HAVE_PSINFO32_T_PR_PID */
+#cmakedefine HAVE_PSINFO32_T_PR_PID
 
 /* Define if <sys/procfs.h> has psinfo_t. */
-/* #undef HAVE_PSINFO_T */
+#cmakedefine HAVE_PSINFO_T
 
 /* Define if <sys/procfs.h> has psinfo_t.pr_pid. */
-/* #undef HAVE_PSINFO_T_PR_PID */
+#cmakedefine HAVE_PSINFO_T_PR_PID
 
 /* Define if <sys/procfs.h> has pstatus32_t. */
-/* #undef HAVE_PSTATUS32_T */
+#cmakedefine HAVE_PSTATUS32_T
 
 /* Define if <sys/procfs.h> has pstatus_t. */
-/* #undef HAVE_PSTATUS_T */
+#cmakedefine HAVE_PSTATUS_T
 
 /* Define if <sys/procfs.h> has pxstatus_t. */
-/* #undef HAVE_PXSTATUS_T */
+#cmakedefine HAVE_PXSTATUS_T
 
 /* Define to 1 if you have the `setitimer' function. */
-/* #undef HAVE_SETITIMER */
+#cmakedefine HAVE_SETITIMER
 
 /* Define to 1 if you have the <stddef.h> header file. */
-#define HAVE_STDDEF_H
+#cmakedefine HAVE_STDDEF_H
 
 /* Define to 1 if you have the <stdint.h> header file. */
-#define HAVE_STDINT_H
+#cmakedefine HAVE_STDINT_H
 
 /* Define to 1 if you have the <stdlib.h> header file. */
-/* #undef HAVE_STDLIB_H */
+#cmakedefine HAVE_STDLIB_H  @HAVE_STDLIB_H@
 
 /* Define to 1 if you have the <strings.h> header file. */
-/* #undef HAVE_STRINGS_H */
+#cmakedefine HAVE_STRINGS_H @HAVE_STRINGS_H@
 
 /* Define to 1 if you have the <string.h> header file. */
-/* #undef HAVE_STRING_H */
+#cmakedefine HAVE_STRING_H
 
 /* Define to 1 if you have the `strtoull' function. */
-/* #undef HAVE_STRTOULL */
+#cmakedefine HAVE_STRTOULL
 
 /* Define if struct core_dumpx has member c_impl */
 #undef HAVE_ST_C_IMPL
 
 /* Define to 1 if you have the `sysconf' function. */
-/* #undef HAVE_SYSCONF */
+#cmakedefine HAVE_SYSCONF
 
 /* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
    */
-/* #undef HAVE_SYS_DIR_H */
+#cmakedefine HAVE_SYS_DIR_H
 
 /* Define to 1 if you have the <sys/file.h> header file. */
-/* #undef HAVE_SYS_FILE_H */
+#cmakedefine HAVE_SYS_FILE_H
 
 /* Define to 1 if you have the <sys/ndir.h> header file, and it defines `DIR'.
    */
-/* #undef HAVE_SYS_NDIR_H */
+#cmakedefine HAVE_SYS_NDIR_H
 
 /* Define to 1 if you have the <sys/param.h> header file. */
-/* #undef HAVE_SYS_PARAM_H */
+#cmakedefine HAVE_SYS_PARAM_H
 
 /* Define to 1 if you have the <sys/procfs.h> header file. */
-/* #undef HAVE_SYS_PROCFS_H */
+#cmakedefine HAVE_SYS_PROCFS_H
 
 /* Define to 1 if you have the <sys/resource.h> header file. */
-/* #undef HAVE_SYS_RESOURCE_H */
+#cmakedefine HAVE_SYS_RESOURCE_H
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
-/* #undef HAVE_SYS_STAT_H */
+#cmakedefine HAVE_SYS_STAT_H
 
 /* Define to 1 if you have the <sys/time.h> header file. */
-/* #undef HAVE_SYS_TIME_H */
+#cmakedefine HAVE_SYS_TIME_H
 
 /* Define to 1 if you have the <sys/types.h> header file. */
-#define HAVE_SYS_TYPES_H
+#cmakedefine HAVE_SYS_TYPES_H
 
 /* Define to 1 if you have the <time.h> header file. */
-/* #undef HAVE_TIME_H */
+#cmakedefine HAVE_TIME_H
 
 /* Define to 1 if you have the <unistd.h> header file. */
-/* #undef HAVE_UNISTD_H */
+#cmakedefine HAVE_UNISTD_H
 
 /* Define to 1 if you have the <wchar.h> header file. */
-/* #undef HAVE_WCHAR_H */
+#cmakedefine HAVE_WCHAR_H
 
 /* Define if <sys/procfs.h> has win32_pstatus_t. */
-/* #undef HAVE_WIN32_PSTATUS_T */
+#cmakedefine HAVE_WIN32_PSTATUS_T
 
 /* Define to 1 if you have the <windows.h> header file. */
-/* #undef HAVE_WINDOWS_H */
+#cmakedefine HAVE_WINDOWS_H
 
 /* Define to 1 if you have the <zlib.h> header file. */
 #define HAVE_ZLIB_H 1
@@ -294,72 +294,72 @@
 #undef PACKAGE_VERSION
 
 /* The size of `char', as computed by sizeof. */
-#define SIZEOF_CHAR 1
+#cmakedefine SIZEOF_CHAR @SIZEOF_CHAR@
 
 /* The size of `int', as computed by sizeof. */
-#define SIZEOF_INT 4
+#cmakedefine SIZEOF_INT @SIZEOF_INT@
 
 /* The size of `long', as computed by sizeof. */
-#define SIZEOF_LONG 8
+#cmakedefine SIZEOF_LONG @SIZEOF_LONG@
 
 /* The size of `long long', as computed by sizeof. */
-#define SIZEOF_LONG_LONG 8
+#cmakedefine SIZEOF_LONG_LONG @SIZEOF_LONG_LONG@
 
 /* The size of `off_t', as computed by sizeof. */
-/* #undef SIZEOF_OFF_T */
+#cmakedefine SIZEOF_OFF_T @SIZEOF_OFF_T@
 
 /* The size of `short', as computed by sizeof. */
-#define SIZEOF_SHORT 2
+#cmakedefine SIZEOF_SHORT @SIZEOF_SHORT@
 
 /* The size of `void *', as computed by sizeof. */
-#define SIZEOF_VOID_P 8
+#cmakedefine SIZEOF_VOID_P @SIZEOF_VOID_P@
 
 /* Define to 1 if you have the ANSI C header files. */
-/* #undef STDC_HEADERS */
+#cmakedefine STDC_HEADERS
 
 /* Define if you can safely include both <string.h> and <strings.h>. */
-/* #undef STRING_WITH_STRINGS */
+#cmakedefine STRING_WITH_STRINGS
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
-/* #undef TIME_WITH_SYS_TIME */
+#cmakedefine TIME_WITH_SYS_TIME
 
 /* Name of host specific header file to include in trad-core.c. */
-/* #undef TRAD_HEADER */
+#cmakedefine TRAD_HEADER
 
 /* Use b modifier when opening binary files? */
-/* #undef USE_BINARY_FOPEN */
+#cmakedefine USE_BINARY_FOPEN
 
 /* Define if we should use leading underscore on 64 bit mingw targets */
-/* #undef USE_MINGW64_LEADING_UNDERSCORES */
+#cmakedefine USE_MINGW64_LEADING_UNDERSCORES
 
 /* Use mmap if it's available? */
-/* #undef USE_MMAP */
+#cmakedefine USE_MMAP
 
 /* Define if we should default to creating read-only plt entries */
-/* #undef USE_SECUREPLT */
+#cmakedefine USE_SECUREPLT
 
 /* Define if we may generate symbols with ELF's STT_COMMON type */
-/* #undef USE_STT_COMMON */
+#cmakedefine USE_STT_COMMON
 
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
-/* #undef _ALL_SOURCE */
+#cmakedefine _ALL_SOURCE
 #endif
 /* Enable GNU extensions on systems that have them.  */
 #ifndef _GNU_SOURCE
-/* #undef _GNU_SOURCE */
+#cmakedefine _GNU_SOURCE
 #endif
 /* Enable threading extensions on Solaris.  */
 #ifndef _POSIX_PTHREAD_SEMANTICS
-/* #undef _POSIX_PTHREAD_SEMANTICS */
+#cmakedefine _POSIX_PTHREAD_SEMANTICS
 #endif
 /* Enable extensions on HP NonStop.  */
 #ifndef _TANDEM_SOURCE
-/* #undef _TANDEM_SOURCE */
+#cmakedefine _TANDEM_SOURCE
 #endif
 /* Enable general extensions on Solaris.  */
 #ifndef __EXTENSIONS__
-/* #undef __EXTENSIONS__ */
+#cmakedefine __EXTENSIONS__
 #endif
 
 
@@ -372,17 +372,17 @@
 #endif
 
 /* Number of bits in a file offset, on hosts where this is settable. */
-/* #undef _FILE_OFFSET_BITS */
+#cmakedefine _FILE_OFFSET_BITS
 
 /* Define for large files, on AIX-style hosts. */
-/* #undef _LARGE_FILES */
+#cmakedefine _LARGE_FILES
 
 /* Define to 1 if on MINIX. */
-/* #undef _MINIX */
+#cmakedefine _MINIX
 
 /* Define to 2 if the system does not provide POSIX.1 features except with
    this defined. */
-/* #undef _POSIX_1_SOURCE */
+#cmakedefine _POSIX_1_SOURCE
 
 /* Define to 1 if you need to in order for `stat' and other things to work. */
-/* #undef _POSIX_SOURCE */
+#cmakedefine _POSIX_SOURCE

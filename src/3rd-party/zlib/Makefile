@@ -48,10 +48,10 @@ RM = /opt/local/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/nietzsche/Downloads/snowman/src/3rd-party/zlib-1.2.8
+CMAKE_SOURCE_DIR = /Users/nietzsche/Downloads/snowman/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/nietzsche/Downloads/snowman/src/3rd-party/zlib-1.2.8
+CMAKE_BINARY_DIR = /Users/nietzsche/Downloads/snowman/src
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -112,17 +112,6 @@ install/fast: preinstall/fast
 	/opt/local/bin/cmake -P cmake_install.cmake
 .PHONY : install/fast
 
-# Special rule for the target install/strip
-install/strip: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
-	/opt/local/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
-.PHONY : install/strip
-
-# Special rule for the target install/strip
-install/strip/fast: install/strip
-
-.PHONY : install/strip/fast
-
 # Special rule for the target list_install_components
 list_install_components:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
@@ -135,14 +124,14 @@ list_install_components/fast: list_install_components
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/nietzsche/Downloads/snowman/src/3rd-party/zlib-1.2.8/CMakeFiles /Users/nietzsche/Downloads/snowman/src/3rd-party/zlib-1.2.8/CMakeFiles/progress.marks
-	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/nietzsche/Downloads/snowman/src/3rd-party/zlib-1.2.8/CMakeFiles 0
+	cd /Users/nietzsche/Downloads/snowman/src && $(CMAKE_COMMAND) -E cmake_progress_start /Users/nietzsche/Downloads/snowman/src/CMakeFiles /Users/nietzsche/Downloads/snowman/src/3rd-party/zlib/CMakeFiles/progress.marks
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f CMakeFiles/Makefile2 3rd-party/zlib/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/nietzsche/Downloads/snowman/src/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	$(MAKE) -f CMakeFiles/Makefile2 clean
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f CMakeFiles/Makefile2 3rd-party/zlib/clean
 .PHONY : clean
 
 # The main clean target
@@ -152,369 +141,377 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	$(MAKE) -f CMakeFiles/Makefile2 preinstall
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f CMakeFiles/Makefile2 3rd-party/zlib/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	$(MAKE) -f CMakeFiles/Makefile2 preinstall
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f CMakeFiles/Makefile2 3rd-party/zlib/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	$(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /Users/nietzsche/Downloads/snowman/src && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-#=============================================================================
-# Target rules for targets named example
+# Convenience name for target.
+3rd-party/zlib/CMakeFiles/example.dir/rule:
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f CMakeFiles/Makefile2 3rd-party/zlib/CMakeFiles/example.dir/rule
+.PHONY : 3rd-party/zlib/CMakeFiles/example.dir/rule
 
-# Build rule for target.
-example: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 example
+# Convenience name for target.
+example: 3rd-party/zlib/CMakeFiles/example.dir/rule
+
 .PHONY : example
 
 # fast build rule for target.
 example/fast:
-	$(MAKE) -f CMakeFiles/example.dir/build.make CMakeFiles/example.dir/build
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/example.dir/build.make 3rd-party/zlib/CMakeFiles/example.dir/build
 .PHONY : example/fast
 
-#=============================================================================
-# Target rules for targets named minigzip
+# Convenience name for target.
+3rd-party/zlib/CMakeFiles/minigzip.dir/rule:
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f CMakeFiles/Makefile2 3rd-party/zlib/CMakeFiles/minigzip.dir/rule
+.PHONY : 3rd-party/zlib/CMakeFiles/minigzip.dir/rule
 
-# Build rule for target.
-minigzip: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 minigzip
+# Convenience name for target.
+minigzip: 3rd-party/zlib/CMakeFiles/minigzip.dir/rule
+
 .PHONY : minigzip
 
 # fast build rule for target.
 minigzip/fast:
-	$(MAKE) -f CMakeFiles/minigzip.dir/build.make CMakeFiles/minigzip.dir/build
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/minigzip.dir/build.make 3rd-party/zlib/CMakeFiles/minigzip.dir/build
 .PHONY : minigzip/fast
 
-#=============================================================================
-# Target rules for targets named zlib
+# Convenience name for target.
+3rd-party/zlib/CMakeFiles/zlib.dir/rule:
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f CMakeFiles/Makefile2 3rd-party/zlib/CMakeFiles/zlib.dir/rule
+.PHONY : 3rd-party/zlib/CMakeFiles/zlib.dir/rule
 
-# Build rule for target.
-zlib: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 zlib
+# Convenience name for target.
+zlib: 3rd-party/zlib/CMakeFiles/zlib.dir/rule
+
 .PHONY : zlib
 
 # fast build rule for target.
 zlib/fast:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/build
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/build
 .PHONY : zlib/fast
 
-#=============================================================================
-# Target rules for targets named zlibstatic
+# Convenience name for target.
+3rd-party/zlib/CMakeFiles/zlibstatic.dir/rule:
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f CMakeFiles/Makefile2 3rd-party/zlib/CMakeFiles/zlibstatic.dir/rule
+.PHONY : 3rd-party/zlib/CMakeFiles/zlibstatic.dir/rule
 
-# Build rule for target.
-zlibstatic: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 zlibstatic
+# Convenience name for target.
+zlibstatic: 3rd-party/zlib/CMakeFiles/zlibstatic.dir/rule
+
 .PHONY : zlibstatic
 
 # fast build rule for target.
 zlibstatic/fast:
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/build
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build
 .PHONY : zlibstatic/fast
 
 # target to build an object file
 adler32.o:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/adler32.o
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/adler32.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/adler32.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/adler32.o
 .PHONY : adler32.o
 
 # target to preprocess a source file
 adler32.i:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/adler32.i
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/adler32.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/adler32.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/adler32.i
 .PHONY : adler32.i
 
 # target to generate assembly for a file
 adler32.s:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/adler32.s
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/adler32.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/adler32.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/adler32.s
 .PHONY : adler32.s
 
 # target to build an object file
 compress.o:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/compress.o
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/compress.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/compress.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/compress.o
 .PHONY : compress.o
 
 # target to preprocess a source file
 compress.i:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/compress.i
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/compress.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/compress.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/compress.i
 .PHONY : compress.i
 
 # target to generate assembly for a file
 compress.s:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/compress.s
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/compress.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/compress.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/compress.s
 .PHONY : compress.s
 
 # target to build an object file
 crc32.o:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/crc32.o
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/crc32.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/crc32.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/crc32.o
 .PHONY : crc32.o
 
 # target to preprocess a source file
 crc32.i:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/crc32.i
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/crc32.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/crc32.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/crc32.i
 .PHONY : crc32.i
 
 # target to generate assembly for a file
 crc32.s:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/crc32.s
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/crc32.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/crc32.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/crc32.s
 .PHONY : crc32.s
 
 # target to build an object file
 deflate.o:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/deflate.o
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/deflate.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/deflate.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/deflate.o
 .PHONY : deflate.o
 
 # target to preprocess a source file
 deflate.i:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/deflate.i
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/deflate.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/deflate.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/deflate.i
 .PHONY : deflate.i
 
 # target to generate assembly for a file
 deflate.s:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/deflate.s
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/deflate.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/deflate.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/deflate.s
 .PHONY : deflate.s
 
 # target to build an object file
 gzclose.o:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/gzclose.o
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/gzclose.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/gzclose.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/gzclose.o
 .PHONY : gzclose.o
 
 # target to preprocess a source file
 gzclose.i:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/gzclose.i
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/gzclose.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/gzclose.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/gzclose.i
 .PHONY : gzclose.i
 
 # target to generate assembly for a file
 gzclose.s:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/gzclose.s
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/gzclose.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/gzclose.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/gzclose.s
 .PHONY : gzclose.s
 
 # target to build an object file
 gzlib.o:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/gzlib.o
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/gzlib.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/gzlib.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/gzlib.o
 .PHONY : gzlib.o
 
 # target to preprocess a source file
 gzlib.i:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/gzlib.i
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/gzlib.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/gzlib.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/gzlib.i
 .PHONY : gzlib.i
 
 # target to generate assembly for a file
 gzlib.s:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/gzlib.s
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/gzlib.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/gzlib.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/gzlib.s
 .PHONY : gzlib.s
 
 # target to build an object file
 gzread.o:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/gzread.o
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/gzread.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/gzread.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/gzread.o
 .PHONY : gzread.o
 
 # target to preprocess a source file
 gzread.i:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/gzread.i
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/gzread.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/gzread.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/gzread.i
 .PHONY : gzread.i
 
 # target to generate assembly for a file
 gzread.s:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/gzread.s
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/gzread.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/gzread.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/gzread.s
 .PHONY : gzread.s
 
 # target to build an object file
 gzwrite.o:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/gzwrite.o
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/gzwrite.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/gzwrite.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/gzwrite.o
 .PHONY : gzwrite.o
 
 # target to preprocess a source file
 gzwrite.i:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/gzwrite.i
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/gzwrite.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/gzwrite.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/gzwrite.i
 .PHONY : gzwrite.i
 
 # target to generate assembly for a file
 gzwrite.s:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/gzwrite.s
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/gzwrite.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/gzwrite.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/gzwrite.s
 .PHONY : gzwrite.s
 
 # target to build an object file
 infback.o:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/infback.o
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/infback.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/infback.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/infback.o
 .PHONY : infback.o
 
 # target to preprocess a source file
 infback.i:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/infback.i
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/infback.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/infback.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/infback.i
 .PHONY : infback.i
 
 # target to generate assembly for a file
 infback.s:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/infback.s
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/infback.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/infback.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/infback.s
 .PHONY : infback.s
 
 # target to build an object file
 inffast.o:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/inffast.o
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/inffast.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/inffast.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/inffast.o
 .PHONY : inffast.o
 
 # target to preprocess a source file
 inffast.i:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/inffast.i
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/inffast.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/inffast.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/inffast.i
 .PHONY : inffast.i
 
 # target to generate assembly for a file
 inffast.s:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/inffast.s
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/inffast.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/inffast.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/inffast.s
 .PHONY : inffast.s
 
 # target to build an object file
 inflate.o:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/inflate.o
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/inflate.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/inflate.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/inflate.o
 .PHONY : inflate.o
 
 # target to preprocess a source file
 inflate.i:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/inflate.i
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/inflate.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/inflate.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/inflate.i
 .PHONY : inflate.i
 
 # target to generate assembly for a file
 inflate.s:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/inflate.s
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/inflate.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/inflate.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/inflate.s
 .PHONY : inflate.s
 
 # target to build an object file
 inftrees.o:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/inftrees.o
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/inftrees.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/inftrees.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/inftrees.o
 .PHONY : inftrees.o
 
 # target to preprocess a source file
 inftrees.i:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/inftrees.i
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/inftrees.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/inftrees.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/inftrees.i
 .PHONY : inftrees.i
 
 # target to generate assembly for a file
 inftrees.s:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/inftrees.s
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/inftrees.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/inftrees.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/inftrees.s
 .PHONY : inftrees.s
 
 # target to build an object file
 test/example.o:
-	$(MAKE) -f CMakeFiles/example.dir/build.make CMakeFiles/example.dir/test/example.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/example.dir/build.make 3rd-party/zlib/CMakeFiles/example.dir/test/example.o
 .PHONY : test/example.o
 
 # target to preprocess a source file
 test/example.i:
-	$(MAKE) -f CMakeFiles/example.dir/build.make CMakeFiles/example.dir/test/example.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/example.dir/build.make 3rd-party/zlib/CMakeFiles/example.dir/test/example.i
 .PHONY : test/example.i
 
 # target to generate assembly for a file
 test/example.s:
-	$(MAKE) -f CMakeFiles/example.dir/build.make CMakeFiles/example.dir/test/example.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/example.dir/build.make 3rd-party/zlib/CMakeFiles/example.dir/test/example.s
 .PHONY : test/example.s
 
 # target to build an object file
 test/minigzip.o:
-	$(MAKE) -f CMakeFiles/minigzip.dir/build.make CMakeFiles/minigzip.dir/test/minigzip.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/minigzip.dir/build.make 3rd-party/zlib/CMakeFiles/minigzip.dir/test/minigzip.o
 .PHONY : test/minigzip.o
 
 # target to preprocess a source file
 test/minigzip.i:
-	$(MAKE) -f CMakeFiles/minigzip.dir/build.make CMakeFiles/minigzip.dir/test/minigzip.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/minigzip.dir/build.make 3rd-party/zlib/CMakeFiles/minigzip.dir/test/minigzip.i
 .PHONY : test/minigzip.i
 
 # target to generate assembly for a file
 test/minigzip.s:
-	$(MAKE) -f CMakeFiles/minigzip.dir/build.make CMakeFiles/minigzip.dir/test/minigzip.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/minigzip.dir/build.make 3rd-party/zlib/CMakeFiles/minigzip.dir/test/minigzip.s
 .PHONY : test/minigzip.s
 
 # target to build an object file
 trees.o:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/trees.o
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/trees.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/trees.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/trees.o
 .PHONY : trees.o
 
 # target to preprocess a source file
 trees.i:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/trees.i
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/trees.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/trees.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/trees.i
 .PHONY : trees.i
 
 # target to generate assembly for a file
 trees.s:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/trees.s
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/trees.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/trees.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/trees.s
 .PHONY : trees.s
 
 # target to build an object file
 uncompr.o:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/uncompr.o
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/uncompr.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/uncompr.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/uncompr.o
 .PHONY : uncompr.o
 
 # target to preprocess a source file
 uncompr.i:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/uncompr.i
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/uncompr.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/uncompr.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/uncompr.i
 .PHONY : uncompr.i
 
 # target to generate assembly for a file
 uncompr.s:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/uncompr.s
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/uncompr.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/uncompr.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/uncompr.s
 .PHONY : uncompr.s
 
 # target to build an object file
 zutil.o:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/zutil.o
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/zutil.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/zutil.o
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/zutil.o
 .PHONY : zutil.o
 
 # target to preprocess a source file
 zutil.i:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/zutil.i
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/zutil.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/zutil.i
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/zutil.i
 .PHONY : zutil.i
 
 # target to generate assembly for a file
 zutil.s:
-	$(MAKE) -f CMakeFiles/zlib.dir/build.make CMakeFiles/zlib.dir/zutil.s
-	$(MAKE) -f CMakeFiles/zlibstatic.dir/build.make CMakeFiles/zlibstatic.dir/zutil.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlib.dir/build.make 3rd-party/zlib/CMakeFiles/zlib.dir/zutil.s
+	cd /Users/nietzsche/Downloads/snowman/src && $(MAKE) -f 3rd-party/zlib/CMakeFiles/zlibstatic.dir/build.make 3rd-party/zlib/CMakeFiles/zlibstatic.dir/zutil.s
 .PHONY : zutil.s
 
 # Help Target
@@ -529,9 +526,8 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... zlibstatic"
 	@echo "... example"
-	@echo "... install"
 	@echo "... zlib"
-	@echo "... install/strip"
+	@echo "... install"
 	@echo "... list_install_components"
 	@echo "... minigzip"
 	@echo "... adler32.o"
@@ -596,6 +592,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	$(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /Users/nietzsche/Downloads/snowman/src && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 
