@@ -118,7 +118,7 @@
 /* #undef HAVE_GETRLIMIT */
 
 /* Define to 1 if you have the `getuid' function. */
-/* #undef HAVE_GETUID */
+#define HAVE_GETUID 1
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
@@ -145,10 +145,10 @@
 /* #undef HAVE_MEMORY_H */
 
 /* Define to 1 if you have a working `mmap' system call. */
-/* #undef HAVE_MMAP */
+#define HAVE_MMAP 1
 
 /* Define to 1 if you have the `mprotect' function. */
-/* #undef HAVE_MPROTECT */
+#define HAVE_MPROTECT 1
 
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
 /* #undef HAVE_NDIR_H */
