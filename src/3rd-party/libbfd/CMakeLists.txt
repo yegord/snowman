@@ -1,14 +1,44 @@
 # In this file we are doing all of our 'configure' checks. Things like checking
 # for headers, functions, libraries, types and size of types.
-INCLUDE (${CMAKE_ROOT}/Modules/CheckIncludeFile.cmake)
-INCLUDE (${CMAKE_ROOT}/Modules/CheckTypeSize.cmake)
-INCLUDE (${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
-INCLUDE (${CMAKE_ROOT}/Modules/CheckCXXSourceCompiles.cmake)
-INCLUDE (${CMAKE_ROOT}/Modules/TestBigEndian.cmake)
-INCLUDE (${CMAKE_ROOT}/Modules/CheckSymbolExists.cmake)
+INCLUDE(CheckIncludeFile)
+INCLUDE(CheckTypeSize)
+INCLUDE(CheckFunctionExists)
+INCLUDE(CheckCXXSourceCompiles)
+INCLUDE(TestBigEndian)
+INCLUDE(CheckSymbolExists)
+INCLUDE(CMakeDetermineCompileFeatures)
+INCLUDE(CheckPrototypeDefinition)
+
+
+MACRO(CHECK_PROTOTYPE_EXISTS _SYMBOL _HEADER _RESULT)
+  SET(_INCLUDE_FILES)
+  FOREACH (it ${_HEADER})
+    SET(_INCLUDE_FILES "${_INCLUDE_FILES}#include <${it}>\n")
+  ENDFOREACH (it)
+  
+  SET(_CHECK_PROTO_EXISTS_SOURCE_CODE "
+${_INCLUDE_FILES}
+int main()
+{
+#ifndef ${_SYMBOL}
+    int i = sizeof(&${_SYMBOL});
+#endif
+    return 0;
+}
+")
+  CHECK_CXX_SOURCE_COMPILES("${_CHECK_PROTO_EXISTS_SOURCE_CODE}" ${_RESULT})
+ENDMACRO(CHECK_PROTOTYPE_EXISTS _SYMBOL _HEADER _RESULT)
 
 # To check for an include file you do this:
+CHECK_INCLUDE_FILE("alloca.h" HAVE_ALLOCA_H)
+CHECK_INCLUDE_FILE("dirent.h" HAVE_DIRENT_H)
+CHECK_INCLUDE_FILE("dlfcn.h" HAVE_DLFCN_H)
+CHECK_INCLUDE_FILE("fcntl.h" HAVE_FCNTL_H)
+CHECK_INCLUDE_FILE("stddef.h" HAVE_STDDEF_H)
 CHECK_INCLUDE_FILE("stdint.h" HAVE_STDINT_H)
+CHECK_INCLUDE_FILE("inttypes.h" HAVE_INTTYPES_H)
+CHECK_INCLUDE_FILE("string.h" HAVE_STRING_H)
+CHECK_INCLUDE_FILE("strings.h" HAVE_STRINGS_H)
 
 # To check the size of a primitive type:
 CHECK_TYPE_SIZE("char" SIZEOF_CHAR)
@@ -16,23 +46,538 @@ CHECK_TYPE_SIZE("int" SIZEOF_INT)
 CHECK_TYPE_SIZE("long" SIZEOF_LONG)
 CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG)
 CHECK_TYPE_SIZE("short" SIZEOF_SHORT)
+CHECK_TYPE_SIZE("off_t" SIZEOF_OFF_T)
 CHECK_TYPE_SIZE("void *" SIZEOF_VOID_P)
+
+# To check for an function:
+CHECK_PROTOTYPE_EXISTS(basename "libgen.h" HAVE_DECL_BASENAME)
+CHECK_PROTOTYPE_EXISTS(ffs "string.h;strings.h" HAVE_DECL_FFS)
+CHECK_PROTOTYPE_EXISTS(free "stdlib.h;unistd.h" HAVE_DECL_FREE)
+CHECK_PROTOTYPE_EXISTS(fseeko "stdio.h" HAVE_DECL_FSEEKO)
+CHECK_PROTOTYPE_EXISTS(fseeko64 "stdio.h" HAVE_DECL_FSEEKO64)
+CHECK_PROTOTYPE_EXISTS(ftello "stdio.h" HAVE_DECL_FTELLO)
+CHECK_PROTOTYPE_EXISTS(ftello64 "stdio.h" HAVE_DECL_FTELLO64)
+CHECK_PROTOTYPE_EXISTS(getenv "stdlib.h;unistd.h" HAVE_DECL_GETENV)
+CHECK_PROTOTYPE_EXISTS(malloc "stdlib.h;unistd.h" HAVE_DECL_MALLOC)
+CHECK_PROTOTYPE_EXISTS(realloc "stdlib.h;unistd.h" HAVE_DECL_REALLOC)
+CHECK_PROTOTYPE_EXISTS(snprintf "string.h;strings.h" HAVE_DECL_SNPRINTF)
+CHECK_PROTOTYPE_EXISTS(stpcpy "string.h;strings.h" HAVE_DECL_STPCPY)
+CHECK_PROTOTYPE_EXISTS(strnlen "string.h;strings.h" HAVE_DECL_STRNLEN)
+CHECK_PROTOTYPE_EXISTS(strstr "string.h;strings.h" HAVE_DECL_STRSTR)
+CHECK_PROTOTYPE_EXISTS(vsnprintf "string.h;strings.h" HAVE_DECL_VSNPRINTF)
+
+CHECK_FUNCTION_EXISTS(fseeko HAVE_FSEEKO)
+CHECK_FUNCTION_EXISTS(fileno HAVE_FILENO)
+CHECK_FUNCTION_EXISTS(fseeko64 HAVE_FSEEKO64)
+CHECK_FUNCTION_EXISTS(ftello HAVE_FTELLO)
+CHECK_FUNCTION_EXISTS(ftello64 HAVE_FTELLO64)
+CHECK_FUNCTION_EXISTS(fcntl HAVE_FCNTL)
+CHECK_FUNCTION_EXISTS(fdopen HAVE_FDOPEN)
+CHECK_FUNCTION_EXISTS(getgid HAVE_GETGID)
+CHECK_FUNCTION_EXISTS(getuid HAVE_GETUID)
+CHECK_FUNCTION_EXISTS(madvise HAVE_MADVISE)
+CHECK_FUNCTION_EXISTS(strtoull HAVE_STRTOULL)
 
 # And you continue doing these types of checks for each item that you want to check. You can even do custom "try-compiles/Try-run" for more elaborate setups.
 # Now that you have your variables define you add lines like this to your CMakeLists.txt file:
 
+SET( PACKAGE "libbfd" )
+SET( VERSION "2.25.1" )
+
 configure_file ( config.h.cmake config.h )
 # Now make sure that you the the build directory on your "Include" path when compiling
-include_directories(${PROJECT_BINARY_DIR})
+include_directories(.)
+
 
 if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS /wd4018 /wd4267 /wd4244)
 endif()
 
 set(SOURCES
-    config.h 
-    bfd.c
-    bfd.h
+aix386-core.c
+aix5ppc-core.c
+alloca-conf.h
+ansidecl.h
+aout-adobe.c
+aout-arm.c
+aout-cris.c
+aout-ns32k.c
+aout-sparcle.c
+aout-target.h
+aout-tic30.c
+aout0.c
+aout32.c
+aout64.c
+aoutf1.h
+aoutx.h
+archive.c
+archive64.c
+archures.c
+armnetbsd.c
+bfd-in.h
+bfd-in2.h
+bfd-in3.h
+bfd.c
+bfd.h
+bfd_stdint.h
+bfdio.c
+bfdlink.h
+bfdver.h
+bfdwin.c
+binary-io.h
+binary.c
+bout.c
+bout.h
+cache.c
+cf-i386lynx.c
+cf-sparclynx.c
+cisco-core.c
+coff-alpha.c
+coff-apollo.c
+coff-arm.c
+coff-aux.c
+coff-go32.c
+coff-h8300.c
+coff-h8500.c
+coff-i386.c
+coff-i860.c
+coff-i960.c
+coff-ia64.c
+coff-m68k.c
+coff-m88k.c
+coff-mcore.c
+coff-mips.c
+coff-ppc.c
+coff-rs6000.c
+coff-sh.c
+coff-sparc.c
+coff-stgo32.c
+coff-svm68k.c
+coff-tic30.c
+coff-tic4x.c
+coff-tic54x.c
+coff-tic80.c
+coff-u68k.c
+coff-w65.c
+coff-we32k.c
+coff-x86_64.c
+coff-z80.c
+coff-z8k.c
+coff64-rs6000.c
+coffcode.h
+coffgen.c
+cofflink.c
+coffswap.h
+compress.c
+config.h
+corefile.c
+cpu-aarch64.c
+cpu-alpha.c
+cpu-arc.c
+cpu-arm.c
+cpu-avr.c
+cpu-bfin.c
+cpu-cr16.c
+cpu-cr16c.c
+cpu-cris.c
+cpu-crx.c
+cpu-d10v.c
+cpu-d30v.c
+cpu-dlx.c
+cpu-epiphany.c
+cpu-fr30.c
+cpu-frv.c
+cpu-h8300.c
+cpu-h8500.c
+cpu-hppa.c
+cpu-i370.c
+cpu-i386.c
+cpu-i860.c
+cpu-i960.c
+cpu-ia64-opc.c
+cpu-ia64.c
+cpu-ip2k.c
+cpu-iq2000.c
+cpu-k1om.c
+cpu-l1om.c
+cpu-lm32.c
+cpu-m10200.c
+cpu-m10300.c
+cpu-m32c.c
+cpu-m32r.c
+cpu-m68hc11.c
+cpu-m68hc12.c
+cpu-m68k.c
+cpu-m88k.c
+cpu-m9s12x.c
+cpu-m9s12xg.c
+cpu-mcore.c
+cpu-mep.c
+cpu-metag.c
+cpu-microblaze.c
+cpu-mips.c
+cpu-mmix.c
+cpu-moxie.c
+cpu-msp430.c
+cpu-mt.c
+cpu-nds32.c
+cpu-nios2.c
+cpu-ns32k.c
+cpu-or1k.c
+cpu-pdp11.c
+cpu-pj.c
+cpu-plugin.c
+cpu-powerpc.c
+cpu-rl78.c
+cpu-rs6000.c
+cpu-rx.c
+cpu-s390.c
+cpu-score.c
+cpu-sh.c
+cpu-sparc.c
+cpu-spu.c
+cpu-tic30.c
+cpu-tic4x.c
+cpu-tic54x.c
+cpu-tic6x.c
+cpu-tic80.c
+cpu-tilegx.c
+cpu-tilepro.c
+cpu-v850.c
+cpu-v850_rh850.c
+cpu-vax.c
+cpu-w65.c
+cpu-we32k.c
+cpu-xc16x.c
+cpu-xgate.c
+cpu-xstormy16.c
+cpu-xtensa.c
+cpu-z80.c
+cpu-z8k.c
+demangle.h
+demo64.c
+dis-asm.h
+dwarf1.c
+dwarf2.c
+dwarf2.h
+dyn-string.h
+ecoff.c
+ecofflink.c
+ecoffswap.h
+elf-attrs.c
+elf-bfd.h
+elf-eh-frame.c
+elf-hppa.h
+elf-ifunc.c
+elf-linux-psinfo.h
+elf-m10200.c
+elf-m10300.c
+elf-nacl.c
+elf-nacl.h
+elf-s390-common.c
+elf-strtab.c
+elf-vxworks.c
+elf-vxworks.h
+elf.c
+elf32-aarch64.c
+elf32-am33lin.c
+elf32-arc.c
+elf32-arm.c
+elf32-avr.c
+elf32-avr.h
+elf32-bfin.c
+elf32-cr16.c
+elf32-cr16c.c
+elf32-cris.c
+elf32-crx.c
+elf32-d10v.c
+elf32-d30v.c
+elf32-dlx.c
+elf32-epiphany.c
+elf32-fr30.c
+elf32-frv.c
+elf32-gen.c
+elf32-h8300.c
+elf32-hppa.c
+elf32-hppa.h
+elf32-i370.c
+elf32-i386.c
+elf32-i860.c
+elf32-i960.c
+elf32-ia64.c
+elf32-ip2k.c
+elf32-iq2000.c
+elf32-lm32.c
+elf32-m32c.c
+elf32-m32r.c
+elf32-m68hc11.c
+elf32-m68hc12.c
+elf32-m68hc1x.c
+elf32-m68hc1x.h
+elf32-m68k.c
+elf32-m88k.c
+elf32-mcore.c
+elf32-mep.c
+elf32-metag.c
+elf32-metag.h
+elf32-microblaze.c
+elf32-mips.c
+elf32-moxie.c
+elf32-msp430.c
+elf32-mt.c
+elf32-nds32.c
+elf32-nds32.h
+elf32-nios2.c
+elf32-nios2.h
+elf32-or1k.c
+elf32-pj.c
+elf32-ppc.c
+elf32-ppc.h
+elf32-rl78.c
+elf32-rx.c
+elf32-rx.h
+elf32-s390.c
+elf32-score.c
+elf32-score.h
+elf32-score7.c
+elf32-sh-relocs.h
+elf32-sh-symbian.c
+elf32-sh.c
+elf32-sh64-com.c
+elf32-sh64.c
+elf32-sh64.h
+elf32-sparc.c
+elf32-spu.c
+elf32-spu.h
+elf32-target.h
+elf32-tic6x.c
+elf32-tic6x.h
+elf32-tilegx.c
+elf32-tilegx.h
+elf32-tilepro.c
+elf32-tilepro.h
+elf32-v850.c
+elf32-vax.c
+elf32-xc16x.c
+elf32-xgate.c
+elf32-xgate.h
+elf32-xstormy16.c
+elf32-xtensa.c
+elf32.c
+elf64-aarch64.c
+elf64-alpha.c
+elf64-gen.c
+elf64-hppa.c
+elf64-hppa.h
+elf64-ia64-vms.c
+elf64-ia64.c
+elf64-mips.c
+elf64-mmix.c
+elf64-ppc.c
+elf64-ppc.h
+elf64-s390.c
+elf64-sh64.c
+elf64-sparc.c
+elf64-target.h
+elf64-tilegx.c
+elf64-tilegx.h
+elf64-x86-64.c
+elf64.c
+elfcode.h
+elfcore.h
+elflink.c
+elfn32-mips.c
+elfnn-aarch64.c
+elfnn-ia64.c
+elfxx-aarch64.c
+elfxx-aarch64.h
+elfxx-ia64.c
+elfxx-ia64.h
+elfxx-mips.c
+elfxx-mips.h
+elfxx-sparc.c
+elfxx-sparc.h
+elfxx-target.h
+elfxx-tilegx.c
+elfxx-tilegx.h
+epoc-pe-arm.c
+epoc-pei-arm.c
+fibheap.h
+filenames.h
+floatformat.h
+fnmatch.h
+fopen-bin.h
+fopen-same.h
+fopen-vms.h
+format.c
+freebsd.h
+gen-aout.c
+genlink.h
+getopt.h
+go32stub.h
+hash.c
+hashtab.h
+host-aout.c
+hp-symtab.h
+hp300bsd.c
+hp300hpux.c
+hppabsd-core.c
+hpux-core.c
+i386aout.c
+i386bsd.c
+i386dynix.c
+i386freebsd.c
+i386linux.c
+i386lynx.c
+i386mach3.c
+i386msdos.c
+i386netbsd.c
+i386os9k.c
+ieee.c
+ieee.h
+ihex.c
+init.c
+irix-core.c
+leb128.h
+libaout.h
+libbfd-in.h
+libbfd.c
+libbfd.h
+libcoff-in.h
+libcoff.h
+libecoff.h
+libhppa.h
+libiberty.h
+libieee.h
+libnlm.h
+liboasys.h
+libpei.h
+libxcoff.h
+linker.c
+longlong.h
+lto-symtab.h
+lynx-core.c
+m68k4knetbsd.c
+m68klinux.c
+m68knetbsd.c
+m88kmach3.c
+m88kopenbsd.c
+mach-o-i386.c
+mach-o-target.c
+mach-o-x86-64.c
+mach-o.c
+mach-o.h
+md5.h
+merge.c
+mipsbsd.c
+mmo.c
+netbsd-core.c
+netbsd.h
+newsos3.c
+nlm-target.h
+nlm.c
+nlm32-alpha.c
+nlm32-i386.c
+nlm32-ppc.c
+nlm32-sparc.c
+nlm32.c
+nlm64.c
+nlmcode.h
+nlmswap.h
+ns32k.h
+ns32knetbsd.c
+oasys.c
+oasys.h
+objalloc.h
+obstack.h
+opncls.c
+os9k.h
+osf-core.c
+partition.h
+pc532-mach.c
+pdp11.c
+pe-arm-wince.c
+pe-arm.c
+pe-i386.c
+pe-mcore.c
+pe-mips.c
+pe-ppc.c
+pe-sh.c
+pe-x86_64.c
+peXXigen.c
+pef-traceback.h
+pef.c
+pef.h
+pei-arm-wince.c
+pei-arm.c
+pei-i386.c
+pei-ia64.c
+pei-mcore.c
+pei-mips.c
+pei-ppc.c
+pei-sh.c
+pei-x86_64.c
+peicode.h
+peigen.c
+pepigen.c
+pex64igen.c
+plugin-api.h
+plugin.c
+plugin.h
+ppcboot.c
+progress.h
+ptrace-core.c
+reloc.c
+reloc16.c
+riscix.c
+rs6000-core.c
+safe-ctype.h
+sco5-core.c
+section.c
+sha1.h
+simple-object.h
+simple.c
+som.c
+som.h
+sort.h
+sparclinux.c
+sparclynx.c
+sparcnetbsd.c
+splay-tree.h
+srec.c
+stab-syms.c
+stabs.c
+sunos.c
+symcat.h
+syms.c
+sysdep.h
+targets.c
+targmatch.h
+tekhex.c
+timeval-utils.h
+trad-core.c
+vax1knetbsd.c
+vaxbsd.c
+vaxnetbsd.c
+verilog.c
+versados.c
+version.h
+vms-alpha.c
+vms-lib.c
+vms-misc.c
+vms.h
+vtv-change-permission.h
+xcofflink.c
+xregex.h
+xregex2.h
+xsym.c
+xsym.h
+xtensa-config.h
+xtensa-isa-internal.h
+xtensa-isa.c
+xtensa-isa.h
+xtensa-modules.c
 )
 
-add_library(libbfd ${SOURCES})
+add_library(bfd ${SOURCES})
+target_link_libraries(bfd)

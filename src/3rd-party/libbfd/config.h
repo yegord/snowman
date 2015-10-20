@@ -13,22 +13,22 @@
 /* #undef ENABLE_NLS */
 
 /* Define to 1 if you have the <alloca.h> header file. */
-/* #undef HAVE_ALLOCA_H */
+#define HAVE_ALLOCA_H 1
 
 /* Define to 1 if you have the declaration of `basename', and to 0 if you
    don't. */
-/* #undef HAVE_DECL_BASENAME */
+#define HAVE_DECL_BASENAME 1
 
 /* Define to 1 if you have the declaration of `ffs', and to 0 if you don't. */
-/* #undef HAVE_DECL_FFS */
+#define HAVE_DECL_FFS 1
 
 /* Define to 1 if you have the declaration of `free', and to 0 if you don't.
    */
-/* #undef HAVE_DECL_FREE */
+#define HAVE_DECL_FREE 1
 
 /* Define to 1 if you have the declaration of `fseeko', and to 0 if you don't.
    */
-/* #undef HAVE_DECL_FSEEKO */
+#define HAVE_DECL_FSEEKO 1
 
 /* Define to 1 if you have the declaration of `fseeko64', and to 0 if you
    don't. */
@@ -36,7 +36,7 @@
 
 /* Define to 1 if you have the declaration of `ftello', and to 0 if you don't.
    */
-/* #undef HAVE_DECL_FTELLO */
+#define HAVE_DECL_FTELLO 1
 
 /* Define to 1 if you have the declaration of `ftello64', and to 0 if you
    don't. */
@@ -44,42 +44,42 @@
 
 /* Define to 1 if you have the declaration of `getenv', and to 0 if you don't.
    */
-/* #undef HAVE_DECL_GETENV */
+#define HAVE_DECL_GETENV 1
 
 /* Define to 1 if you have the declaration of `malloc', and to 0 if you don't.
    */
-/* #undef HAVE_DECL_MALLOC */
+#define HAVE_DECL_MALLOC 1
 
 /* Define to 1 if you have the declaration of `realloc', and to 0 if you
    don't. */
-/* #undef HAVE_DECL_REALLOC */
+#define HAVE_DECL_REALLOC 1
 
 /* Define to 1 if you have the declaration of `snprintf', and to 0 if you
    don't. */
-/* #undef HAVE_DECL_SNPRINTF */
+#define HAVE_DECL_SNPRINTF 1
 
 /* Define to 1 if you have the declaration of `stpcpy', and to 0 if you don't.
    */
-/* #undef HAVE_DECL_STPCPY */
+#define HAVE_DECL_STPCPY 1
 
 /* Define to 1 if you have the declaration of `strnlen', and to 0 if you
    don't. */
-/* #undef HAVE_DECL_STRNLEN */
+#define HAVE_DECL_STRNLEN 1
 
 /* Define to 1 if you have the declaration of `strstr', and to 0 if you don't.
    */
-/* #undef HAVE_DECL_STRSTR */
+#define HAVE_DECL_STRSTR 1
 
 /* Define to 1 if you have the declaration of `vsnprintf', and to 0 if you
    don't. */
-/* #undef HAVE_DECL_VSNPRINTF */
+#define HAVE_DECL_VSNPRINTF 1
 
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */
-/* #undef HAVE_DIRENT_H */
+#define HAVE_DIRENT_H 1
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
-/* #undef HAVE_DLFCN_H */
+#define HAVE_DLFCN_H 1
 
 /* Define to 1 if you have the `fcntl' function. */
 /* #undef HAVE_FCNTL */
@@ -88,10 +88,10 @@
 /* #undef HAVE_FCNTL_H */
 
 /* Define to 1 if you have the `fdopen' function. */
-/* #undef HAVE_FDOPEN */
+#define HAVE_FDOPEN 1
 
 /* Define to 1 if you have the `fileno' function. */
-/* #undef HAVE_FILENO */
+#define HAVE_FILENO 1
 
 /* Define to 1 if you have the `fopen64' function. */
 /* #undef HAVE_FOPEN64 */
@@ -103,13 +103,13 @@
 /* #undef HAVE_FSEEKO64 */
 
 /* Define to 1 if you have the `ftello' function. */
-/* #undef HAVE_FTELLO */
+#define HAVE_FTELLO 1
 
 /* Define to 1 if you have the `ftello64' function. */
 /* #undef HAVE_FTELLO64 */
 
 /* Define to 1 if you have the `getgid' function. */
-/* #undef HAVE_GETGID */
+#define HAVE_GETGID 1
 
 /* Define to 1 if you have the `getpagesize' function. */
 /* #undef HAVE_GETPAGESIZE */
@@ -121,7 +121,7 @@
 /* #undef HAVE_GETUID */
 
 /* Define to 1 if you have the <inttypes.h> header file. */
-/* #undef HAVE_INTTYPES_H */
+#define HAVE_INTTYPES_H 1
 
 /* Define if <sys/procfs.h> has lwpstatus_t. */
 /* #undef HAVE_LWPSTATUS_T */
@@ -130,7 +130,7 @@
 /* #undef HAVE_LWPSTATUS_T_PR_CONTEXT */
 
 /* Define if <sys/procfs.h> has lwpstatus_t.pr_fpreg. */
-#undef HAVE_LWPSTATUS_T_PR_FPREG
+#undef HAVE_LWPSTATUS_T_PR_FPREG 
 
 /* Define if <sys/procfs.h> has lwpstatus_t.pr_reg. */
 /* #undef HAVE_LWPSTATUS_T_PR_REG */
@@ -139,7 +139,7 @@
 /* #undef HAVE_LWPXSTATUS_T */
 
 /* Define to 1 if you have the `madvise' function. */
-/* #undef HAVE_MADVISE */
+#define HAVE_MADVISE 1
 
 /* Define to 1 if you have the <memory.h> header file. */
 /* #undef HAVE_MEMORY_H */
@@ -202,25 +202,25 @@
 /* #undef HAVE_SETITIMER */
 
 /* Define to 1 if you have the <stddef.h> header file. */
-#define HAVE_STDDEF_H
+#define HAVE_STDDEF_H 1
 
 /* Define to 1 if you have the <stdint.h> header file. */
-#define HAVE_STDINT_H
+#define HAVE_STDINT_H 1
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 /* #undef HAVE_STDLIB_H */
 
 /* Define to 1 if you have the <strings.h> header file. */
-/* #undef HAVE_STRINGS_H */
+#define HAVE_STRINGS_H 1
 
 /* Define to 1 if you have the <string.h> header file. */
-/* #undef HAVE_STRING_H */
+#define HAVE_STRING_H 1
 
 /* Define to 1 if you have the `strtoull' function. */
-/* #undef HAVE_STRTOULL */
+#define HAVE_STRTOULL 1
 
 /* Define if struct core_dumpx has member c_impl */
-#undef HAVE_ST_C_IMPL
+#undef HAVE_ST_C_IMPL 
 
 /* Define to 1 if you have the `sysconf' function. */
 /* #undef HAVE_SYSCONF */
@@ -252,7 +252,7 @@
 /* #undef HAVE_SYS_TIME_H */
 
 /* Define to 1 if you have the <sys/types.h> header file. */
-#define HAVE_SYS_TYPES_H
+#define HAVE_SYS_TYPES_H 1
 
 /* Define to 1 if you have the <time.h> header file. */
 /* #undef HAVE_TIME_H */
@@ -273,25 +273,25 @@
 #define HAVE_ZLIB_H 1
 
 /* Name of package */
-#undef PACKAGE
+#define PACKAGE libbfd
 
 /* Define to the address where bug reports for this package should be sent. */
-#undef PACKAGE_BUGREPORT
+/* #undef PACKAGE_BUGREPORT */
 
 /* Define to the full name of this package. */
-#undef PACKAGE_NAME
+/* #undef PACKAGE_NAME */
 
 /* Define to the full name and version of this package. */
-#undef PACKAGE_STRING
+/* #undef PACKAGE_STRING */
 
 /* Define to the one symbol short name of this package. */
-#undef PACKAGE_TARNAME
+/* #undef PACKAGE_TARNAME */
 
 /* Define to the home page for this package. */
-#undef PACKAGE_URL
+/* #undef PACKAGE_URL */
 
 /* Define to the version of this package. */
-#undef PACKAGE_VERSION
+/* #undef PACKAGE_VERSION */
 
 /* The size of `char', as computed by sizeof. */
 #define SIZEOF_CHAR 1
@@ -306,7 +306,7 @@
 #define SIZEOF_LONG_LONG 8
 
 /* The size of `off_t', as computed by sizeof. */
-/* #undef SIZEOF_OFF_T */
+#define SIZEOF_OFF_T 8
 
 /* The size of `short', as computed by sizeof. */
 #define SIZEOF_SHORT 2
@@ -364,7 +364,7 @@
 
 
 /* Version number of package */
-#undef VERSION
+#define VERSION 2.25.1
 
 /* Enable large inode numbers on Mac OS X 10.5.  */
 #ifndef _DARWIN_USE_64_BIT_INODE
