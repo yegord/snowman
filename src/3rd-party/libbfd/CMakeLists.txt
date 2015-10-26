@@ -46,6 +46,8 @@ find_package(ZLIB)
 IF(ZLIB_FOUND)
 include_directories(${ZLIB_INCLUDE_DIR})
 SET(HAVE_ZLIB_H 1)
+ELSE()
+SET(ZLIB_LIBRARY "")
 ENDIF()
 
 SET(USE_SECUREPLT 1)
