@@ -920,4 +920,4 @@ xtensa-modules.c
 )
 
 add_library(bfd ${SOURCES})
-target_link_libraries(bfd ${ZLIB_LIBRARIES})
+target_link_libraries(bfd ${ZLIB_LIBRARY})
