@@ -12,7 +12,7 @@ INCLUDE(CheckSymbolExists)
 INCLUDE(CMakeDetermineCompileFeatures)
 INCLUDE(CheckPrototypeDefinition)
 INCLUDE(CheckCSourceCompiles)
-INCLUDE (CheckStructHasMember)
+INCLUDE(CheckStructHasMember)
 
 MACRO(CHECK_PROTOTYPE_EXISTS _SYMBOL _HEADER _RESULT)
   SET(_INCLUDE_FILES)
@@ -42,7 +42,12 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGCXX)
   set(_GNU_SOURCE 1)
 endif()
 
+find_package(ZLIB)
+IF(ZLIB_FOUND)
+include_directories(${ZLIB_INCLUDE_DIR})
 SET(HAVE_ZLIB_H 1)
+ENDIF()
+
 SET(USE_SECUREPLT 1)
 
 # To check for an include file you do this:
@@ -915,4 +920,4 @@ xtensa-modules.c
 )
 
 add_library(bfd ${SOURCES})
-target_link_libraries(bfd)
+target_link_libraries(bfd ${LIBS} ${ZLIB_LIBRARIES})
