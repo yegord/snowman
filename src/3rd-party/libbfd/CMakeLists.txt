@@ -44,7 +44,7 @@ endif()
 
 find_package(ZLIB)
 IF(ZLIB_FOUND)
-include_directories(${ZLIB_INCLUDE_DIR})
+include_directories(${ZLIB_INCLUDE_DIRS})
 SET(HAVE_ZLIB_H 1)
 ENDIF()
 
@@ -920,4 +920,4 @@ xtensa-modules.c
 )
 
 add_library(bfd ${SOURCES})
-target_link_libraries(bfd ${LIBS} ${ZLIB_LIBRARIES})
+target_link_libraries(bfd ${ZLIB_LIBRARIES})
