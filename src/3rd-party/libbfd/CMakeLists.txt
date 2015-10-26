@@ -44,7 +44,7 @@ endif()
 
 find_package(ZLIB)
 IF(ZLIB_FOUND)
-include_directories(${ZLIB_INCLUDE_DIRS})
+include_directories(${ZLIB_INCLUDE_DIR})
 SET(HAVE_ZLIB_H 1)
 ENDIF()
 
