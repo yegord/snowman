@@ -423,6 +423,9 @@ SET(PACKAGE_NAME "\"bfd\"")
 SET(PACKAGE_TARNAME "\"bfd\"")
 SET(PACKAGE_STRING "\"bfd 2.25.1\"")
 
+SET(DEBUGDIR "\".\"")
+SET(BINDIR "\".\"")
+
 configure_file ( config.h.cmake config.h )
 # Now make sure that you the the build directory on your "Include" path when compiling
 include_directories(.)
@@ -432,8 +435,15 @@ if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS /wd4018 /wd4267 /wd4244)
 endif()
 
+#OPTIONAL BACKENDS
+#aix386-core.c <- needs core.h
+#hpux-core.c <- needs core.h
+#netbsd-core.c <- needs sys/core.h 
+#osf-core.c
+#sco5-core.c
+#trad-core.c
+
 set(SOURCES
-aix386-core.c
 aix5ppc-core.c
 alloca-conf.h
 ansidecl.h
@@ -484,9 +494,7 @@ coff-i960.c
 coff-ia64.c
 coff-m68k.c
 coff-m88k.c
-coff-mcore.c
 coff-mips.c
-coff-ppc.c
 coff-rs6000.c
 coff-sh.c
 coff-sparc.c
@@ -533,7 +541,6 @@ cpu-i370.c
 cpu-i386.c
 cpu-i860.c
 cpu-i960.c
-cpu-ia64-opc.c
 cpu-ia64.c
 cpu-ip2k.c
 cpu-iq2000.c
@@ -613,7 +620,6 @@ elf-m10200.c
 elf-m10300.c
 elf-nacl.c
 elf-nacl.h
-elf-s390-common.c
 elf-strtab.c
 elf-vxworks.c
 elf-vxworks.h
@@ -726,8 +732,6 @@ elfcode.h
 elfcore.h
 elflink.c
 elfn32-mips.c
-elfnn-aarch64.c
-elfnn-ia64.c
 elfxx-aarch64.c
 elfxx-aarch64.h
 elfxx-ia64.c
@@ -750,18 +754,15 @@ fopen-same.h
 fopen-vms.h
 format.c
 freebsd.h
-gen-aout.c
 genlink.h
 getopt.h
 go32stub.h
 hash.c
 hashtab.h
-host-aout.c
 hp-symtab.h
 hp300bsd.c
 hp300hpux.c
 hppabsd-core.c
-hpux-core.c
 i386aout.c
 i386bsd.c
 i386dynix.c
@@ -802,7 +803,6 @@ m68knetbsd.c
 m88kmach3.c
 m88kopenbsd.c
 mach-o-i386.c
-mach-o-target.c
 mach-o-x86-64.c
 mach-o.c
 mach-o.h
@@ -810,7 +810,6 @@ md5.h
 merge.c
 mipsbsd.c
 mmo.c
-netbsd-core.c
 netbsd.h
 newsos3.c
 nlm-target.h
@@ -831,7 +830,6 @@ objalloc.h
 obstack.h
 opncls.c
 os9k.h
-osf-core.c
 partition.h
 pc532-mach.c
 pdp11.c
@@ -871,7 +869,6 @@ reloc16.c
 riscix.c
 rs6000-core.c
 safe-ctype.h
-sco5-core.c
 section.c
 sha1.h
 simple-object.h
@@ -894,7 +891,6 @@ targets.c
 targmatch.h
 tekhex.c
 timeval-utils.h
-trad-core.c
 vax1knetbsd.c
 vaxbsd.c
 vaxnetbsd.c

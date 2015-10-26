@@ -386,3 +386,9 @@
 
 /* Define to 1 if you need to in order for `stat' and other things to work. */
 /* #undef _POSIX_SOURCE */
+
+/* Needs to be defined for dwarf2.c */
+#define DEBUGDIR "."
+
+/* Needs to be defined for plugin.c */
+#define BINDIR "."

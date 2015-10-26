@@ -386,3 +386,9 @@
 
 /* Define to 1 if you need to in order for `stat' and other things to work. */
 #cmakedefine _POSIX_SOURCE @_POSIX_SOURCE@
+
+/* Needs to be defined for dwarf2.c */
+#cmakedefine DEBUGDIR @DEBUGDIR@
+
+/* Needs to be defined for plugin.c */
+#cmakedefine BINDIR @BINDIR@

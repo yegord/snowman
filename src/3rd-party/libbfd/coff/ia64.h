@@ -49,9 +49,9 @@ typedef struct
   char	bsize[4];		/* uninitialized data "   "		*/
   char	entry[4];		/* entry pt.				*/
   char 	text_start[4];		/* base of text used for this file	*/
-#ifndef BFD64
+//#ifndef BFD64
   char 	data_start[4];		/* base of data used for this file	*/
-#endif
+//#endif
 }
 AOUTHDR;
 
