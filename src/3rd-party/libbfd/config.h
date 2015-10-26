@@ -56,7 +56,7 @@
 
 /* Define to 1 if you have the declaration of `snprintf', and to 0 if you
    don't. */
-/* #undef HAVE_DECL_SNPRINTF */
+#define HAVE_DECL_SNPRINTF 1
 
 /* Define to 1 if you have the declaration of `stpcpy', and to 0 if you don't.
    */
@@ -72,7 +72,7 @@
 
 /* Define to 1 if you have the declaration of `vsnprintf', and to 0 if you
    don't. */
-/* #undef HAVE_DECL_VSNPRINTF */
+#define HAVE_DECL_VSNPRINTF 1
 
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */
@@ -273,25 +273,25 @@
 #define HAVE_ZLIB_H 1
 
 /* Name of package */
-#define PACKAGE bfd
+#define PACKAGE "bfd"
 
 /* Define to the address where bug reports for this package should be sent. */
-/* #undef PACKAGE_BUGREPORT */
+#define PACKAGE_BUGREPORT ""
 
 /* Define to the full name of this package. */
-#define PACKAGE_NAME bfd
+#define PACKAGE_NAME "bfd"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING bfd 2.25.1
+#define PACKAGE_STRING "bfd 2.25.1"
 
 /* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME bfd
+#define PACKAGE_TARNAME "bfd"
 
 /* Define to the home page for this package. */
-/* #undef PACKAGE_URL */
+#define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION 2.25.1
+#define PACKAGE_VERSION "2.25.1"
 
 /* The size of `char', as computed by sizeof. */
 #define SIZEOF_CHAR 1
@@ -318,10 +318,10 @@
 #define STDC_HEADERS 1
 
 /* Define if you can safely include both <string.h> and <strings.h>. */
-/* #undef STRING_WITH_STRINGS */
+#define STRING_WITH_STRINGS 1
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
-/* #undef TIME_WITH_SYS_TIME */
+#define TIME_WITH_SYS_TIME 1
 
 /* Name of host specific header file to include in trad-core.c. */
 /* #undef TRAD_HEADER */
@@ -336,35 +336,35 @@
 /* #undef USE_MMAP */
 
 /* Define if we should default to creating read-only plt entries */
-/* #undef USE_SECUREPLT */
+#define USE_SECUREPLT 1
 
 /* Define if we may generate symbols with ELF's STT_COMMON type */
 /* #undef USE_STT_COMMON */
 
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
-/* #undef _ALL_SOURCE */
+#define _ALL_SOURCE 1
 #endif
 /* Enable GNU extensions on systems that have them.  */
 #ifndef _GNU_SOURCE
-/* #undef _GNU_SOURCE */
+#define _GNU_SOURCE 1
 #endif
 /* Enable threading extensions on Solaris.  */
 #ifndef _POSIX_PTHREAD_SEMANTICS
-/* #undef _POSIX_PTHREAD_SEMANTICS */
+#define _POSIX_PTHREAD_SEMANTICS 1
 #endif
 /* Enable extensions on HP NonStop.  */
 #ifndef _TANDEM_SOURCE
-/* #undef _TANDEM_SOURCE */
+#define _TANDEM_SOURCE 1
 #endif
 /* Enable general extensions on Solaris.  */
 #ifndef __EXTENSIONS__
-/* #undef __EXTENSIONS__ */
+#define __EXTENSIONS__ 1
 #endif
 
 
 /* Version number of package */
-#define VERSION 2.25.1
+#define VERSION "2.25.1"
 
 /* Enable large inode numbers on Mac OS X 10.5.  */
 #ifndef _DARWIN_USE_64_BIT_INODE

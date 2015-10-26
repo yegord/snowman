@@ -11,6 +11,7 @@ INCLUDE(TestBigEndian)
 INCLUDE(CheckSymbolExists)
 INCLUDE(CMakeDetermineCompileFeatures)
 INCLUDE(CheckPrototypeDefinition)
+INCLUDE(CheckCSourceCompiles)
 
 
 MACRO(CHECK_PROTOTYPE_EXISTS _SYMBOL _HEADER _RESULT)
@@ -32,10 +33,9 @@ int main()
   CHECK_CXX_SOURCE_COMPILES("${_CHECK_PROTO_EXISTS_SOURCE_CODE}" ${_RESULT})
 ENDMACRO(CHECK_PROTOTYPE_EXISTS _SYMBOL _HEADER _RESULT)
 
-# If we are on AIX, do the _ALL_SOURCE magic
-IF(${CMAKE_SYSTEM_NAME} MATCHES AIX)
-  SET(_ALL_SOURCE 1)
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES AIX)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  set(CMAKE_COMPILER_IS_CLANGCXX ON)
+endif()
 
 # Check if _GNU_SOURCE is available.
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGCXX)
@@ -43,6 +43,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGCXX)
 endif()
 
 SET(HAVE_ZLIB_H 1)
+SET(USE_SECUREPLT 1)
 
 # To check for an include file you do this:
 CHECK_INCLUDE_FILE("alloca.h" HAVE_ALLOCA_H)
@@ -120,17 +121,64 @@ CHECK_FUNCTION_EXISTS(sysconf HAVE_SYSCONF)
 #check for stdc headers
 CHECK_INCLUDE_FILES("stdlib.h;stdarg.h;string.h;float.h" STDC_HEADERS)
 
+IF (UNIX OR MINGW)
+  SET (_ALL_SOURCE 1)
+  SET (_POSIX_PTHREAD_SEMANTICS 1)
+  SET (_TANDEM_SOURCE 1)
+  SET (__EXTENSIONS__ 1)
+ENDIF (UNIX OR MINGW)
+
 # And you continue doing these types of checks for each item that you want to check. You can even do custom "try-compiles/Try-run" for more elaborate setups.
 # Now that you have your variables define you add lines like this to your CMakeLists.txt file:
 
-SET(PACKAGE "bfd")
-SET(VERSION "2.25.1")
-SET(PACKAGE_VERSION "2.25.1")
-SET(PACKAGE_BUGREPORT "")
-SET(PACKAGE_URL "")
-SET(PACKAGE_NAME "bfd")
-SET(PACKAGE_TARNAME "bfd")
-SET(PACKAGE_STRING "bfd 2.25.1")
+# Check whether time and sys/time can both be included
+check_c_source_compiles(
+"
+#include <sys/time.h>
+#include <time.h>
+int main(int argc, char** argv) {return 0;}
+"
+TIME_WITH_SYS_TIME
+)
+if (TIME_WITH_SYS_TIME)
+  if (DEBUG_CMAKE)
+    message("time.h and sys/time.h are compatible.")
+  endif ()
+  set(TIME_WITH_SYS_TIME 1 CACHE BOOL "Whether time.h and sys/time.h are compatible")
+else ()
+  if (DEBUG_CMAKE)
+    message("time.h and sys/time.h are NOT compatible.")
+  endif ()
+endif ()
+
+# Check whether string and strings can both be included
+check_c_source_compiles(
+"
+#include <string.h>
+#include <strings.h>
+int main(int argc, char** argv) {return 0;}
+"
+STRING_WITH_STRINGS
+)
+if (STRING_WITH_STRINGS)
+  if (DEBUG_CMAKE)
+    message("string.h and strings.h are compatible.")
+  endif ()
+  set(STRING_WITH_STRINGS 1 CACHE BOOL "Whether string.h and strings.h are compatible")
+else ()
+  if (DEBUG_CMAKE)
+    message("string.h and strings.h are NOT compatible.")
+  endif ()
+endif ()
+
+SET(PACKAGE "\"bfd\"")
+SET(VERSION "\"2.25.1\"")
+SET(PACKAGE_VERSION "\"2.25.1\"")
+SET(PACKAGE_BUGREPORT "\"\"")
+SET(PACKAGE_URL "\"\"")
+SET(PACKAGE_NAME "\"bfd\"")
+SET(PACKAGE_TARNAME "\"bfd\"")
+SET(PACKAGE_STRING "\"bfd 2.25.1\"")
 
 configure_file ( config.h.cmake config.h )
 # Now make sure that you the the build directory on your "Include" path when compiling
