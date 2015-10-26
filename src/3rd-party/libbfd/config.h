@@ -112,10 +112,10 @@
 #define HAVE_GETGID 1
 
 /* Define to 1 if you have the `getpagesize' function. */
-/* #undef HAVE_GETPAGESIZE */
+#define HAVE_GETPAGESIZE 1
 
 /* Define to 1 if you have the `getrlimit' function. */
-/* #undef HAVE_GETRLIMIT */
+#define HAVE_GETRLIMIT 1
 
 /* Define to 1 if you have the `getuid' function. */
 #define HAVE_GETUID 1
@@ -142,7 +142,7 @@
 #define HAVE_MADVISE 1
 
 /* Define to 1 if you have the <memory.h> header file. */
-/* #undef HAVE_MEMORY_H */
+#define HAVE_MEMORY_H 1
 
 /* Define to 1 if you have a working `mmap' system call. */
 #define HAVE_MMAP 1
@@ -199,7 +199,7 @@
 /* #undef HAVE_PXSTATUS_T */
 
 /* Define to 1 if you have the `setitimer' function. */
-/* #undef HAVE_SETITIMER */
+#define HAVE_SETITIMER 1
 
 /* Define to 1 if you have the <stddef.h> header file. */
 #define HAVE_STDDEF_H 1
@@ -208,7 +208,7 @@
 #define HAVE_STDINT_H 1
 
 /* Define to 1 if you have the <stdlib.h> header file. */
-/* #undef HAVE_STDLIB_H */
+#define HAVE_STDLIB_H  1
 
 /* Define to 1 if you have the <strings.h> header file. */
 #define HAVE_STRINGS_H 1
@@ -223,45 +223,45 @@
 #undef HAVE_ST_C_IMPL 
 
 /* Define to 1 if you have the `sysconf' function. */
-/* #undef HAVE_SYSCONF */
+#define HAVE_SYSCONF 1
 
 /* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
    */
-/* #undef HAVE_SYS_DIR_H */
+#define HAVE_SYS_DIR_H 1
 
 /* Define to 1 if you have the <sys/file.h> header file. */
-/* #undef HAVE_SYS_FILE_H */
+#define HAVE_SYS_FILE_H 1
 
 /* Define to 1 if you have the <sys/ndir.h> header file, and it defines `DIR'.
    */
 /* #undef HAVE_SYS_NDIR_H */
 
 /* Define to 1 if you have the <sys/param.h> header file. */
-/* #undef HAVE_SYS_PARAM_H */
+#define HAVE_SYS_PARAM_H 1
 
 /* Define to 1 if you have the <sys/procfs.h> header file. */
 /* #undef HAVE_SYS_PROCFS_H */
 
 /* Define to 1 if you have the <sys/resource.h> header file. */
-/* #undef HAVE_SYS_RESOURCE_H */
+#define HAVE_SYS_RESOURCE_H 1
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
-/* #undef HAVE_SYS_STAT_H */
+#define HAVE_SYS_STAT_H 1
 
 /* Define to 1 if you have the <sys/time.h> header file. */
-/* #undef HAVE_SYS_TIME_H */
+#define HAVE_SYS_TIME_H 1
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #define HAVE_SYS_TYPES_H 1
 
 /* Define to 1 if you have the <time.h> header file. */
-/* #undef HAVE_TIME_H */
+#define HAVE_TIME_H 1
 
 /* Define to 1 if you have the <unistd.h> header file. */
-/* #undef HAVE_UNISTD_H */
+#define HAVE_UNISTD_H 1
 
 /* Define to 1 if you have the <wchar.h> header file. */
-/* #undef HAVE_WCHAR_H */
+#define HAVE_WCHAR_H 1
 
 /* Define if <sys/procfs.h> has win32_pstatus_t. */
 /* #undef HAVE_WIN32_PSTATUS_T */
@@ -315,7 +315,7 @@
 #define SIZEOF_VOID_P 8
 
 /* Define to 1 if you have the ANSI C header files. */
-/* #undef STDC_HEADERS */
+#define STDC_HEADERS 1
 
 /* Define if you can safely include both <string.h> and <strings.h>. */
 /* #undef STRING_WITH_STRINGS */

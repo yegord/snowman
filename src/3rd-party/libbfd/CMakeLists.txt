@@ -1,6 +1,7 @@
 # In this file we are doing all of our 'configure' checks. Things like checking
 # for headers, functions, libraries, types and size of types.
 INCLUDE(CheckIncludeFile)
+INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckTypeSize)
 INCLUDE(CheckFunctionExists)
 INCLUDE(CheckCXXSourceCompiles)
@@ -41,12 +42,28 @@ CHECK_INCLUDE_FILE("alloca.h" HAVE_ALLOCA_H)
 CHECK_INCLUDE_FILE("dirent.h" HAVE_DIRENT_H)
 CHECK_INCLUDE_FILE("dlfcn.h" HAVE_DLFCN_H)
 CHECK_INCLUDE_FILE("fcntl.h" HAVE_FCNTL_H)
+CHECK_INCLUDE_FILE("memory.h" HAVE_MEMORY_H)
 CHECK_INCLUDE_FILE("ndir.h" HAVE_NDIR_H)
 CHECK_INCLUDE_FILE("stddef.h" HAVE_STDDEF_H)
+CHECK_INCLUDE_FILE("stdlib.h" HAVE_STDLIB_H)
 CHECK_INCLUDE_FILE("stdint.h" HAVE_STDINT_H)
 CHECK_INCLUDE_FILE("inttypes.h" HAVE_INTTYPES_H)
 CHECK_INCLUDE_FILE("string.h" HAVE_STRING_H)
 CHECK_INCLUDE_FILE("strings.h" HAVE_STRINGS_H)
+CHECK_INCLUDE_FILE("unistd.h" HAVE_UNISTD_H)
+CHECK_INCLUDE_FILE("time.h" HAVE_TIME_H)
+CHECK_INCLUDE_FILE("wchar.h" HAVE_WCHAR_H)
+CHECK_INCLUDE_FILE("windows.h" HAVE_WINDOWS_H)
+CHECK_INCLUDE_FILE("sys/dir.h" HAVE_SYS_DIR_H)
+CHECK_INCLUDE_FILE("sys/file.h" HAVE_SYS_FILE_H)
+CHECK_INCLUDE_FILE("sys/ndir.h" HAVE_SYS_NDIR_H)
+CHECK_INCLUDE_FILE("sys/param.h" HAVE_SYS_PARAM_H)
+CHECK_INCLUDE_FILE("sys/procfs.h" HAVE_SYS_PROCFS_H)
+CHECK_INCLUDE_FILE("sys/resource.h" HAVE_SYS_RESOURCE_H)
+CHECK_INCLUDE_FILE("sys/stat.h" HAVE_SYS_STAT_H)
+CHECK_INCLUDE_FILE("sys/time.h" HAVE_SYS_TIME_H)
+CHECK_INCLUDE_FILE("sys/types.h" HAVE_SYS_TYPES_H)
+
 
 # To check the size of a primitive type:
 CHECK_TYPE_SIZE("char" SIZEOF_CHAR)
@@ -83,10 +100,17 @@ CHECK_FUNCTION_EXISTS(fcntl HAVE_FCNTL)
 CHECK_FUNCTION_EXISTS(fdopen HAVE_FDOPEN)
 CHECK_FUNCTION_EXISTS(getgid HAVE_GETGID)
 CHECK_FUNCTION_EXISTS(getuid HAVE_GETUID)
+CHECK_FUNCTION_EXISTS(getpagesize HAVE_GETPAGESIZE)
+CHECK_FUNCTION_EXISTS(getrlimit HAVE_GETRLIMIT)
 CHECK_FUNCTION_EXISTS(madvise HAVE_MADVISE)
 CHECK_FUNCTION_EXISTS(mmap HAVE_MMAP)
 CHECK_FUNCTION_EXISTS(mprotect HAVE_MPROTECT)
+CHECK_FUNCTION_EXISTS(setitimer HAVE_SETITIMER)
 CHECK_FUNCTION_EXISTS(strtoull HAVE_STRTOULL)
+CHECK_FUNCTION_EXISTS(sysconf HAVE_SYSCONF)
+
+#check for stdc headers
+CHECK_INCLUDE_FILES("stdlib.h;stdarg.h;string.h;float.h" STDC_HEADERS)
 
 # And you continue doing these types of checks for each item that you want to check. You can even do custom "try-compiles/Try-run" for more elaborate setups.
 # Now that you have your variables define you add lines like this to your CMakeLists.txt file:
