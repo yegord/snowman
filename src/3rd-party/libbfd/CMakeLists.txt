@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+
 # In this file we are doing all of our 'configure' checks. Things like checking
 # for headers, functions, libraries, types and size of types.
 INCLUDE(CheckIncludeFile)
@@ -34,6 +36,11 @@ ENDMACRO(CHECK_PROTOTYPE_EXISTS _SYMBOL _HEADER _RESULT)
 IF(${CMAKE_SYSTEM_NAME} MATCHES AIX)
   SET(_ALL_SOURCE 1)
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES AIX)
+
+# Check if _GNU_SOURCE is available.
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGCXX)
+  set(_GNU_SOURCE 1)
+endif()
 
 SET(HAVE_ZLIB_H 1)
 
@@ -76,6 +83,7 @@ CHECK_TYPE_SIZE("void *" SIZEOF_VOID_P)
 
 # To check for an function:
 CHECK_PROTOTYPE_EXISTS(basename "libgen.h" HAVE_DECL_BASENAME)
+CHECK_PROTOTYPE_EXISTS(fcntl "fcntl.h" HAVE_FCNTL)
 CHECK_PROTOTYPE_EXISTS(ffs "string.h;strings.h" HAVE_DECL_FFS)
 CHECK_PROTOTYPE_EXISTS(free "stdlib.h;unistd.h" HAVE_DECL_FREE)
 CHECK_PROTOTYPE_EXISTS(fseeko "stdio.h" HAVE_DECL_FSEEKO)
@@ -85,11 +93,11 @@ CHECK_PROTOTYPE_EXISTS(ftello64 "stdio.h" HAVE_DECL_FTELLO64)
 CHECK_PROTOTYPE_EXISTS(getenv "stdlib.h;unistd.h" HAVE_DECL_GETENV)
 CHECK_PROTOTYPE_EXISTS(malloc "stdlib.h;unistd.h" HAVE_DECL_MALLOC)
 CHECK_PROTOTYPE_EXISTS(realloc "stdlib.h;unistd.h" HAVE_DECL_REALLOC)
-CHECK_PROTOTYPE_EXISTS(snprintf "string.h;strings.h" HAVE_DECL_SNPRINTF)
+CHECK_PROTOTYPE_EXISTS(snprintf "stdio.h" HAVE_DECL_SNPRINTF)
 CHECK_PROTOTYPE_EXISTS(stpcpy "string.h;strings.h" HAVE_DECL_STPCPY)
 CHECK_PROTOTYPE_EXISTS(strnlen "string.h;strings.h" HAVE_DECL_STRNLEN)
 CHECK_PROTOTYPE_EXISTS(strstr "string.h;strings.h" HAVE_DECL_STRSTR)
-CHECK_PROTOTYPE_EXISTS(vsnprintf "string.h;strings.h" HAVE_DECL_VSNPRINTF)
+CHECK_PROTOTYPE_EXISTS(vsnprintf "stdio.h" HAVE_DECL_VSNPRINTF)
 
 CHECK_FUNCTION_EXISTS(fseeko HAVE_FSEEKO)
 CHECK_FUNCTION_EXISTS(fileno HAVE_FILENO)
@@ -115,8 +123,14 @@ CHECK_INCLUDE_FILES("stdlib.h;stdarg.h;string.h;float.h" STDC_HEADERS)
 # And you continue doing these types of checks for each item that you want to check. You can even do custom "try-compiles/Try-run" for more elaborate setups.
 # Now that you have your variables define you add lines like this to your CMakeLists.txt file:
 
-SET( PACKAGE "libbfd" )
-SET( VERSION "2.25.1" )
+SET(PACKAGE "bfd")
+SET(VERSION "2.25.1")
+SET(PACKAGE_VERSION "2.25.1")
+SET(PACKAGE_BUGREPORT "")
+SET(PACKAGE_URL "")
+SET(PACKAGE_NAME "bfd")
+SET(PACKAGE_TARNAME "bfd")
+SET(PACKAGE_STRING "bfd 2.25.1")
 
 configure_file ( config.h.cmake config.h )
 # Now make sure that you the the build directory on your "Include" path when compiling

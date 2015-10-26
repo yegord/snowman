@@ -56,7 +56,7 @@
 
 /* Define to 1 if you have the declaration of `snprintf', and to 0 if you
    don't. */
-#define HAVE_DECL_SNPRINTF 1
+/* #undef HAVE_DECL_SNPRINTF */
 
 /* Define to 1 if you have the declaration of `stpcpy', and to 0 if you don't.
    */
@@ -72,7 +72,7 @@
 
 /* Define to 1 if you have the declaration of `vsnprintf', and to 0 if you
    don't. */
-#define HAVE_DECL_VSNPRINTF 1
+/* #undef HAVE_DECL_VSNPRINTF */
 
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */
@@ -82,10 +82,10 @@
 #define HAVE_DLFCN_H 1
 
 /* Define to 1 if you have the `fcntl' function. */
-/* #undef HAVE_FCNTL */
+#define HAVE_FCNTL 1
 
 /* Define to 1 if you have the <fcntl.h> header file. */
-/* #undef HAVE_FCNTL_H */
+#define HAVE_FCNTL_H 1
 
 /* Define to 1 if you have the `fdopen' function. */
 #define HAVE_FDOPEN 1
@@ -208,7 +208,7 @@
 #define HAVE_STDINT_H 1
 
 /* Define to 1 if you have the <stdlib.h> header file. */
-#define HAVE_STDLIB_H  1
+#define HAVE_STDLIB_H 1
 
 /* Define to 1 if you have the <strings.h> header file. */
 #define HAVE_STRINGS_H 1
@@ -273,25 +273,25 @@
 #define HAVE_ZLIB_H 1
 
 /* Name of package */
-#define PACKAGE libbfd
+#define PACKAGE bfd
 
 /* Define to the address where bug reports for this package should be sent. */
 /* #undef PACKAGE_BUGREPORT */
 
 /* Define to the full name of this package. */
-/* #undef PACKAGE_NAME */
+#define PACKAGE_NAME bfd
 
 /* Define to the full name and version of this package. */
-/* #undef PACKAGE_STRING */
+#define PACKAGE_STRING bfd 2.25.1
 
 /* Define to the one symbol short name of this package. */
-/* #undef PACKAGE_TARNAME */
+#define PACKAGE_TARNAME bfd
 
 /* Define to the home page for this package. */
 /* #undef PACKAGE_URL */
 
 /* Define to the version of this package. */
-/* #undef PACKAGE_VERSION */
+#define PACKAGE_VERSION 2.25.1
 
 /* The size of `char', as computed by sizeof. */
 #define SIZEOF_CHAR 1

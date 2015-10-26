@@ -82,10 +82,10 @@
 #cmakedefine HAVE_DLFCN_H @HAVE_DLFCN_H@
 
 /* Define to 1 if you have the `fcntl' function. */
-#cmakedefine HAVE_FCNTL @HAVE_FNCTL@
+#cmakedefine HAVE_FCNTL @HAVE_FCNTL@
 
 /* Define to 1 if you have the <fcntl.h> header file. */
-#cmakedefine HAVE_FCNTL_H @HAVE_FNCTL_H@
+#cmakedefine HAVE_FCNTL_H @HAVE_FCNTL_H@
 
 /* Define to 1 if you have the `fdopen' function. */
 #cmakedefine HAVE_FDOPEN @HAVE_FDOPEN@
@@ -208,7 +208,7 @@
 #cmakedefine HAVE_STDINT_H @HAVE_STDINT_H@
 
 /* Define to 1 if you have the <stdlib.h> header file. */
-#cmakedefine HAVE_STDLIB_H  @HAVE_STDLIB_H@
+#cmakedefine HAVE_STDLIB_H @HAVE_STDLIB_H@
 
 /* Define to 1 if you have the <strings.h> header file. */
 #cmakedefine HAVE_STRINGS_H @HAVE_STRINGS_H@
@@ -343,23 +343,23 @@
 
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
-#cmakedefine _ALL_SOURCE
+#cmakedefine _ALL_SOURCE @_ALL_SOURCE@
 #endif
 /* Enable GNU extensions on systems that have them.  */
 #ifndef _GNU_SOURCE
-#cmakedefine _GNU_SOURCE
+#cmakedefine _GNU_SOURCE @_GNU_SOURCE@
 #endif
 /* Enable threading extensions on Solaris.  */
 #ifndef _POSIX_PTHREAD_SEMANTICS
-#cmakedefine _POSIX_PTHREAD_SEMANTICS
+#cmakedefine _POSIX_PTHREAD_SEMANTICS @_POSIX_PTHREAD_SEMANTICS@
 #endif
 /* Enable extensions on HP NonStop.  */
 #ifndef _TANDEM_SOURCE
-#cmakedefine _TANDEM_SOURCE
+#cmakedefine _TANDEM_SOURCE @_TANDEM_SOURCE@
 #endif
 /* Enable general extensions on Solaris.  */
 #ifndef __EXTENSIONS__
-#cmakedefine __EXTENSIONS__
+#cmakedefine __EXTENSIONS__ @__EXTENSIONS__@
 #endif
 
 
