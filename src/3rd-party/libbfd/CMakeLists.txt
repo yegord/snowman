@@ -12,7 +12,7 @@ INCLUDE(CheckSymbolExists)
 INCLUDE(CMakeDetermineCompileFeatures)
 INCLUDE(CheckPrototypeDefinition)
 INCLUDE(CheckCSourceCompiles)
-
+INCLUDE (CheckStructHasMember)
 
 MACRO(CHECK_PROTOTYPE_EXISTS _SYMBOL _HEADER _RESULT)
   SET(_INCLUDE_FILES)
@@ -128,6 +128,10 @@ IF (UNIX OR MINGW)
   SET (__EXTENSIONS__ 1)
 ENDIF (UNIX OR MINGW)
 
+IF (MSVC OR MINGW)
+  SET (USE_BINARY_FOPEN 1)
+ENDIF (MSVC OR MINGW)
+
 # And you continue doing these types of checks for each item that you want to check. You can even do custom "try-compiles/Try-run" for more elaborate setups.
 # Now that you have your variables define you add lines like this to your CMakeLists.txt file:
 
@@ -170,6 +174,245 @@ else ()
     message("string.h and strings.h are NOT compatible.")
   endif ()
 endif ()
+
+check_c_source_compiles(
+"
+#define _SYSCALL32
+/* Needed for new procfs interface on sparc-solaris.  */
+#define _STRUCTURED_PROC 1
+#include <sys/procfs.h>
+int
+main ()
+{
+lwpstatus_t avar
+  ;
+  return 0;
+}
+"
+LWPSTATUS_T
+)
+if (LWPSTATUS_T)
+  set(HAVE_LWPSTATUS_T 1)
+endif ()
+
+CHECK_STRUCT_HAS_MEMBER ("lwpstatus_t" "pr_context" "sys/procfs.h" HAVE_LWPSTATUS_T_PR_CONTEXT)
+CHECK_STRUCT_HAS_MEMBER ("lwpstatus_t" "pr_fpreg" "sys/procfs.h" HAVE_LWPSTATUS_T_PR_FPREG)
+CHECK_STRUCT_HAS_MEMBER ("lwpstatus_t" "pr_reg" "sys/procfs.h" HAVE_LWPSTATUS_T_PR_REG)
+
+check_c_source_compiles(
+"
+#define _SYSCALL32
+/* Needed for new procfs interface on sparc-solaris.  */
+#define _STRUCTURED_PROC 1
+#include <sys/procfs.h>
+int
+main ()
+{
+lwpxstatus_t avar
+  ;
+  return 0;
+}
+"
+LWPXSTATUS_T
+)
+if (LWPXSTATUS_T)
+  set(HAVE_LWPXSTATUS_T 1)
+endif ()
+
+check_c_source_compiles(
+"
+#define _SYSCALL32
+/* Needed for new procfs interface on sparc-solaris.  */
+#define _STRUCTURED_PROC 1
+#include <sys/procfs.h>
+int
+main ()
+{
+prpsinfo32_t avar
+  ;
+  return 0;
+}
+"
+PRPSINFO32_T
+)
+if (PRPSINFO32_T)
+  set(HAVE_PRPSINFO32_T 1)
+endif ()
+
+CHECK_STRUCT_HAS_MEMBER ("prpsinfo32_t" "pr_pid" "sys/procfs.h" HAVE_PRPSINFO32_T_PR_PID)
+
+check_c_source_compiles(
+"
+#define _SYSCALL32
+/* Needed for new procfs interface on sparc-solaris.  */
+#define _STRUCTURED_PROC 1
+#include <sys/procfs.h>
+int
+main ()
+{
+prpsinfo_t avar
+  ;
+  return 0;
+}
+"
+PRPSINFO_T
+)
+if (PRPSINFO_T)
+  set(HAVE_PRPSINFO_T 1)
+endif ()
+
+CHECK_STRUCT_HAS_MEMBER ("prpsinfo_t" "pr_pid" "sys/procfs.h" HAVE_PRPSINFO_T_PR_PID)
+
+check_c_source_compiles(
+"
+#define _SYSCALL32
+/* Needed for new procfs interface on sparc-solaris.  */
+#define _STRUCTURED_PROC 1
+#include <sys/procfs.h>
+int
+main ()
+{
+prstatus32_t avar
+  ;
+  return 0;
+}
+"
+PRSTATUS32_T
+)
+if (PRSTATUS32_T)
+  set(HAVE_PRSTATUS32_T 1)
+endif ()
+
+CHECK_STRUCT_HAS_MEMBER ("prstatus32_t" "pr_who" "sys/procfs.h" HAVE_PRSTATUS32_T_PR_WHO)
+
+check_c_source_compiles(
+"
+#define _SYSCALL32
+/* Needed for new procfs interface on sparc-solaris.  */
+#define _STRUCTURED_PROC 1
+#include <sys/procfs.h>
+int
+main ()
+{
+prstatus_t avar
+  ;
+  return 0;
+}
+"
+PRSTATUS_T
+)
+if (PRSTATUS_T)
+  set(HAVE_PRSTATUS_T 1)
+endif ()
+
+CHECK_STRUCT_HAS_MEMBER ("prstatus_t" "pr_who" "sys/procfs.h" HAVE_PRSTATUS_T_PR_WHO)
+
+check_c_source_compiles(
+"
+#define _SYSCALL32
+/* Needed for new procfs interface on sparc-solaris.  */
+#define _STRUCTURED_PROC 1
+#include <sys/procfs.h>
+int
+main ()
+{
+psinfo32_t avar
+  ;
+  return 0;
+}
+"
+PSINFO32_T
+)
+if (PSINFO32_T)
+  set(HAVE_PSINFO32_T 1)
+endif ()
+
+CHECK_STRUCT_HAS_MEMBER ("psinfo32_t" "pr_pid" "sys/procfs.h" HAVE_PSINFO32_T_PR_PID)
+
+check_c_source_compiles(
+"
+#define _SYSCALL32
+/* Needed for new procfs interface on sparc-solaris.  */
+#define _STRUCTURED_PROC 1
+#include <sys/procfs.h>
+int
+main ()
+{
+psinfo_t avar
+  ;
+  return 0;
+}
+"
+PSINFO_T
+)
+if (PSINFO_T)
+  set(HAVE_PSINFO_T 1)
+endif ()
+
+CHECK_STRUCT_HAS_MEMBER ("psinfo_t" "pr_pid" "sys/procfs.h" HAVE_PSINFO_T_PR_PID)
+
+CHECK_STRUCT_HAS_MEMBER ("struct core_dumpx" "c_impl" "core.h" HAVE_ST_C_IMPL)
+
+check_c_source_compiles(
+"
+#define _SYSCALL32
+/* Needed for new procfs interface on sparc-solaris.  */
+#define _STRUCTURED_PROC 1
+#include <sys/procfs.h>
+int
+main ()
+{
+pstatus32_t avar
+  ;
+  return 0;
+}
+"
+PSTATUS32_T
+)
+if (PSTATUS32_T)
+  set(HAVE_PSTATUS32_T 1)
+endif ()
+
+check_c_source_compiles(
+"
+#define _SYSCALL32
+/* Needed for new procfs interface on sparc-solaris.  */
+#define _STRUCTURED_PROC 1
+#include <sys/procfs.h>
+int
+main ()
+{
+pstatus_t avar
+  ;
+  return 0;
+}
+"
+PSTATUS_T
+)
+if (PSTATUS_T)
+  set(HAVE_PSTATUS_T 1)
+endif ()
+
+check_c_source_compiles(
+"
+#define _SYSCALL32
+/* Needed for new procfs interface on sparc-solaris.  */
+#define _STRUCTURED_PROC 1
+#include <sys/procfs.h>
+int
+main ()
+{
+pxstatus_t avar
+  ;
+  return 0;
+}
+"
+PXSTATUS_T
+)
+if (PXSTATUS_T)
+  set(HAVE_PXSTATUS_T 1)
+endif ()
+
 
 SET(PACKAGE "\"bfd\"")
 SET(VERSION "\"2.25.1\"")
