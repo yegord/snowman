@@ -150,6 +150,10 @@ find_package(Bfd)
 
 if(LIBBFD_FOUND)
   add_definitions(-DHAVE_LIBBFD=1)
+  find_package(ZLIB)
+  if(ZLIB_FOUND)
+  	LIST(APPEND LIBBFD_LIBRARIES ${ZLIB_LIBRARIES})
+  endif()
 endif()
 
 # Find IDA SDK.

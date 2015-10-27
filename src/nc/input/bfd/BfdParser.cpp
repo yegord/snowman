@@ -4,7 +4,7 @@
 #include "BfdParser.h"
 
 #include <QCoreApplication> /* For Q_DECLARE_TR_FUNCTIONS. */
-#include <QIODevice>
+#include <QFile>
 
 #include <nc/common/Foreach.h>
 #include <nc/common/LogToken.h>
@@ -64,9 +64,11 @@ BfdParser::BfdParser():
 
 bool BfdParser::doCanParse(QIODevice *source) const {
 	bfd *ibfd = nullptr;
-
+	QFile *file = static_cast<QFile *>(source);
+	QString filename = file->fileName();
+	
 	bfd_init();
-	//ibfd = bfd_openr(source, nullptr);
+	ibfd = bfd_openr(filename.toAscii().data(), nullptr);
 	if(ibfd == nullptr){
 		return false;
 	}
