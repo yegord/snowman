@@ -50,6 +50,58 @@ public:
     {}
 
     void parse() {
+    	bfd *ibfd = nullptr;
+		QFile *file = static_cast<QFile *>(source_);
+		QString filename = file->fileName();
+		source_->seek(0); /* Convention */
+
+		if((ibfd = bfd_openr(filename.toAscii().data(), nullptr)) == nullptr){
+			throw ParseError(tr("Could not open file: %1").arg(filename));
+		}
+  
+  		/* Here we try to figure out the target. */
+  		if (!bfd_check_format(ibfd, bfd_object)){
+			bfd_close(ibfd);
+			throw ParseError(tr("Could not open file: %1").arg(filename));
+		}
+  
+  		int arch = bfd_get_arch(ibfd);
+  		byteOrder_ = bfd_big_endian(ibfd) ? ByteOrder::BigEndian : ByteOrder::LittleEndian;
+  	
+  		switch (arch) {
+            case bfd_arch_i386:
+                if(bfd_get_mach(ibfd) != bfd_mach_x86_64){
+	                image_->platform().setArchitecture(QLatin1String("i386"));
+                } else {
+                	image_->platform().setArchitecture(QLatin1String("x86-64"));
+                }
+                break;
+            case bfd_arch_arm:
+                if (byteOrder_ == ByteOrder::LittleEndian) {
+                    image_->platform().setArchitecture(QLatin1String("arm-le"));
+                } else {
+                    image_->platform().setArchitecture(QLatin1String("arm-be"));
+                }
+                break;
+            case bfd_arch_mips:
+                if (byteOrder_ == ByteOrder::LittleEndian) {
+					if(bfd_arch_bits_per_address(ibfd) == 32) {
+                        image_->platform().setArchitecture(QLatin1String("mips-le"));
+                    } else {
+                    	image_->platform().setArchitecture(QLatin1String("mips64-le"));
+                    }
+                } 
+                else if(bfd_arch_bits_per_address(ibfd) == 32) {
+                    image_->platform().setArchitecture(QLatin1String("mips-be"));
+                } else {
+                	image_->platform().setArchitecture(QLatin1String("mips64-be"));
+                }
+                break;
+            default:
+            	const char *id = bfd_printable_name(ibfd);
+            	bfd_close(ibfd);
+                throw ParseError(tr("Unknown machine id: %1.").arg(id));
+        }
     }
 
 private:
