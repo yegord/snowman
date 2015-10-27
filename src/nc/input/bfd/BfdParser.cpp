@@ -55,6 +55,7 @@ public:
 		QString filename = file->fileName();
 		source_->seek(0); /* Convention */
 
+		/* Read filename */
 		if((ibfd = bfd_openr(filename.toAscii().data(), nullptr)) == nullptr){
 			throw ParseError(tr("Could not open file: %1").arg(filename));
 		}
