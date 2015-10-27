@@ -1,27 +1,6 @@
 /* The file is part of Snowman decompiler. */
 /* See doc/licenses.asciidoc for the licensing information. */
 
-//
-// SmartDec decompiler - SmartDec is a native code to C/C++ decompiler
-// Copyright (C) 2015 Alexander Chernov, Katerina Troshina, Yegor Derevenets,
-// Alexander Fokin, Sergey Levin, Leonid Tsvetkov
-//
-// This file is part of SmartDec decompiler.
-//
-// SmartDec decompiler is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// SmartDec decompiler is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with SmartDec decompiler.  If not, see <http://www.gnu.org/licenses/>.
-//
-
 #include "BfdParser.h"
 
 #include <QCoreApplication> /* For Q_DECLARE_TR_FUNCTIONS. */
@@ -46,12 +25,36 @@
 
 namespace nc {
 namespace input {
-namespace bfd {
+namespace bfdparser {
 
 namespace {
 
 using nc::core::input::read;
+using nc::core::input::getAsciizString;
 using nc::core::input::ParseError;
+
+class BfdParserImpl {
+    Q_DECLARE_TR_FUNCTIONS(BfdParserImpl)
+
+    QIODevice *source_;
+    core::image::Image *image_;
+    const LogToken &log_;
+
+    ByteOrder byteOrder_;
+    std::vector<const core::image::Section *> sections_;
+    std::vector<const core::image::Symbol *> symbols_;
+
+public:
+    BfdParserImpl(QIODevice *source, core::image::Image *image, const LogToken &log):
+        source_(source), image_(image), log_(log), byteOrder_(ByteOrder::Current)
+    {}
+
+    void parse() {
+    }
+
+private:
+
+};
 
 } // anonymous namespace
 
@@ -60,13 +63,26 @@ BfdParser::BfdParser():
 {}
 
 bool BfdParser::doCanParse(QIODevice *source) const {
-	return false;
+	bfd *ibfd = nullptr;
+
+	bfd_init();
+	//ibfd = bfd_openr(source, nullptr);
+	if(ibfd == nullptr){
+		return false;
+	}
+	if (!bfd_check_format(ibfd, bfd_object)){
+		bfd_close(ibfd);
+		return false;
+	}
+	bfd_close(ibfd);
+	return true;
 }
 
 void BfdParser::doParse(QIODevice *source, core::image::Image *image, const LogToken &log) const {
+	BfdParserImpl(source, image, log).parse();
 }
 
-} // namespace bfd
+} // namespace bfdparser
 } // namespace input
 } // namespace nc
 

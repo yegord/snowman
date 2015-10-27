@@ -240,7 +240,7 @@ qt4_wrap_cpp(SOURCES ${MOC_HEADERS} OPTIONS -DQ_MOC_RUN)
 add_library(nc-core ${SOURCES})
 if(LIBBFD_FOUND)
 target_link_libraries(nc-core nc-common nc-arch-arm nc-arch-allegrex nc-arch-mips nc-arch-mips64 nc-arch-x86 nc-input-bfd
-    ${Boost_LIBRARIES} ${QT_LIBRARIES} iberty undname)
+    ${Boost_LIBRARIES} ${QT_LIBRARIES} iberty undname ${LIBBFD_LIBRARIES})
 else()
 target_link_libraries(nc-core nc-common nc-arch-arm nc-arch-allegrex nc-arch-mips nc-arch-mips64 nc-arch-x86 nc-input-elf nc-input-mach-o nc-input-pe
     ${Boost_LIBRARIES} ${QT_LIBRARIES} iberty undname)

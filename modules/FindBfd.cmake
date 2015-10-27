@@ -32,7 +32,7 @@ find_path (LIBBFD_INCLUDE_DIRS
       ENV CPATH)
 
 # Ugly, yes ugly...
-find_library (LIBBFD_BFD_LIBRARY
+find_library (LIBBFD_LIBRARIES
     NAMES
       bfd
     PATHS
@@ -50,7 +50,7 @@ include (FindPackageHandleStandardArgs)
 
 # handle the QUIETLY and REQUIRED arguments and set LIBBFD_FOUND to TRUE if all listed variables are TRUE
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(LIBBFD DEFAULT_MSG
-    LIBBFD_BFD_LIBRARY
+    LIBBFD_LIBRARIES
     LIBBFD_INCLUDE_DIRS)
 
 mark_as_advanced(LIBBFD_INCLUDE_DIRS LIBBFD_LIBRARIES)
