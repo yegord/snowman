@@ -39,10 +39,6 @@
 #include <nc/core/input/ParseError.h>
 #include <nc/core/input/Utils.h>
 
-#define PACKAGE 1 /* Work-around for bfd.h */
-#define PACKAGE_VERSION 1 /* Work-around for bfd.h */
-
-#include "bfd.h"
 
 namespace nc {
 namespace input {

@@ -145,6 +145,9 @@ if(QT_NAMESPACE)
     add_definitions(-DQT_NAMESPACE=${QT_NAMESPACE})
 endif()
 
+#Find libbfd
+find_package(Bfd)
+
 # Find IDA SDK.
 find_package(IDA)
 
