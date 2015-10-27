@@ -148,6 +148,10 @@ endif()
 #Find libbfd
 find_package(Bfd)
 
+if(LIBBFD_FOUND)
+  add_definitions(-DHAVE_LIBBFD=1)
+endif()
+
 # Find IDA SDK.
 find_package(IDA)
 
