@@ -125,8 +125,10 @@ private:
 		asymbol **syms;
 		bfd_boolean dynamic = FALSE;
 		
-		if (!(bfd_get_file_flags(abfd) & HAS_SYMS))
+		if (!(bfd_get_file_flags(abfd) & HAS_SYMS)){
+			log_.warning(tr("Cannot find any symbols."));
     		return;
+		}
 
   		storage = bfd_get_symtab_upper_bound(abfd);
   		if (storage == 0) {
@@ -209,8 +211,9 @@ private:
             image_->addSymbol(std::move(sym));
 		}
 
-    	free(syms);
+		free(syms);
 		syms = nullptr;
+		
 		return;
     }
 
