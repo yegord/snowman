@@ -165,7 +165,7 @@ private:
 			boost::optional<ConstantValue> value = static_cast<long>(sym_value);
 			const core::image::Section *section = nullptr;
 
-			/* qDebug()  << name << " is: "  << symclass; */
+			/*qDebug()  << name << "is:"  << symclass;*/
 			
             SymbolType type;
 			switch (symclass) {
