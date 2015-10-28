@@ -63,8 +63,13 @@ public:
   
   		/* Here we try to figure out the target. */
   		if (!bfd_check_format(abfd, bfd_object)){
-			bfd_close(abfd);
-			throw ParseError(tr("Could not open file: %1").arg(filename));
+  			if (!bfd_check_format(abfd, bfd_archive)){
+				bfd_close(abfd);
+				throw ParseError(tr("Could not open file: %1").arg(filename));
+			} else {
+				bfd_close(abfd);
+				throw ParseError(tr("BFD archives is not yet supported."));
+			}
 		}
   
   		int arch = bfd_get_arch(abfd);
@@ -239,7 +244,7 @@ bool BfdParser::doCanParse(QIODevice *source) const {
 	if(abfd == nullptr){
 		return false;
 	}
-	if (!bfd_check_format(abfd, bfd_object)){
+	if (!(bfd_check_format(abfd, bfd_object) || bfd_check_format(abfd, bfd_archive))){
 		bfd_close(abfd);
 		return false;
 	}
