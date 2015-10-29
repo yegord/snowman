@@ -172,11 +172,10 @@ private:
 			boost::optional<ConstantValue> value = static_cast<long>(sym_value);
 			const core::image::Section *section = nullptr;
 
-			/*qDebug()  << name << "is:"  << symclass;*/
+			qDebug()  << name << "is:"  << symclass;
 			
             SymbolType type;
 			switch (symclass) {
-				case 'A':
 				case 'a':
 				case 'D':
 				case 'd':
@@ -184,6 +183,7 @@ private:
 				case 'g':
 				case 'S': /* Small object */
 				case 's':
+				case 'w':
 					type = SymbolType::OBJECT;
 					break;
 				case 'I':
@@ -195,9 +195,9 @@ private:
 				case 'V':
 				case 'v':
 				case 'W':
-				case 'w':
 					type = SymbolType::FUNCTION;
 					break;
+				case 'A':
 				case 'B': /* BSS */
 				case 'b':
 				case 'R': /* Read-only */
