@@ -125,38 +125,22 @@ private:
     }
 
     void parseSymbols() {
-		long storage;
+		unsigned int symsize;
 		long symcount;
 		asymbol **syms;
-		bfd_boolean dynamic = FALSE;
 		
 		if (!(bfd_get_file_flags(abfd) & HAS_SYMS)){
 			log_.warning(tr("Cannot find any symbols."));
     		return;
 		}
 
-  		storage = bfd_get_symtab_upper_bound(abfd);
-  		if (storage == 0) {
-  			storage = bfd_get_dynamic_symtab_upper_bound(abfd);
-  			dynamic = TRUE;
+  		symcount = bfd_read_minisymbols (abfd, FALSE, (void **) &syms, &symsize);
+  		if (symcount == 0){
+    		symcount = bfd_read_minisymbols (abfd, TRUE /* dynamic */, (void **) &syms, &symsize);
   		}
-  		
-  		if (storage < 0) {
-  			bfd_close(abfd);
-  			throw ParseError(tr("bfd_get_symtab_upper_bound: %1.").arg(getAsciizString(bfd_errmsg(bfd_get_error()))));
-	  	}
-
- 		syms = (asymbol **)malloc(storage);
- 		if (dynamic){
- 			symcount = bfd_canonicalize_dynamic_symtab(abfd, syms);
-    	} else {
- 			symcount = bfd_canonicalize_symtab(abfd, syms);
-    	}
-    	
+  	
 		if (symcount < 0) {
 			bfd_close(abfd);
-			free(syms);
-			syms = nullptr;
 			throw ParseError(tr("bfd_canonicalize_symtab: %1.").arg(getAsciizString(bfd_errmsg(bfd_get_error()))));
 		}
 
@@ -170,7 +154,7 @@ private:
 
 			QString name = getAsciizString(sym_name);
 			boost::optional<ConstantValue> value = static_cast<long>(sym_value);
-			const core::image::Section *section = nullptr;
+			const core::image::Section *section = nullptr; /* FIXME! */
 
 			/*qDebug()  << name << "is:"  << symclass;*/
 			
@@ -211,7 +195,7 @@ private:
 					break;
 			}
 
-            auto sym = std::make_unique<core::image::Symbol>(type, name, value, section);
+            auto sym = std::make_unique<Symbol>(type, name, value, section);
             symbols_.push_back(sym.get());
             image_->addSymbol(std::move(sym));
 		}
