@@ -52,7 +52,7 @@ REG(k1,     K1, 	0,  27 * 64,	64, "Reserved for kernel trap / IRQ handling")
 REG(gp,     GP, 	0,  28 * 64,	64, "Global pointer")
 REG(sp,     SP, 	0,  29 * 64,	64, "Stack pointer")
 REG(fp,     FP, 	0,  30 * 64,	64, "Frame pointer")
-REG(s8,     S8, 	0,  30 * 64,	64, "Calle saved register / frame pointer")
+REG(s8,     S8, 	0,  30 * 64,	64, "Callee saved register / frame pointer")
 REG(ra,     RA, 	0,  31 * 64,	64, "Return Address")
 
 REG(f0,		F0,		1,	0  * 64,	64, "Float point register")
