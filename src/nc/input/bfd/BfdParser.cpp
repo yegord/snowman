@@ -136,7 +136,7 @@ private:
 
 			auto section = std::make_unique<core::image::Section>(getAsciizString(bfd_get_section_name(abfd, p)), bfd_get_section_vma(abfd, p), static_cast<unsigned long>(bfd_section_size(abfd, p) / opb));
 
-			section->setAllocated((p->flags & SEC_ALLOC) == 0);
+			section->setAllocated(p->flags & SEC_ALLOC);
 			section->setReadable();
 			section->setWritable(p->flags & SEC_IN_MEMORY);
 			section->setExecutable(p->flags & SEC_EXCLUDE);
