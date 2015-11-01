@@ -43,7 +43,7 @@ class BfdParserImpl {
     bfd *abfd = nullptr;
 
     ByteOrder byteOrder_;
-    std::vector<const core::image::Section *> sections_;
+    std::vector<std::unique_ptr<core::image::Section>> sections_;
     std::vector<const core::image::Symbol *> symbols_;
 
 public:
@@ -120,7 +120,37 @@ public:
 
 private:
 
+	/* Borrowed this fron objdump.c */
     void parseSections() {
+    	/* Make a callback to dump_sections_headers() */
+    	asection *p;
+
+       	for (p = abfd->sections; p != NULL; p = p->next){
+			unsigned int opb = bfd_octets_per_byte(abfd);
+
+		  	/* Ignore linker created section.  See elfNN_ia64_object_p in bfd/elfxx-ia64.c.  */
+  			if(p->flags & SEC_LINKER_CREATED){
+  				log_.warning(tr("Ignoring linker created section."));
+	    		continue;
+  			}
+
+			auto section = std::make_unique<core::image::Section>(getAsciizString(bfd_get_section_name(abfd, p)), bfd_get_section_vma(abfd, p), static_cast<unsigned long>(bfd_section_size(abfd, p) / opb));
+
+			section->setAllocated((p->flags & SEC_ALLOC) == 0);
+			section->setReadable();
+			section->setWritable(p->flags & SEC_IN_MEMORY);
+			section->setExecutable(p->flags & SEC_EXCLUDE);
+
+			section->setCode(p->flags & SEC_CODE);
+			section->setData(p->flags & SEC_DATA);
+  			section->setBss(p->flags & SEC_LOAD);
+		
+			if(p->flags & SEC_HAS_CONTENTS){
+				QByteArray bytes(reinterpret_cast<const char *>(p->contents));
+				section->setContent(std::move(bytes));
+			}
+			image_->addSection(std::move(section));
+       	}		
 		return;
     }
 
