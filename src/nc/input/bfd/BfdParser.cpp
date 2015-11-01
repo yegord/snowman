@@ -120,7 +120,6 @@ public:
 
 private:
 
-	/* Borrowed this fron objdump.c */
     void parseSections() {
     	/* Make a callback to dump_sections_headers() */
     	asection *p;
@@ -138,18 +137,24 @@ private:
 
 			section->setAllocated(p->flags & SEC_ALLOC);
 			section->setReadable();
-			section->setWritable(p->flags & SEC_IN_MEMORY);
-			section->setExecutable(p->flags & SEC_EXCLUDE);
+			section->setWritable(!(p->flags & SEC_READONLY));
+			section->setExecutable(p->flags & SEC_CODE);
 
 			section->setCode(p->flags & SEC_CODE);
 			section->setData(p->flags & SEC_DATA);
-  			section->setBss(p->flags & SEC_LOAD);
-		
-			if(p->flags & SEC_HAS_CONTENTS){
-				QByteArray bytes(reinterpret_cast<const char *>(p->contents));
-				section->setContent(std::move(bytes));
+  			section->setBss(strcmp(bfd_section_name(abfd, p), ".bss") == 0);
+
+			bfd_size_type strsize = bfd_section_size (abfd, p);
+			bfd_byte *content = (bfd_byte *) malloc (strsize);
+			if (!bfd_get_section_contents(abfd, p, content, 0, strsize)){
+				free(content);
+				 throw ParseError(tr("Could not parse content in sections."));
 			}
+
+			QByteArray bytes(reinterpret_cast<const char *>(content));
+			section->setContent(std::move(bytes));
 			image_->addSection(std::move(section));
+			free(content);
        	}		
 		return;
     }
