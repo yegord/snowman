@@ -296,14 +296,14 @@ private:
 				case 'p': /* .pdata */				
 				case 's': /* .sbss */
 						{
-							section = nullptr;
+							/*section = nullptr;
 	   						for (std::size_t m = 0; m < sections_.size(); m++){
 								auto tmp = sections_[m].get();
 								if((name == QString(tmp->name())) || (sym_value == tmp->addr())){
 									section = tmp;
 									break;
 								}
-	   						}
+	   						}*/
 							type = SymbolType::SECTION;
 							break;
 						}
