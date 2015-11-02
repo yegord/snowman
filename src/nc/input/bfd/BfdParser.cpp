@@ -368,6 +368,8 @@ private:
 							type = SymbolType::SECTION;
 							break;
 						}
+				case 'v':
+				case 'w': /* weak */
 				default:
 					type = SymbolType::NOTYPE;
 					break;
