@@ -114,6 +114,10 @@ public:
         parseSymbols();
         parseRelocations();     
 
+        foreach (auto &section, sections_) {
+            image_->addSection(std::move(section));
+        }
+
 		bfd_close(abfd);
 		return;        
     }
@@ -143,21 +147,76 @@ private:
 			section->setCode(p->flags & SEC_CODE);
 			section->setData(p->flags & SEC_DATA);
   			section->setBss(strcmp(bfd_section_name(abfd, p), ".bss") == 0);
+			section->setName(bfd_section_name(abfd, p));
 
-			bfd_size_type strsize = bfd_section_size (abfd, p);
-			bfd_byte *content = (bfd_byte *) malloc (strsize);
+			bfd_size_type strsize = bfd_section_size(abfd, p);
+			bfd_byte *content = (bfd_byte *) malloc(strsize);
+			
 			if (!bfd_get_section_contents(abfd, p, content, 0, strsize)){
 				free(content);
-				 throw ParseError(tr("Could not parse content in sections."));
+				bfd_close(abfd);
+				throw ParseError(tr("Could not parse content in sections."));
 			}
 
 			QByteArray bytes(reinterpret_cast<const char *>(content));
 			section->setContent(std::move(bytes));
-			image_->addSection(std::move(section));
+			sections_.push_back(std::move(section));
 			free(content);
        	}		
 		return;
     }
+
+
+    void parseRelocations() {
+    	/* Make a callback to dump_sections_headers() */
+    	asection *p;
+
+       	for (p = abfd->sections; p != NULL; p = p->next){
+			unsigned int opb = bfd_octets_per_byte(abfd);
+
+		  	/* Ignore linker created section.  See elfNN_ia64_object_p in bfd/elfxx-ia64.c.  */
+  			/*if(p->flags & SEC_LINKER_CREATED){
+  				log_.warning(tr("Ignoring linker created section."));
+	    		continue;
+  			}
+  			
+			if (bfd_is_abs_section(p) || bfd_is_und_section(p) || bfd_is_com_section(p) || ((p->flags & SEC_RELOC) == 0)){
+  				continue; 
+			}
+
+			arelent **relpp;
+			long relcount;
+		 	long relsize = bfd_get_reloc_upper_bound (abfd, section);
+
+			if (relsize < 0){
+    			bfd_close(abfd);
+    			throw ParseError(tr("Could not parse relocations."));
+		  	}
+
+			if (relsize == 0){
+				log_.warning(tr("Cannot find any relocs."));
+				return;
+			}
+
+			relpp = (arelent **) malloc(relsize);
+			relcount = bfd_canonicalize_reloc(abfd, p, relpp, syms);
+
+			if (relcount < 0){
+    	  		free(relpp);
+    			bfd_close(abfd);
+    			throw ParseError(tr("Failed to read relocations."));
+      		}
+			
+			QString name = getAsciizString(sym_name);
+			
+			auto relocation = std::make_unique<core::image::Relocation>(entryAddress, image_->addSymbol(std::make_unique<core::image::Symbol>(core::image::SymbolType::FUNCTION, std::move(name), boost::none)));
+
+			image_->addRelocation(std::move(relocation));
+			free (relpp);*/
+       	}		
+		return;
+	}
+
 
     void parseSymbols() {
 		unsigned int symsize;
@@ -189,9 +248,27 @@ private:
 
 			QString name = getAsciizString(sym_name);
 			boost::optional<ConstantValue> value = static_cast<long>(sym_value);
-			const core::image::Section *section = nullptr; /* FIXME! */
+			const core::image::Section *section = nullptr;
+	    	asection *p;
+    	   	int j = 0;
 
-			/*qDebug()  << name << "is:"  << symclass;*/
+    	   	for (p = abfd->sections; p != NULL; p = p->next){
+				if(bfd_get_section(asym) == p){
+					section = sections_[j].get();
+					break;
+				}
+				j++;
+			}
+			
+			/*
+			if(section == nullptr){
+				unsigned int opb = bfd_octets_per_byte(abfd);
+				auto tmpsection = std::make_unique<core::image::Section>(getAsciizString(bfd_get_section_name(abfd, bfd_get_section(asym))), bfd_get_section_vma(abfd, bfd_get_section(asym)), static_cast<unsigned long>(bfd_section_size(abfd, bfd_get_section(asym)) / opb));
+				section = tmpsection.get();
+			}
+			*/
+
+			//qDebug()  << name << "is:"  << bfd_section_name(abfd, p);
 			
             SymbolType type;
 			switch (symclass) {
@@ -240,11 +317,6 @@ private:
 		
 		return;
     }
-
-    void parseRelocations() {
-		return;
-    }
-
 };
 
 } // anonymous namespace
