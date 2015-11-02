@@ -358,14 +358,14 @@ private:
 				case 'p': /* .pdata */				
 				case 's': /* .sbss */
 						{
-							if((section != nullptr && (section->addr() == sym_value)) || (section != nullptr && (section->name() == name))){
-								type = SymbolType::SECTION;
-								break;
-							} else if(section != nullptr && (section->isBss() || section->isData())) {
+							if(section != nullptr && (section->isBss() || section->isData()) && !(((section->addr() == sym_value)) || (section != nullptr && (section->name() == name)))){
 								type = SymbolType::OBJECT;
 								break;
-							} else if(section != nullptr && section->isCode()) {
+							} else if(section != nullptr && section->isCode() && !(((section->addr() == sym_value)) || (section != nullptr && (section->name() == name)))) {
 								type = SymbolType::FUNCTION;
+								break;
+							} else if((section != nullptr && (section->addr() == sym_value)) || (section != nullptr && (section->name() == name))){
+								type = SymbolType::SECTION;
 								break;
 							}
 						}
