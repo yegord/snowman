@@ -327,7 +327,18 @@ private:
 
 			//qDebug()  << name << "is:"  << symclass;
 			
-            SymbolType type;
+			SymbolType type = SymbolType::NOTYPE;
+
+			/* First inspect flags */
+			if(asym->flags & BSF_FUNCTION){
+				type = SymbolType::FUNCTION;
+			} else if (asym->flags & BSF_SECTION_SYM){
+				type = SymbolType::SECTION;
+			} else if (asym->flags & BSF_OBJECT){
+				type = SymbolType::OBJECT;
+			}
+			
+			if(type == SymbolType::NOTYPE){
 			switch (symclass) {
 				case 'A':
 				case 'D':
@@ -384,6 +395,7 @@ private:
 								break;
 							}
 						}
+			}
 			}
 
             auto sym = std::make_unique<Symbol>(type, name, value, section);
