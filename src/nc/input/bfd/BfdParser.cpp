@@ -319,7 +319,7 @@ private:
 
 	   		for (std::size_t m = 0; m < sections_.size(); m++){
 				auto tmp = sections_[m].get();
-				if(tmp->containsAddress(sym_value)){
+				if(tmp->containsAddress(sym_value) && tmp->isAllocated()){
 					section = tmp;
 					break;
 				}
