@@ -158,7 +158,12 @@ private:
 				throw ParseError(tr("Could not parse content in sections."));
 			}
 
-			QByteArray bytes(reinterpret_cast<const char *>(content));
+			//qDebug()  << getAsciizString(bfd_section_name(abfd, p)) << "is:"  << strsize;
+
+			QByteArray bytes;
+			bytes.resize(strsize);
+			memcpy(bytes.data(), reinterpret_cast<const void *>(content), strsize);			
+			
 			section->setContent(std::move(bytes));
 			sections_.push_back(std::move(section));
 			free(content);
@@ -262,7 +267,7 @@ private:
 			}
 			
 
-			qDebug()  << name << "is:"  << symclass;
+			//qDebug()  << name << "is:"  << symclass;
 			
             SymbolType type;
 			switch (symclass) {
