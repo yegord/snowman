@@ -146,11 +146,11 @@ private:
 
 			section->setCode(p->flags & SEC_CODE);
 			section->setData(p->flags & SEC_DATA);
-  			section->setBss((strcmp(bfd_section_name(abfd, p), ".bss") == 0) || (strcmp(bfd_section_name(abfd, p), ".sbss") == 0));
-			section->setName(bfd_section_name(abfd, p));
+  			section->setBss((strcmp(bfd_section_name(abfd, p), ".bss") == 0) || (strcmp(bfd_section_name(abfd, p), ".sbss") == 0) || (strcmp(bfd_section_name(abfd, p), "zerovars") == 0)); /* FIXME: This is ugly! */
+			section->setName(getAsciizString(bfd_section_name(abfd, p)));
 
 			bfd_size_type strsize = bfd_section_size(abfd, p);
-			bfd_byte *content = (bfd_byte *) malloc(strsize);
+			bfd_byte *content = (bfd_byte *)malloc(strsize);
 			
 			if (!bfd_get_section_contents(abfd, p, content, 0, strsize)){
 				free(content);
@@ -162,6 +162,7 @@ private:
 			section->setContent(std::move(bytes));
 			sections_.push_back(std::move(section));
 			free(content);
+			content = nullptr;
        	}		
 		return;
     }
@@ -260,48 +261,50 @@ private:
 				j++;
 			}
 			
-			/*
-			if(section == nullptr){
-				unsigned int opb = bfd_octets_per_byte(abfd);
-				auto tmpsection = std::make_unique<core::image::Section>(getAsciizString(bfd_get_section_name(abfd, bfd_get_section(asym))), bfd_get_section_vma(abfd, bfd_get_section(asym)), static_cast<unsigned long>(bfd_section_size(abfd, bfd_get_section(asym)) / opb));
-				section = tmpsection.get();
-			}
-			*/
 
-			//qDebug()  << name << "is:"  << bfd_section_name(abfd, p);
+			qDebug()  << name << "is:"  << symclass;
 			
             SymbolType type;
 			switch (symclass) {
-				case 'a':
+				case 'A':
 				case 'D':
-				case 'd':
 				case 'G':
-				case 'g':
+				case 'B': /* Object */
 				case 'S': /* Small object */
-				case 's':
-				case 'w':
 					type = SymbolType::OBJECT;
 					break;
 				case 'I':
-				case 'i':
 				case 'T': /* .text */
-				case 't':
 				case 'U':
-				case 'u':
 				case 'V':
-				case 'v':
 				case 'W':
 					type = SymbolType::FUNCTION;
 					break;
-				case 'A':
-				case 'B': /* BSS */
-				case 'b':
-				case 'R': /* Read-only */
-				case 'r':
-				case 'N': /* Debug */
-				case 'n':
-					type = SymbolType::SECTION;
-					break;
+				case 'a': /* abs section */
+				case 'b': /* .bss */
+				case 'C': /* ???? */
+				case 'c': /* .scommon */
+				case 'd': /* .data */
+				case 'e': /* .eata */
+				case 'g': /* .sdata */
+				case 'i': /* .idata */
+				case 't': /* .text */
+				case 'r': /* .rdata */
+				case 'N': /* .debug */
+				case 'p': /* .pdata */				
+				case 's': /* .sbss */
+						{
+							section = nullptr;
+	   						for (std::size_t m = 0; m < sections_.size(); m++){
+								auto tmp = sections_[m].get();
+								if(name == QString(tmp->name())){
+									section = tmp;
+									break;
+								}
+	   						}
+							type = SymbolType::SECTION;
+							break;
+						}
 				default:
 					type = SymbolType::NOTYPE;
 					break;
