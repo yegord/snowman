@@ -146,7 +146,7 @@ private:
 
 			section->setCode(p->flags & SEC_CODE);
 			section->setData(p->flags & SEC_DATA);
-  			section->setBss(strcmp(bfd_section_name(abfd, p), ".bss") == 0);
+  			section->setBss((strcmp(bfd_section_name(abfd, p), ".bss") == 0) || (strcmp(bfd_section_name(abfd, p), ".sbss") == 0));
 			section->setName(bfd_section_name(abfd, p));
 
 			bfd_size_type strsize = bfd_section_size(abfd, p);
