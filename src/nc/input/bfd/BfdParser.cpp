@@ -74,7 +74,7 @@ public:
   
   		int arch = bfd_get_arch(abfd);
   		byteOrder_ = bfd_big_endian(abfd) ? ByteOrder::BigEndian : ByteOrder::LittleEndian;
-  	
+
   		switch (arch) {
             case bfd_arch_i386:
                 if(bfd_get_arch_size(abfd) == 32){
@@ -361,7 +361,7 @@ private:
 							if((section != nullptr && (section->addr() == sym_value)) || (section != nullptr && (section->name() == name))){
 								type = SymbolType::SECTION;
 								break;
-							} else if(section != nullptr && section->isBss() && section->isData()) {
+							} else if(section != nullptr && (section->isBss() || section->isData())) {
 								type = SymbolType::OBJECT;
 								break;
 							} else if(section != nullptr && section->isCode()) {
@@ -372,8 +372,18 @@ private:
 				case 'v':
 				case 'w': /* weak */
 				default:
-					type = SymbolType::NOTYPE;
-					break;
+						{
+							if(section != nullptr && (section->isBss() || section->isData())) {
+								type = SymbolType::OBJECT;
+								break;
+							} else if(section != nullptr && section->isCode()) {
+								type = SymbolType::FUNCTION;
+								break;
+							} else {
+								type = SymbolType::NOTYPE;
+								break;
+							}
+						}
 			}
 
             auto sym = std::make_unique<Symbol>(type, name, value, section);
