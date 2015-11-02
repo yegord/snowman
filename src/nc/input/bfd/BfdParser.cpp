@@ -111,8 +111,8 @@ public:
         }
 
         parseSections();
-        parseSymbols(FALSE);
-        parseSymbols(TRUE);
+        parseSymbols(FALSE); /* Slurp static symtab */
+        parseSymbols(TRUE);  /* Slurp dynamic symtab */
         parseRelocations();
         parseDynamicRelocations();
 
@@ -319,7 +319,7 @@ private:
 
 	   		for (std::size_t m = 0; m < sections_.size(); m++){
 				auto tmp = sections_[m].get();
-				if(tmp->containsAddress(sym_value) && tmp->isAllocated()){
+				if((tmp->containsAddress(sym_value) && tmp->isAllocated()) || (tmp->containsAddress(sym_value) && (tmp->name() == name))){
 					section = tmp;
 					break;
 				}
@@ -353,20 +353,21 @@ private:
 				case 'i': /* .idata */
 				case 't': /* .text */
 				case 'r': /* .rdata */
+				case 'n': /* .comment */
 				case 'N': /* .debug */
 				case 'p': /* .pdata */				
 				case 's': /* .sbss */
 						{
-							/*section = nullptr;
-	   						for (std::size_t m = 0; m < sections_.size(); m++){
-								auto tmp = sections_[m].get();
-								if((name == QString(tmp->name())) || (sym_value == tmp->addr())){
-									section = tmp;
-									break;
-								}
-	   						}*/
-							type = SymbolType::SECTION;
-							break;
+							if((section != nullptr && (section->addr() == sym_value)) || (section != nullptr && (section->name() == name))){
+								type = SymbolType::SECTION;
+								break;
+							} else if(section != nullptr && section->isBss() && section->isData()) {
+								type = SymbolType::OBJECT;
+								break;
+							} else if(section != nullptr && section->isCode()) {
+								type = SymbolType::FUNCTION;
+								break;
+							}
 						}
 				case 'v':
 				case 'w': /* weak */
