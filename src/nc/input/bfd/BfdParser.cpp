@@ -255,17 +255,14 @@ private:
 			QString name = getAsciizString(sym_name);
 			boost::optional<ConstantValue> value = static_cast<long>(sym_value);
 			const core::image::Section *section = nullptr;
-	    	asection *p;
-    	   	int j = 0;
 
-    	   	for (p = abfd->sections; p != NULL; p = p->next){
-				if(bfd_get_section(asym) == p){
-					section = sections_[j].get();
+	   		for (std::size_t m = 0; m < sections_.size(); m++){
+				auto tmp = sections_[m].get();
+				if(tmp->containsAddress(sym_value)){
+					section = tmp;
 					break;
 				}
-				j++;
-			}
-			
+	   		}
 
 			//qDebug()  << name << "is:"  << symclass;
 			
@@ -302,7 +299,7 @@ private:
 							section = nullptr;
 	   						for (std::size_t m = 0; m < sections_.size(); m++){
 								auto tmp = sections_[m].get();
-								if(name == QString(tmp->name())){
+								if((name == QString(tmp->name())) || (sym_value == tmp->addr())){
 									section = tmp;
 									break;
 								}
