@@ -111,11 +111,21 @@ public:
         }
 
         parseSections();
-        parseSymbols(FALSE); /* Slurp static symtab */
-        parseSymbols(TRUE);  /* Slurp dynamic symtab */
-        parseRelocations();
-        parseDynamicRelocations();
 
+		if (!(bfd_get_file_flags(abfd) & HAS_SYMS)){
+			log_.warning(tr("Cannot find any symbols."));
+   		} else {
+	        parseSymbols(FALSE); /* Slurp static symtab */
+    	    parseSymbols(TRUE);  /* Slurp dynamic symtab */
+   		}
+
+		/*if (!(bfd_get_file_flags(abfd) & HAS_RELOC)){
+			log_.warning(tr("Cannot find any relocations."));
+   		} else {*/
+       		parseRelocations();
+        	parseDynamicRelocations();
+   		/*}*/
+   
         foreach (auto &section, sections_) {
             image_->addSection(std::move(section));
         }
@@ -149,7 +159,7 @@ private:
 			section->setCode(p->flags & SEC_CODE);
 			section->setData(p->flags & SEC_DATA);
 			
-  			section->setBss((strcmp(bfd_section_name(abfd, p), ".bss") == 0) || (strcmp(bfd_section_name(abfd, p), ".sbss") == 0) || (strcmp(bfd_section_name(abfd, p), "zerovars") == 0)); /* FIXME: This is ugly! */
+  			section->setBss((strcmp(bfd_section_name(abfd, p), ".bss") == 0) || (strcmp(bfd_section_name(abfd, p), ".sbss") == 0) || (strcmp(bfd_section_name(abfd, p), ".dynbss") == 0) || (strcmp(bfd_section_name(abfd, p), "zerovars") == 0)); /* FIXME: This is ugly! */
 			section->setName(getAsciizString(bfd_section_name(abfd, p)));
 
 			bfd_size_type strsize = bfd_section_size(abfd, p);
@@ -290,11 +300,6 @@ private:
 		long symcount;
 		asymbol **syms;
 		
-		if (!(bfd_get_file_flags(abfd) & HAS_SYMS)){
-			log_.warning(tr("Cannot find any symbols."));
-    		return;
-		}
-
   		symcount = bfd_read_minisymbols (abfd, isdynamic, (void **) &syms, &symsize);
   		if (symcount == 0){
     		return;
@@ -329,7 +334,7 @@ private:
 			
 			SymbolType type = SymbolType::NOTYPE;
 
-			/* First inspect flags */
+			/* First inspect flags - Helps parsing ELF files withouth heuristics */
 			if(asym->flags & BSF_FUNCTION){
 				type = SymbolType::FUNCTION;
 			} else if (asym->flags & BSF_SECTION_SYM){
