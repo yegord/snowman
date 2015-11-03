@@ -72,7 +72,7 @@ public:
 			}
 		}
   
-  		int arch = bfd_get_arch(abfd);
+  		bfd_architecture arch = bfd_get_arch(abfd);
   		byteOrder_ = bfd_big_endian(abfd) ? ByteOrder::BigEndian : ByteOrder::LittleEndian;
 
   		switch (arch) {
@@ -433,6 +433,11 @@ bool BfdParser::doCanParse(QIODevice *source) const {
 		return false;
 	}
 	if (!(bfd_check_format(abfd, bfd_object) || bfd_check_format(abfd, bfd_archive))){
+		bfd_close(abfd);
+		return false;
+	}
+	bfd_architecture arch = bfd_get_arch(abfd);
+	if((arch == bfd_arch_unknown) || (arch == bfd_arch_obscure)){
 		bfd_close(abfd);
 		return false;
 	}
