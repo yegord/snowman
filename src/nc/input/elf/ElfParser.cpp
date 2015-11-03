@@ -165,7 +165,7 @@ private:
         byteOrder_.convertFrom(ehdr_.e_shoff);
         byteOrder_.convertFrom(ehdr_.e_shnum);
         byteOrder_.convertFrom(ehdr_.e_shstrndx);
-		byteOrder_.convertFrom(ehdr_.e_flags);
+	byteOrder_.convertFrom(ehdr_.e_flags);
 
         switch (ehdr_.e_machine) {
             case EM_386:
