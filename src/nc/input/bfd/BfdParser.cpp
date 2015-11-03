@@ -158,8 +158,7 @@ private:
 
 			section->setCode(p->flags & SEC_CODE);
 			section->setData(p->flags & SEC_DATA);
-			
-  			section->setBss((strcmp(bfd_section_name(abfd, p), ".bss") == 0) || (strcmp(bfd_section_name(abfd, p), ".sbss") == 0) || (strcmp(bfd_section_name(abfd, p), ".dynbss") == 0) || (strcmp(bfd_section_name(abfd, p), "zerovars") == 0)); /* FIXME: This is ugly! */
+ 			section->setBss((strcmp(bfd_section_name(abfd, p), ".bss") == 0) || (strcmp(bfd_section_name(abfd, p), ".sbss") == 0) || (strcmp(bfd_section_name(abfd, p), ".dynbss") == 0) || (strcmp(bfd_section_name(abfd, p), "zerovars") == 0)); /* FIXME: This is ugly! */
 			section->setName(getAsciizString(bfd_section_name(abfd, p)));
 
 			bfd_size_type strsize = bfd_section_size(abfd, p);
@@ -319,7 +318,10 @@ private:
 			int sym_value = bfd_asymbol_value(asym);
 
 			QString name = getAsciizString(sym_name);
-			boost::optional<ConstantValue> value = static_cast<long>(sym_value);
+			boost::optional<ConstantValue> value = boost::none;
+			if(sym_value){
+				value = static_cast<long>(sym_value);
+			}
 			const core::image::Section *section = nullptr;
 
 	   		for (std::size_t m = 0; m < sections_.size(); m++){
@@ -402,7 +404,7 @@ private:
 						}
 			}
 			}
-
+		
             auto sym = std::make_unique<Symbol>(type, name, value, section);
             symbols_.push_back(sym.get());
             image_->addSymbol(std::move(sym));
