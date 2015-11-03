@@ -314,7 +314,10 @@ private:
 			int sym_value = bfd_asymbol_value(asym);
 
 			QString name = getAsciizString(sym_name);
-			boost::optional<ConstantValue> value = static_cast<long>(sym_value);
+			boost::optional<ConstantValue> value = boost::none;
+			if(sym_value){
+				value = static_cast<long>(sym_value);
+			}
 			const core::image::Section *section = nullptr;
 
 	   		for (std::size_t m = 0; m < sections_.size(); m++){
@@ -397,7 +400,7 @@ private:
 						}
 			}
 			}
-
+		
             auto sym = std::make_unique<Symbol>(type, name, value, section);
             symbols_.push_back(sym.get());
             image_->addSymbol(std::move(sym));
