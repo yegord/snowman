@@ -115,8 +115,8 @@ public:
 		if (!(bfd_get_file_flags(abfd) & HAS_SYMS)){
 			log_.warning(tr("Cannot find any symbols."));
    		} else {
-	        parseSymbols(FALSE); /* Slurp static symtab */
-    	    parseSymbols(TRUE);  /* Slurp dynamic symtab */
+	        parseSymbols(FALSE); /* Slurping static symtab like it is cum. */
+    	    parseSymbols(TRUE);  /* Slurping dynamic symtab like it is a bukakke party */
    		}
 
        	parseRelocations();
