@@ -112,8 +112,12 @@ public:
 
         parseSections();
 
-	    parseSymbols(FALSE); /* Slurp static symtab; yummy like cum. */
-    	parseSymbols(TRUE);  /* Slurp dynamic symtab; yummy like cum. */
+		if (!(bfd_get_file_flags(abfd) & HAS_SYMS)){
+			log_.warning(tr("Cannot find any symbols."));
+   		} else {
+	        parseSymbols(FALSE); /* Slurp static symtab */
+    	    parseSymbols(TRUE);  /* Slurp dynamic symtab */
+   		}
 
        	parseRelocations();
         parseDynamicRelocations();
