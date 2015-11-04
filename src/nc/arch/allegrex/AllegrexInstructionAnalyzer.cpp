@@ -184,7 +184,7 @@ namespace nc {
                     _[core::irgen::expressions::regizter(AllegrexRegisters::zero()) ^= core::irgen::expressions::constant(0)];
 
                     auto delayslotCallback = [&](AllegrexExpressionFactoryCallback &callback) -> AllegrexExpressionFactoryCallback & {
-						if (auto delayslotInstruction = getDelayslotInstruction(instruction)) {
+			if (auto delayslotInstruction = getDelayslotInstruction(instruction)) {
                             callback.setBasicBlock(createStatements(callback, delayslotInstruction, program, instruction));
                         }
                         return callback;

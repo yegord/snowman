@@ -880,7 +880,7 @@ class MipsInstructionAnalyzerImpl {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
             _[
-                regizter(MipsRegisters::hilo()) ^= sign_extend(sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
+                regizter(MipsRegisters::hilo()) ^= (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
             ];
             break;
         }
