@@ -68,7 +68,7 @@ public:
 				throw ParseError(tr("Could not open file: %1").arg(filename));
 			} else {
 				bfd_close(abfd);
-				throw ParseError(tr("BFD archives is not yet supported."));
+				throw ParseError(tr("BFD archives are not supported yet."));
 			}
 		}
   
@@ -437,7 +437,7 @@ bool BfdParser::doCanParse(QIODevice *source) const {
 		return false;
 	}
 	bfd_architecture arch = bfd_get_arch(abfd);
-	if((arch == bfd_arch_unknown) || (arch == bfd_arch_obscure)){
+	if(((arch == bfd_arch_unknown) || (arch == bfd_arch_obscure)) && !bfd_check_format(abfd, bfd_archive)){
 		bfd_close(abfd);
 		return false;
 	}
