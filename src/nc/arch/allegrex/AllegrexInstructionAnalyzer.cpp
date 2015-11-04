@@ -166,7 +166,7 @@ namespace nc {
                 const AllegrexInstruction *getDelayslotInstruction(const AllegrexInstruction *instruction) {
                     auto delayslotInstruction = checked_cast<const AllegrexInstruction *>(instructions_->get(instruction->endAddr()).get());
                     if (!delayslotInstruction) {
-                        throw core::irgen::InvalidInstructionException(tr("Cannot find a delay slot at 0x%1.").arg(delayslotInstruction->endAddr(), 0, 16));
+                        throw core::irgen::InvalidInstructionException(tr("Cannot find a delay slot at 0x%1.").arg(instruction->endAddr(), 0, 16));
                     }
                     return delayslotInstruction;
                 };

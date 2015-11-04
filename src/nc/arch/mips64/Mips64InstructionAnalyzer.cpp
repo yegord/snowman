@@ -86,7 +86,7 @@ class Mips64InstructionAnalyzerImpl {
     const Mips64Instruction *getDelayslotInstruction(const Mips64Instruction *instruction) {
         auto delayslotInstruction = checked_cast<const Mips64Instruction *>(instructions_->get(instruction->endAddr()).get());
         if (!delayslotInstruction) {
-            throw core::irgen::InvalidInstructionException(tr("Cannot find a delay slot at 0x%1.").arg(delayslotInstruction->endAddr(), 0, 16));
+            throw core::irgen::InvalidInstructionException(tr("Cannot find a delay slot at 0x%1.").arg(instruction->endAddr(), 0, 16));
         }
         return delayslotInstruction;
     };
