@@ -116,7 +116,7 @@ public:
 			log_.warning(tr("Cannot find any symbols."));
    		} else {
 	        parseSymbols(FALSE); /* Slurping static symtab like it is cum. */
-    	    parseSymbols(TRUE);  /* Slurping dynamic symtab like it is a bukakke party */
+    	    parseSymbols(TRUE);  /* Slurping dynamic symtab like it is a bukakke party. */
    		}
 
        	parseRelocations();
