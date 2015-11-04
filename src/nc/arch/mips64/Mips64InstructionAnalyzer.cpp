@@ -875,7 +875,7 @@ class Mips64InstructionAnalyzerImpl {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
             _[
-                regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
+                regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (sign_extend(std::move(operand0), 128) * sign_extend(std::move(operand1), 128))
             ];
             break;
         }
@@ -883,7 +883,7 @@ class Mips64InstructionAnalyzerImpl {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
             _[
-                regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
+                regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (zero_extend(std::move(operand0), 128) * zero_extend(std::move(operand1), 128))
             ];
             break;
         }
@@ -894,12 +894,12 @@ class Mips64InstructionAnalyzerImpl {
             if (op_count == 3){
             	auto operand2 = operand(2);
             	_[
-                	regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (sign_extend(std::move(operand1), 64) * sign_extend(std::move(operand2), 64)),
+                	regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (sign_extend(std::move(operand1), 128) * sign_extend(std::move(operand2), 128)),
                 	operand0 ^= regizter(Mips64Registers::lo())
             	];
             } else {
             	_[
-                	regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
+                	regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (sign_extend(std::move(operand0), 128) * sign_extend(std::move(operand1), 128))
             	];
             }
             break;
@@ -910,12 +910,12 @@ class Mips64InstructionAnalyzerImpl {
            	if (op_count == 3){
             	auto operand2 = operand(2);
             	_[
-                	regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (zero_extend(std::move(operand1), 64) * zero_extend(std::move(operand2), 64)),
+                	regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (zero_extend(std::move(operand1), 128) * zero_extend(std::move(operand2), 128)),
                 	operand0 ^= regizter(Mips64Registers::lo())
             	];
             } else {
             	_[
-                	regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
+                	regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) + (zero_extend(std::move(operand0), 128) * zero_extend(std::move(operand1), 128))
             	];
            	}
             break;
@@ -924,7 +924,7 @@ class Mips64InstructionAnalyzerImpl {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
             _[
-                regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) - (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
+                regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) - (sign_extend(std::move(operand0), 128) * sign_extend(std::move(operand1), 128))
             ];
             break;
         }
@@ -932,7 +932,7 @@ class Mips64InstructionAnalyzerImpl {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
             _[
-                regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) - (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
+                regizter(Mips64Registers::hilo()) ^= regizter(Mips64Registers::hilo()) - (zero_extend(std::move(operand0), 128) * zero_extend(std::move(operand1), 128))
             ];
             break;
         }
@@ -941,7 +941,7 @@ class Mips64InstructionAnalyzerImpl {
             auto operand1 = operand(1);
             auto operand2 = operand(2);
             _[
-                regizter(Mips64Registers::hilo()) ^= (sign_extend(std::move(operand1), 64) * sign_extend(std::move(operand2), 64)),
+                regizter(Mips64Registers::hilo()) ^= (sign_extend(std::move(operand1), 128) * sign_extend(std::move(operand2), 128)),
                 operand0 ^= regizter(Mips64Registers::lo())
             ];
             break;
@@ -950,7 +950,7 @@ class Mips64InstructionAnalyzerImpl {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
             _[
-                regizter(Mips64Registers::hilo()) ^= (sign_extend(std::move(operand0), 64) * sign_extend(std::move(operand1), 64))
+                regizter(Mips64Registers::hilo()) ^= (sign_extend(std::move(operand0), 128) * sign_extend(std::move(operand1), 128))
             ];
             break;
         }
@@ -958,7 +958,7 @@ class Mips64InstructionAnalyzerImpl {
             auto operand0 = operand(0);
             auto operand1 = operand(1);
             _[
-                regizter(Mips64Registers::hilo()) ^= (zero_extend(std::move(operand0), 64) * zero_extend(std::move(operand1), 64))
+                regizter(Mips64Registers::hilo()) ^= (zero_extend(std::move(operand0), 128) * zero_extend(std::move(operand1), 128))
             ];
             break;
         }
