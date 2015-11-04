@@ -112,19 +112,11 @@ public:
 
         parseSections();
 
-		if (!(bfd_get_file_flags(abfd) & HAS_SYMS)){
-			log_.warning(tr("Cannot find any symbols."));
-   		} else {
-	        parseSymbols(FALSE); /* Slurp static symtab */
-    	    parseSymbols(TRUE);  /* Slurp dynamic symtab */
-   		}
+	    parseSymbols(FALSE); /* Slurp static symtab; yummy like cum. */
+    	parseSymbols(TRUE);  /* Slurp dynamic symtab; yummy like cum. */
 
-		/*if (!(bfd_get_file_flags(abfd) & HAS_RELOC)){
-			log_.warning(tr("Cannot find any relocations."));
-   		} else {*/
-       		parseRelocations();
-        	parseDynamicRelocations();
-   		/*}*/
+       	parseRelocations();
+        parseDynamicRelocations();
    
         foreach (auto &section, sections_) {
             image_->addSection(std::move(section));
@@ -250,7 +242,7 @@ private:
 			unsigned int opb = bfd_octets_per_byte(abfd);
 
 		  	/* Ignore linker created section.  See elfNN_ia64_object_p in bfd/elfxx-ia64.c.  */
-  			/*if(p->flags & SEC_LINKER_CREATED){
+  			if(p->flags & SEC_LINKER_CREATED){
   				log_.warning(tr("Ignoring linker created section."));
 	    		continue;
   			}
@@ -260,9 +252,9 @@ private:
 			}
 
 			arelent **relpp;
-			asymbol **syms = nullptr;
+			asymbol **dynsyms = nullptr;
 			long relcount;
-		 	long relsize = bfd_get_reloc_upper_bound(abfd, p);
+		 	long relsize = bfd_get_dynamic_reloc_upper_bound(abfd);
 
 			if (relsize == 0){
 				log_.warning(tr("Cannot find any relocs."));
@@ -275,7 +267,7 @@ private:
 		  	}
 
 			relpp = (arelent **) malloc(relsize);
-			relcount = bfd_canonicalize_reloc(abfd, p, relpp, syms);
+			relcount = bfd_canonicalize_dynamic_reloc(abfd, relpp, dynsyms);
 
 			if (relcount < 0){
     	  		free(relpp);
@@ -283,12 +275,16 @@ private:
     			throw ParseError(tr("Failed to read relocations."));
       		}
 			
-			QString name = getAsciizString(sym_name);
+			/*QString name = getAsciizString(sym_name);
 			
 			auto relocation = std::make_unique<core::image::Relocation>(entryAddress, image_->addSymbol(std::make_unique<core::image::Symbol>(core::image::SymbolType::FUNCTION, std::move(name), boost::none)));
 
-			image_->addRelocation(std::move(relocation));
-			free (relpp);*/
+			image_->addRelocation(std::move(relocation));*/
+			free(dynsyms);
+			dynsyms = nullptr;
+			free(relpp);
+			relpp = nullptr;
+
        	}		
 		return;
 	}
