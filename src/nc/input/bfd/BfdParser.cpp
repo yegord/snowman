@@ -43,6 +43,7 @@ class BfdParserImpl {
     bfd *abfd = nullptr;
 
     ByteOrder byteOrder_;
+    bool isarchive = false;
     std::vector<std::unique_ptr<core::image::Section>> sections_;
     std::vector<const core::image::Symbol *> symbols_;
 
@@ -67,10 +68,20 @@ class BfdParserImpl {
                 bfd_close(abfd);
                 throw ParseError(tr("Could not open file: %1").arg(filename));
             } else {
-                bfd_close(abfd);
-                throw ParseError(tr("BFD archives are not supported yet."));
+				isarchive = true;
+				bfd_close(abfd);				
+				throw ParseError(tr("BFD archives are not supported yet."));
             }
         }
+
+		if(isarchive){
+			/*
+			oldbfd = abfd;
+			abfd = abfd->archive_next;
+			for (abfd = obfd->archive_head; abfd != (bfd *)NULL; abfd = abfd->archive_next)
+      		}
+      		*/
+		}
 
         bfd_architecture arch = bfd_get_arch(abfd);
         byteOrder_ = bfd_big_endian(abfd) ? ByteOrder::BigEndian : ByteOrder::LittleEndian;
@@ -125,7 +136,7 @@ class BfdParserImpl {
             image_->addSection(std::move(section));
         }
 
-        //bfd_close(abfd);
+        bfd_close(abfd);
         return;
     }
 
@@ -319,10 +330,12 @@ class BfdParserImpl {
         relcount = bfd_canonicalize_dynamic_reloc(abfd, relpp, dynsyms);
 
         if (relcount == 0) {
-            log_.warning(tr("Cannot find any dynamic relocations."));
+			if (bfd_get_file_flags (abfd) & DYNAMIC) {
+            	log_.warning(tr("Cannot find any dynamic relocations."));
+            	bfd_close(abfd);
+			}
             free(dynsyms);
-            free(relpp);
-            bfd_close(abfd);
+            free(relpp);	
             return;
         }
 
