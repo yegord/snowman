@@ -116,6 +116,10 @@ public:
 			log_.warning(tr("Cannot find any symbols."));
    		} else {
 	        parseSymbols(FALSE); /* Slurping static symtab like it is cum. */
+	    }
+		if (!(bfd_get_file_flags(abfd) & DYNAMIC)){
+			log_.warning(tr("Cannot find any dynamic symbols."));
+   		} else {
     	    parseSymbols(TRUE);  /* Slurping dynamic symtab like it is a bukakke party. */
    		}
 
@@ -238,60 +242,77 @@ private:
 		return;
 	}
 
-    void parseDynamicRelocations() {
-	arelent **relpp, **p;
-	asymbol **dynsyms;
-	long relcount;
- 	long relsize = bfd_get_dynamic_reloc_upper_bound(abfd);
+	void parseDynamicRelocations() {
+		arelent **relpp, **p;
+		asymbol **dynsyms;
+		long relcount;
+		unsigned int dynsymsize;
+		long relsize;
+		
+		long dynsymcount = dynsymcount = bfd_read_minisymbols(abfd, TRUE, (void **) &dynsyms, &dynsymsize);
+  		
+  		if (dynsymcount == 0){
+    		return;
+  		}
+  	
+		if (dynsymcount < 0) {
+			bfd_close(abfd);
+			throw ParseError(tr("bfd_canonicalize_symtab: %1.").arg(getAsciizString(bfd_errmsg(bfd_get_error()))));
+		}
 
-	if (relsize == 0){
-		log_.warning(tr("Cannot find any dynamic relocations."));
-		return;
-	}
+ 		relsize = bfd_get_dynamic_reloc_upper_bound(abfd);
 
-	if (relsize < 0){
-		bfd_close(abfd);
-		throw ParseError(tr("Could not parse relocations."));
-  	}
+		if (relsize == 0){
+			log_.warning(tr("Cannot find any dynamic relocations."));
+			return;
+		}
 
-	relpp = (arelent **)malloc(relsize);
-	relcount = bfd_canonicalize_dynamic_reloc(abfd, relpp, dynsyms);
+		if(relsize < 0){
+			bfd_close(abfd);
+			throw ParseError(tr("Could not parse relocations."));
+  		}
 
-	if (relcount == 0){
-		log_.warning(tr("Cannot find any dynamic relocations."));
- 		free(relpp);
-		bfd_close(abfd);
-		return;	
-	}
+		relpp = (arelent **)malloc(relsize);
+		relcount = bfd_canonicalize_dynamic_reloc(abfd, relpp, dynsyms);
 
-	if (relcount < 0){
- 		free(relpp);
-		bfd_close(abfd);
-		throw ParseError(tr("Failed to read relocations."));
-	}
+		if (relcount == 0){
+			log_.warning(tr("Cannot find any dynamic relocations."));
+ 			free(relpp);
+			bfd_close(abfd);
+			return;	
+		}
+
+		if (relcount < 0){
+ 			free(relpp);
+			bfd_close(abfd);
+			throw ParseError(tr("Failed to read relocations."));
+		}
 
        for (p = relpp; relcount && *p != NULL; p++, relcount--){
        		arelent *q = *p;
-		qDebug() << "name: " << relcount;
-		if (q->sym_ptr_ptr && *q->sym_ptr_ptr){
-			/*asymbol *asym = *(q->sym_ptr_ptr);*/
-			const char *sym_name = (*(q->sym_ptr_ptr))->name;
-			QString name = getAsciizString(sym_name);
-			qDebug() << "name: " << name << "address: " << q->address  << " addend: " << q->addend;
-		}
-	}
-
-	/*QString name = getAsciizString(sym_name);
+       		
+			if (q->sym_ptr_ptr && *q->sym_ptr_ptr){
+				asymbol *asym = *(q->sym_ptr_ptr);
+				const char *sym_name = bfd_asymbol_name(asym);
+				QString name = getAsciizString(sym_name);
+				bfd_signed_vma addend = 0;				
+				
+				if (q->addend){
+	 				addend = q->addend;	 
+				}
 		
-	auto relocation = std::make_unique<core::image::Relocation>(entryAddress, image_->addSymbol(std::make_unique<core::image::Symbol>(core::image::SymbolType::FUNCTION, std::move(name), boost::none)));
+				auto relocation = std::make_unique<core::image::Relocation>(q->address, image_->addSymbol(std::make_unique<core::image::Symbol>(core::image::SymbolType::FUNCTION, std::move(name), boost::none)), addend);
+				image_->addRelocation(std::move(relocation));
+				//qDebug() << "name: " << name << "address: " << q->address  << " addend: " << q->addend;
+			}
+		}
 
-	image_->addRelocation(std::move(relocation));*/
-
-	free(dynsyms);
-	dynsyms = nullptr;
-	free(relpp);
-	relpp = nullptr;
-	return;
+		
+		free(dynsyms);
+		dynsyms = nullptr;
+		free(relpp);
+		relpp = nullptr;
+		return;
     }
 
 
@@ -300,7 +321,7 @@ private:
 		long symcount;
 		asymbol **syms;
 		
-  		symcount = bfd_read_minisymbols (abfd, isdynamic, (void **) &syms, &symsize);
+  		symcount = bfd_read_minisymbols(abfd, isdynamic, (void **) &syms, &symsize);
   		if (symcount == 0){
     		return;
   		}
