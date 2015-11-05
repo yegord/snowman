@@ -15,13 +15,13 @@ namespace bfdparser {
  * Parser for formats supported by libbfd.
  */
 class BfdParser: public core::input::Parser {
-public:
+  public:
     /**
      * Constructor.
      */
     BfdParser();
 
-protected:
+  protected:
     virtual bool doCanParse(QIODevice *source) const override;
     virtual void doParse(QIODevice *source, core::image::Image *image, const LogToken &logToken) const override;
 };
