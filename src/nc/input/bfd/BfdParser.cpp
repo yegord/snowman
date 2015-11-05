@@ -239,59 +239,60 @@ private:
 	}
 
     void parseDynamicRelocations() {
-    	/* Make a callback to dump_sections_headers() */
-    	asection *p;
+	arelent **relpp, **p;
+	asymbol **dynsyms;
+	long relcount;
+ 	long relsize = bfd_get_dynamic_reloc_upper_bound(abfd);
 
-       	for (p = abfd->sections; p != NULL; p = p->next){
-			unsigned int opb = bfd_octets_per_byte(abfd);
-
-		  	/* Ignore linker created section.  See elfNN_ia64_object_p in bfd/elfxx-ia64.c.  */
-  			if(p->flags & SEC_LINKER_CREATED){
-  				log_.warning(tr("Ignoring linker created section."));
-	    		continue;
-  			}
-  			
-			if (bfd_is_abs_section(p) || bfd_is_und_section(p) || bfd_is_com_section(p) || ((p->flags & SEC_RELOC) == 0)){
-  				continue; 
-			}
-
-			arelent **relpp;
-			asymbol **dynsyms = nullptr;
-			long relcount;
-		 	long relsize = bfd_get_dynamic_reloc_upper_bound(abfd);
-
-			if (relsize == 0){
-				log_.warning(tr("Cannot find any relocs."));
-				return;
-			}
-
-			if (relsize < 0){
-    			bfd_close(abfd);
-    			throw ParseError(tr("Could not parse relocations."));
-		  	}
-
-			relpp = (arelent **) malloc(relsize);
-			relcount = bfd_canonicalize_dynamic_reloc(abfd, relpp, dynsyms);
-
-			if (relcount < 0){
-    	  		free(relpp);
-    			bfd_close(abfd);
-    			throw ParseError(tr("Failed to read relocations."));
-      		}
-			
-			/*QString name = getAsciizString(sym_name);
-			
-			auto relocation = std::make_unique<core::image::Relocation>(entryAddress, image_->addSymbol(std::make_unique<core::image::Symbol>(core::image::SymbolType::FUNCTION, std::move(name), boost::none)));
-
-			image_->addRelocation(std::move(relocation));*/
-			free(dynsyms);
-			dynsyms = nullptr;
-			free(relpp);
-			relpp = nullptr;
-
-       	}		
+	if (relsize == 0){
+		log_.warning(tr("Cannot find any dynamic relocations."));
 		return;
 	}
+
+	if (relsize < 0){
+		bfd_close(abfd);
+		throw ParseError(tr("Could not parse relocations."));
+  	}
+
+	relpp = (arelent **)malloc(relsize);
+	relcount = bfd_canonicalize_dynamic_reloc(abfd, relpp, dynsyms);
+
+	if (relcount == 0){
+		log_.warning(tr("Cannot find any dynamic relocations."));
+ 		free(relpp);
+		bfd_close(abfd);
+		return;	
+	}
+
+	if (relcount < 0){
+ 		free(relpp);
+		bfd_close(abfd);
+		throw ParseError(tr("Failed to read relocations."));
+	}
+
+       for (p = relpp; relcount && *p != NULL; p++, relcount--){
+       		arelent *q = *p;
+		qDebug() << "name: " << relcount;
+		if (q->sym_ptr_ptr && *q->sym_ptr_ptr){
+			/*asymbol *asym = *(q->sym_ptr_ptr);*/
+			const char *sym_name = (*(q->sym_ptr_ptr))->name;
+			QString name = getAsciizString(sym_name);
+			qDebug() << "name: " << name << "address: " << q->address  << " addend: " << q->addend;
+		}
+	}
+
+	/*QString name = getAsciizString(sym_name);
+		
+	auto relocation = std::make_unique<core::image::Relocation>(entryAddress, image_->addSymbol(std::make_unique<core::image::Symbol>(core::image::SymbolType::FUNCTION, std::move(name), boost::none)));
+
+	image_->addRelocation(std::move(relocation));*/
+
+	free(dynsyms);
+	dynsyms = nullptr;
+	free(relpp);
+	relpp = nullptr;
+	return;
+    }
 
 
     void parseSymbols(bfd_boolean isdynamic) {
@@ -402,12 +403,12 @@ private:
 								break;
 							}
 						}
-			}
-			}
+					}
+				}
 		
-            auto sym = std::make_unique<Symbol>(type, name, value, section);
-            symbols_.push_back(sym.get());
-            image_->addSymbol(std::move(sym));
+	            auto sym = std::make_unique<Symbol>(type, name, value, section);
+	            symbols_.push_back(sym.get());
+        	    image_->addSymbol(std::move(sym));
 		}
 
 		free(syms);
