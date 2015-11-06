@@ -69,8 +69,6 @@ class BfdParserImpl {
                 throw ParseError(tr("Could not open file: %1").arg(filename));
             } else {
 				isarchive = true;
-				//bfd_close(abfd);				
-				//throw ParseError(tr("BFD archives are not supported yet."));
             }
         }
 
@@ -80,7 +78,7 @@ class BfdParserImpl {
 			if (!bfd_check_format(abfd, bfd_object)) {
 				bfd_close(abfd);
 				bfd_close(oldbfd);
-		                throw ParseError(tr("Nested BFD archives are not supported yet."));
+		    	throw ParseError(tr("Nested BFD archives are not supported yet."));
 			}
 		}
 
@@ -413,10 +411,8 @@ class BfdParserImpl {
             int sym_value = bfd_asymbol_value(asym);
 
             QString name = getAsciizString(sym_name);
-            boost::optional<ConstantValue> value = boost::none;
-            if(sym_value) {
-                value = static_cast<long>(sym_value);
-            }
+            boost::optional<ConstantValue> value = static_cast<long>(sym_value);
+
             const core::image::Section *section = nullptr;
 
             for (std::size_t m = 0; m < sections_.size(); m++) {
