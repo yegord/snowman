@@ -225,7 +225,7 @@ class BfdParserImpl {
 
             if(relsize < 0) {
                 bfd_close(abfd);
-                throw ParseError(tr("Could not parse relocations."));
+                throw ParseError(tr("Could not parse relocations: %1.").arg(getAsciizString(bfd_errmsg(bfd_get_error()))));
             }
 
             symcount = bfd_read_minisymbols(abfd, FALSE, (void **) &syms, &symsize);
@@ -256,7 +256,7 @@ class BfdParserImpl {
                 free(syms);
                 free(relpp);
                 bfd_close(abfd);
-                throw ParseError(tr("Failed to read relocations."));
+                throw ParseError(tr("Failed to read relocations: %1.").arg(getAsciizString(bfd_errmsg(bfd_get_error()))));
             }
 
             for (p = relpp; relcount && *p != NULL; p++, relcount--) {
@@ -310,7 +310,7 @@ class BfdParserImpl {
         if(relsize < 0) {
             if (bfd_get_file_flags (abfd) & DYNAMIC) {
                 bfd_close(abfd);
-                throw ParseError(tr("Could not parse relocations."));
+                throw ParseError(tr("Could not parse relocations: %1.").arg(getAsciizString(bfd_errmsg(bfd_get_error()))));
             } else {
                 return;
             }
@@ -346,7 +346,7 @@ class BfdParserImpl {
             free(dynsyms);
             free(relpp);
             bfd_close(abfd);
-            throw ParseError(tr("Failed to read relocations."));
+            throw ParseError(tr("Failed to read relocations: %1.").arg(getAsciizString(bfd_errmsg(bfd_get_error()))));
         }
 
         for (p = relpp; relcount && *p != NULL; p++, relcount--) {
