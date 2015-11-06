@@ -374,7 +374,6 @@ class BfdParserImpl {
             }
         }
 
-
         free(dynsyms);
         dynsyms = nullptr;
         free(relpp);
@@ -466,10 +465,10 @@ class BfdParserImpl {
                 case 'N': /* .debug */
                 case 'p': /* .pdata */
                 case 's': { /* .sbss */
-                    if(section != nullptr && (section->isBss() || section->isData()) && !(((section->addr() == sym_value)) || (section != nullptr && (section->name() == name)))) {
+                    if(section != nullptr && (section->isBss() || section->isData()) && !((section != nullptr && (section->addr() == sym_value)) || (section != nullptr && (section->name() == name)))) {
                         type = SymbolType::OBJECT;
                         break;
-                    } else if(section != nullptr && section->isCode() && !(((section->addr() == sym_value)) || (section != nullptr && (section->name() == name)))) {
+                    } else if(section != nullptr && section->isCode() && !((section != nullptr && (section->addr() == sym_value)) || (section != nullptr && (section->name() == name)))) {
                         type = SymbolType::FUNCTION;
                         break;
                     } else if((section != nullptr && (section->addr() == sym_value)) || (section != nullptr && (section->name() == name))) {
