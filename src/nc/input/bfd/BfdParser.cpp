@@ -444,6 +444,7 @@ class BfdParserImpl {
                 case 'S': /* Small object */
                     type = SymbolType::OBJECT;
                     break;
+                case 'F':
                 case 'I':
                 case 'T': /* .text */
                 case 'U':
@@ -453,7 +454,7 @@ class BfdParserImpl {
                     break;
                 case 'a': /* abs section */
                 case 'b': /* .bss */
-                case 'C': /* ???? */
+                case 'C': /* Constructor???? */
                 case 'c': /* .scommon */
                 case 'd': /* .data */
                 case 'e': /* .eata */
