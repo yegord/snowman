@@ -79,8 +79,8 @@ class BfdParserImpl {
 			abfd = bfd_openr_next_archived_file(oldbfd, NULL); /* TODO: iterate over all objects and archives */
 			if (!bfd_check_format(abfd, bfd_object)) {
 				bfd_close(abfd);
-				bfd_close(obfd);
-                throw ParseError(tr("Nested BFD archives are not supported yet."));
+				bfd_close(oldbfd);
+		                throw ParseError(tr("Nested BFD archives are not supported yet."));
 			}
 		}
 
