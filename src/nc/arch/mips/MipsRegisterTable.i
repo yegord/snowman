@@ -3,6 +3,8 @@
  *
  * Register table for MIPS architecture.
  *
+ * Copyright Markus Gothe <nietzsche@lysator.liu.se> 2015
+ *
  * This header is intended for multiple inclusion.
  */
 

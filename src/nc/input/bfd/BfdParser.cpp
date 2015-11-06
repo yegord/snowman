@@ -1,4 +1,5 @@
 /* The file is part of Snowman decompiler. */
+/* Copyright Markus Gothe <nietzsche@lysator.liu.se> 2015 */
 /* See doc/licenses.asciidoc for the licensing information. */
 
 #include "BfdParser.h"
