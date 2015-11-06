@@ -40,7 +40,7 @@ class BfdParserImpl {
     QIODevice *source_;
     core::image::Image *image_;
     const LogToken &log_;
-    bfd *abfd = nullptr;
+    bfd *abfd, *oldbfd = nullptr;
 
     ByteOrder byteOrder_;
     bool isarchive = false;
@@ -69,18 +69,19 @@ class BfdParserImpl {
                 throw ParseError(tr("Could not open file: %1").arg(filename));
             } else {
 				isarchive = true;
-				bfd_close(abfd);				
-				throw ParseError(tr("BFD archives are not supported yet."));
+				//bfd_close(abfd);				
+				//throw ParseError(tr("BFD archives are not supported yet."));
             }
         }
 
 		if(isarchive){
-			/*
 			oldbfd = abfd;
-			abfd = abfd->archive_next;
-			for (abfd = obfd->archive_head; abfd != (bfd *)NULL; abfd = abfd->archive_next)
-      		}
-      		*/
+			abfd = bfd_openr_next_archived_file(oldbfd, NULL); /* TODO: iterate over all objects and archives */
+			if (!bfd_check_format(abfd, bfd_object)) {
+				bfd_close(abfd);
+				bfd_close(obfd);
+                throw ParseError(tr("Nested BFD archives are not supported yet."));
+			}
 		}
 
         bfd_architecture arch = bfd_get_arch(abfd);
@@ -135,8 +136,11 @@ class BfdParserImpl {
         foreach (auto &section, sections_) {
             image_->addSection(std::move(section));
         }
-
+       
         bfd_close(abfd);
+        if(isarchive){
+        	bfd_close(oldbfd);
+        }
         return;
     }
 
