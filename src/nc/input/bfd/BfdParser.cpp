@@ -433,6 +433,8 @@ class BfdParserImpl {
                 type = SymbolType::SECTION;
             } else if (asym->flags & BSF_OBJECT) {
                 type = SymbolType::OBJECT;
+            } else if ((asym->flags & BSF_FILE) || (asym->flags & BSF_DEBUGGING)) {
+                type = SymbolType::DEBUG;
             }
 
             if(type == SymbolType::NOTYPE) {
@@ -440,6 +442,7 @@ class BfdParserImpl {
                 case 'A':
                 case 'D':
                 case 'G':
+                case 'O':
                 case 'B': /* Object */
                 case 'S': /* Small object */
                     type = SymbolType::OBJECT;

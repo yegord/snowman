@@ -30,6 +30,7 @@ public:
      */
     enum Type {
         NOTYPE,   ///< Not specified or unknown.
+        DEBUG,    ///< Debug object.
         FUNCTION, ///< Function.
         OBJECT,   ///< Data object.
         SECTION   ///< Section object.
