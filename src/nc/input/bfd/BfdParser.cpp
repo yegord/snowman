@@ -89,7 +89,7 @@ class BfdParserImpl {
 					for(size_t i = 0; i < depth;){
 						abfd = bfd_openr_next_archived_file(oldbfd, abfd);
 						if(abfd == nullptr){
-							break;
+							break; /* Nothing more to see. */
 						}
 						if(bfd_check_format(abfd, bfd_archive)){
 							i++; /* Found an archive, increment. */
