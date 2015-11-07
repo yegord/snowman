@@ -74,18 +74,33 @@ class BfdParserImpl {
         }
 
 		if(isarchive){
+			bool isnested = false;
+			bfd *tmpbfd = abfd;
 			oldbfd = abfd;
 			abfd = bfd_openr_next_archived_file(oldbfd, nullptr); 
 			while(abfd){
-				if (!bfd_check_format(abfd, bfd_object) && !bfd_check_format(abfd, bfd_archive)) {
-					bfd_close(abfd);
-					bfd_close(oldbfd);
-		    		throw ParseError(tr("Error unkown format in archive."));
+				if (!bfd_check_format(abfd, bfd_object)) {
+					if(!bfd_check_format(abfd, bfd_archive)){
+						bfd_close(abfd);
+						bfd_close(oldbfd);
+			    		throw ParseError(tr("Error unkown format in archive."));
+					} else { /* Nested archive found */
+						oldbfd = bfd_openr_next_archived_file(abfd, nullptr);
+						abfd = oldbfd;
+						isnested = true;
+						continue;
+					}
+					isnested = false;
 				}
 				log_.debug(tr("Found file: %1").arg(getAsciizString(abfd->filename)));
-				abfd = bfd_openr_next_archived_file(oldbfd, abfd);
+				if(isnested == false){
+					abfd = bfd_openr_next_archived_file(oldbfd, abfd);
+				} else {
+					abfd = bfd_openr_next_archived_file(oldbfd, tmpbfd);
+				}
 			}
-			abfd = bfd_openr_next_archived_file(oldbfd, nullptr); 
+			
+			abfd = bfd_openr_next_archived_file(tmpbfd, nullptr); 
 			if (!bfd_check_format(abfd, bfd_object)){
 					bfd_close(abfd);
 					bfd_close(oldbfd);
@@ -277,10 +292,12 @@ class BfdParserImpl {
                     const char *sym_name = bfd_asymbol_name(asym);
                     QString name = getAsciizString(sym_name);
                     bfd_signed_vma addend = 0;
-
-                    if (q->addend) {
+					reloc_howto_type *fixupinfo = q->howto;
+    
+               		if (q->addend) {
+                	 	/* TODO: Use fixupinfo here */
                         addend = q->addend;
-                    }
+                   	}
 
                     for (std::size_t m = 0; m < symbols_.size(); m++) {
                         auto tmpsym = symbols_[m];
@@ -367,8 +384,10 @@ class BfdParserImpl {
                 const char *sym_name = bfd_asymbol_name(asym);
                 QString name = getAsciizString(sym_name);
                 bfd_signed_vma addend = 0;
-
+				reloc_howto_type *fixupinfo = q->howto;
+    
                 if (q->addend) {
+                	 /* TODO: Use fixupinfo here */
                     addend = q->addend;
                 }
 
