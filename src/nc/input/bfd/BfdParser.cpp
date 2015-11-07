@@ -75,11 +75,21 @@ class BfdParserImpl {
 
 		if(isarchive){
 			oldbfd = abfd;
-			abfd = bfd_openr_next_archived_file(oldbfd, NULL); /* TODO: iterate over all objects and archives */
-			if (!bfd_check_format(abfd, bfd_object)) {
-				bfd_close(abfd);
-				bfd_close(oldbfd);
-		    	throw ParseError(tr("Nested BFD archives are not supported yet."));
+			abfd = bfd_openr_next_archived_file(oldbfd, nullptr); 
+			while(abfd){
+				if (!bfd_check_format(abfd, bfd_object) && !bfd_check_format(abfd, bfd_archive)) {
+					bfd_close(abfd);
+					bfd_close(oldbfd);
+		    		throw ParseError(tr("Error unkown format in archive."));
+				}
+				log_.debug(tr("Found file: %1").arg(getAsciizString(abfd->filename)));
+				abfd = bfd_openr_next_archived_file(oldbfd, abfd);
+			}
+			abfd = bfd_openr_next_archived_file(oldbfd, nullptr); 
+			if (!bfd_check_format(abfd, bfd_object)){
+					bfd_close(abfd);
+					bfd_close(oldbfd);
+		    		throw ParseError(tr("Error nested archive not supprted yet."));
 			}
 		}
 
