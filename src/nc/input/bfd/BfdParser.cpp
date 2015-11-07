@@ -76,28 +76,37 @@ class BfdParserImpl {
 		if(isarchive){
 			bool isnested = false;
 			bfd *tmpbfd = abfd;
+			size_t depth = 0;
+			
 			oldbfd = abfd;
-			abfd = bfd_openr_next_archived_file(oldbfd, nullptr); 
-			while(abfd){
+			abfd = bfd_openr_next_archived_file(oldbfd, nullptr);
+			while(abfd || isnested){
+				if(abfd == nullptr){
+					isnested = false;
+					oldbfd = tmpbfd;
+					abfd = bfd_openr_next_archived_file(oldbfd, nullptr);
+					for(size_t i = 0; i < depth; i++){
+						if(bfd_check_format(abfd, bfd_archive)){
+							abfd = bfd_openr_next_archived_file(oldbfd, abfd);
+						}
+					}
+					continue;
+				}
 				if (!bfd_check_format(abfd, bfd_object)) {
 					if(!bfd_check_format(abfd, bfd_archive)){
 						bfd_close(abfd);
 						bfd_close(oldbfd);
 			    		throw ParseError(tr("Error unkown format in archive."));
 					} else { /* Nested archive found */
-						oldbfd = bfd_openr_next_archived_file(abfd, nullptr);
-						abfd = oldbfd;
+						oldbfd = abfd;
+						abfd = bfd_openr_next_archived_file(abfd, nullptr);
 						isnested = true;
-						continue;
+						depth++;
 					}
-					isnested = false;
-				}
-				log_.debug(tr("Found file: %1").arg(getAsciizString(abfd->filename)));
-				if(isnested == false){
-					abfd = bfd_openr_next_archived_file(oldbfd, abfd);
-				} else {
-					abfd = bfd_openr_next_archived_file(oldbfd, tmpbfd);
-				}
+				} 
+	
+				log_.debug(tr("Found file: %1 size: %2").arg(getAsciizString(abfd->filename)).arg(bfd_get_arch_size(abfd)));
+				abfd = bfd_openr_next_archived_file(oldbfd, abfd);
 			}
 			
 			abfd = bfd_openr_next_archived_file(tmpbfd, nullptr); 
