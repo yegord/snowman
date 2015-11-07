@@ -59,7 +59,7 @@ class BfdParserImpl {
         source_->seek(0); /* Convention */
 
         /* Read filename */
-        if((abfd = bfd_openr(filename.toAscii().data(), nullptr)) == nullptr) {
+        if((abfd = bfd_openr(filename.toLatin1().data(), nullptr)) == nullptr) {
             throw ParseError(tr("Could not open file: %1").arg(filename));
         }
 
@@ -313,6 +313,7 @@ class BfdParserImpl {
                     const char *sym_name = bfd_asymbol_name(asym);
                     QString name = getAsciizString(sym_name);
                     bfd_signed_vma addend = 0;
+                    bfd_vma addend2 = 0; /* Some SPARC ABI's use 2 addends.  */
 					reloc_howto_type *fixupinfo = q->howto;
     
                		if (q->addend) {
@@ -405,6 +406,7 @@ class BfdParserImpl {
                 const char *sym_name = bfd_asymbol_name(asym);
                 QString name = getAsciizString(sym_name);
                 bfd_signed_vma addend = 0;
+                bfd_vma addend2 = 0; /* Some SPARC ABI's use 2 addends.  */
 				reloc_howto_type *fixupinfo = q->howto;
     
                 if (q->addend) {
@@ -571,7 +573,7 @@ bool BfdParser::doCanParse(QIODevice *source) const {
     QString filename = file->fileName();
 
     bfd_init();
-    abfd = bfd_openr(filename.toAscii().data(), nullptr);
+    abfd = bfd_openr(filename.toLatin1().data(), nullptr);
     if(abfd == nullptr) {
         return false;
     }
