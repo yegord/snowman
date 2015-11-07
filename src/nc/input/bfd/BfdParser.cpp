@@ -84,14 +84,25 @@ class BfdParserImpl {
 				if(abfd == nullptr){
 					isnested = false;
 					oldbfd = tmpbfd;
+					/* Traverse to end of nested archive */
 					abfd = bfd_openr_next_archived_file(oldbfd, nullptr);
-					for(size_t i = 0; i < depth; i++){
+					for(size_t i = 0; i < depth;){
+						abfd = bfd_openr_next_archived_file(oldbfd, abfd);
+						if(abfd == nullptr){
+							break;
+						}
 						if(bfd_check_format(abfd, bfd_archive)){
-							abfd = bfd_openr_next_archived_file(oldbfd, abfd);
+							i++; /* Found an archive, increment. */
+						} else if (!bfd_check_format(abfd, bfd_object)) {
+							bfd_close(abfd);
+							bfd_close(oldbfd);
+			    			throw ParseError(tr("Error unkown format in archive."));
 						}
 					}
 					continue;
 				}
+
+				/* Regular parsing goes here. */
 				if (!bfd_check_format(abfd, bfd_object)) {
 					if(!bfd_check_format(abfd, bfd_archive)){
 						bfd_close(abfd);
@@ -109,6 +120,7 @@ class BfdParserImpl {
 				abfd = bfd_openr_next_archived_file(oldbfd, abfd);
 			}
 			
+			/* FIXME: Select file here. */
 			abfd = bfd_openr_next_archived_file(tmpbfd, nullptr); 
 			if (!bfd_check_format(abfd, bfd_object)){
 					bfd_close(abfd);
