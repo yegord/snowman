@@ -64,6 +64,11 @@ void LogManager::log(QtMsgType type, const QString &msg) {
     case QtDebugMsg:
         log(tr("[Debug] %1").arg(msg));
         break;
+#if QT_VERSION >= 0x050500
+    case QtInfoMsg:
+        log(tr("[Info] %1").arg(msg));
+        break;
+#endif
     case QtWarningMsg:
         log(tr("[Warning] %1").arg(msg));
         break;
