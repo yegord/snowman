@@ -24,6 +24,7 @@
 #define PACKAGE_VERSION 1 /* Work-around for bfd.h */
 
 #include "bfd.h"
+#include "elf-bfd.h"
 
 namespace nc {
 namespace input {
@@ -316,8 +317,30 @@ class BfdParserImpl {
                     bfd_vma addend2 = 0; /* Some SPARC ABI's use 2 addends.  */
 					reloc_howto_type *fixupinfo = q->howto;
     
-               		if (q->addend) {
-                	 	/* TODO: Use fixupinfo here */
+                 	if (q->addend) {
+               			/* Courtsey of objdump.c */
+                	 	if(fixupinfo != nullptr && q->howto->name){
+        	       	 		const char *name = q->howto->name;
+
+							/* R_SPARC_OLO10 relocations contain two addends.
+						  	But because 'arelent' lacks enough storage to
+						  	store them both, the 64-bit ELF Sparc backend
+						  	records this as two relocations.  One R_SPARC_LO10
+						  	and one R_SPARC_13, both pointing to the same
+						  	address.  This is merely so that we have some
+						  	place to store both addend fields.
+
+						  	Undo this transformation, otherwise the output
+						  	will be confusing.  */
+						  	if (abfd->xvec->flavour == bfd_target_elf_flavour && elf_tdata(abfd)->elf_header->e_machine == EM_SPARCV9 && relcount > 1 && !strcmp (name, "R_SPARC_LO10")){
+		  						arelent *q2 = *(p + 1);
+		  						if (q2 != nullptr && q2->howto && q->address == q2->address && !strcmp (q2->howto->name, "R_SPARC_13")){
+						  			name = "R_SPARC_OLO10"; /* UNUSED */
+						  			addend2 = q2->addend;
+		  							p++;
+		  						}
+							}
+                	 	}
                         addend = q->addend;
                    	}
 
@@ -325,7 +348,7 @@ class BfdParserImpl {
                         auto tmpsym = symbols_[m];
                         if(tmpsym->name() == name) {
                             log_.debug(tr("Found relocation for %1.").arg(name));
-                            auto relocation = std::make_unique<core::image::Relocation>(q->address, tmpsym, addend);
+                            auto relocation = std::make_unique<core::image::Relocation>(q->address, tmpsym, (addend + addend2));
                             image_->addRelocation(std::move(relocation));
                             break;
                         }
@@ -409,16 +432,38 @@ class BfdParserImpl {
                 bfd_vma addend2 = 0; /* Some SPARC ABI's use 2 addends.  */
 				reloc_howto_type *fixupinfo = q->howto;
     
-                if (q->addend) {
-                	 /* TODO: Use fixupinfo here */
-                    addend = q->addend;
-                }
+                 if (q->addend) {
+               		/* Courtsey of objdump.c */
+                	 if(fixupinfo != nullptr && q->howto->name){
+        	       	 	const char *name = q->howto->name;
+
+						/* R_SPARC_OLO10 relocations contain two addends.
+						But because 'arelent' lacks enough storage to
+						store them both, the 64-bit ELF Sparc backend
+						records this as two relocations.  One R_SPARC_LO10
+						and one R_SPARC_13, both pointing to the same
+						address.  This is merely so that we have some
+						place to store both addend fields.
+
+						Undo this transformation, otherwise the output
+						will be confusing.  */
+						if (abfd->xvec->flavour == bfd_target_elf_flavour && elf_tdata(abfd)->elf_header->e_machine == EM_SPARCV9 && relcount > 1 && !strcmp (name, "R_SPARC_LO10")){
+							arelent *q2 = *(p + 1);
+							if (q2 != nullptr && q2->howto && q->address == q2->address && !strcmp (q2->howto->name, "R_SPARC_13")){
+								name = "R_SPARC_OLO10"; /* UNUSED */
+								addend2 = q2->addend;
+								p++;
+							}
+						}
+					}
+					addend = q->addend;
+				}
 
                 for (std::size_t m = 0; m < symbols_.size(); m++) {
                     auto tmpsym = symbols_[m];
                     if(tmpsym->name() == name) {
                         log_.debug(tr("Found dynamic relocation for %1.").arg(name));
-                        auto relocation = std::make_unique<core::image::Relocation>(q->address, tmpsym, addend);
+                        auto relocation = std::make_unique<core::image::Relocation>(q->address, tmpsym, (addend + addend2));
                         image_->addRelocation(std::move(relocation));
                         break;
                     }
