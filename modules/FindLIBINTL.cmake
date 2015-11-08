@@ -33,7 +33,7 @@ ELSE()
   else (LIBINTL_LIBC_HAS_DGETTEXT)
     find_library(LIBINTL_LIBRARIES 
       NAMES intl libintl 
-      PATHS /usr/lib /usr/local/lib
+      PATHS /mingw32/lib /mingw64/lib /usr/lib /usr/local/lib
     )
     IF(LIBINTL_LIBRARIES)
       SET(LIBINTL_FOUND TRUE)
