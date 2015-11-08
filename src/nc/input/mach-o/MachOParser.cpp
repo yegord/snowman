@@ -380,7 +380,6 @@ private:
             }
         }
     }
-
 };
 
 } // anonymous namespace

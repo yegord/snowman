@@ -159,10 +159,12 @@ static const uint32_t S_THREAD_LOCAL_ZEROFILL = 18;
 static const uint32_t S_THREAD_LOCAL_VARIABLES = 19;
 static const uint32_t S_THREAD_LOCAL_VARIABLE_POINTERS = 20;
 static const uint32_t S_THREAD_LOCAL_INIT_FUNCTION_POINTERS = 21;
- 
 static const uint32_t S_ATTR_SOME_INSTRUCTIONS = 0x00000400;
 static const uint32_t S_ATTR_PURE_INSTRUCTIONS = 0x80000000;
  
+static const uint32_t INDIRECT_SYMBOL_LOCAL = 0x80000000;
+static const uint32_t INDIRECT_SYMBOL_ABS = 0x40000000;
+
 static const uint32_t INDIRECT_SYMBOL_LOCAL = 0x80000000;
 static const uint32_t INDIRECT_SYMBOL_ABS = 0x40000000;
 
