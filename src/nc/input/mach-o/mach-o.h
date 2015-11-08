@@ -165,9 +165,6 @@ static const uint32_t S_ATTR_PURE_INSTRUCTIONS = 0x80000000;
 static const uint32_t INDIRECT_SYMBOL_LOCAL = 0x80000000;
 static const uint32_t INDIRECT_SYMBOL_ABS = 0x40000000;
 
-static const uint32_t INDIRECT_SYMBOL_LOCAL = 0x80000000;
-static const uint32_t INDIRECT_SYMBOL_ABS = 0x40000000;
-
 struct symtab_command {
     uint32_t cmd;
     uint32_t cmdsize;
