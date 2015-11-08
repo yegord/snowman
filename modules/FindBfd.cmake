@@ -26,9 +26,13 @@ find_path (LIBBFD_INCLUDE_DIRS
       dis-asm.h
     PATHS
       /usr/include
+      /usr/include/binutils
       /usr/local/include
+      /usr/local/include/binutils
       /opt/local/include
+      /opt/local/include/binutils
       /opt/include
+      /opt/include/binutils
       ENV CPATH)
 
 # Ugly, yes ugly...
