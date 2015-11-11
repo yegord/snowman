@@ -59,7 +59,7 @@ class BfdParserImpl {
         source_->seek(0); /* Convention */
 
         /* Read filename */
-        if((abfd = bfd_openr(filename.toAscii().data(), nullptr)) == nullptr) {
+        if((abfd = bfd_openr(filename.toLatin1().data(), nullptr)) == nullptr) {
             throw ParseError(tr("Could not open file: %1").arg(filename));
         }
 
@@ -571,7 +571,7 @@ bool BfdParser::doCanParse(QIODevice *source) const {
     QString filename = file->fileName();
 
     bfd_init();
-    abfd = bfd_openr(filename.toAscii().data(), nullptr);
+    abfd = bfd_openr(filename.toLatin1().data(), nullptr);
     if(abfd == nullptr) {
         return false;
     }
