@@ -4,8 +4,11 @@ set(SOURCES
 
 # This sets up the exe icon for Windows under MinGW.
 set(RES_FILES "")
-if(MINGW)
+if(MINGW OR MSVC)
   SET(RES_FILES "snowman.rc")
+endif()
+
+if(MINGW)
   SET(CMAKE_RC_COMPILER_INIT "windres")
   ENABLE_LANGUAGE(RC)
   SET(CMAKE_RC_COMPILE_OBJECT
