@@ -132,6 +132,9 @@ if(${NC_QT5})
     endmacro()
 
     set(QT_LIBRARIES Qt5::Core Qt5::Widgets)
+
+    # This is used to produce standalone bundles on Windows.
+    include(DeployQt5)
 else()
     # Find Qt4.
     find_package(Qt4 REQUIRED QtCore QtGui)
