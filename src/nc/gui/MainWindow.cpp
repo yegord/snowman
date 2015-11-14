@@ -660,7 +660,12 @@ void MainWindow::about() {
         "<p>%1 supports the following input file formats:<ul>"
         "<li>ELF,</li>"
         "<li>Mach-O,</li>"
+#ifdef HAVE_LIBBFD
+        "<li>libbfd-supported files,</li>"
         "<li>PE.</li>"
+#else
+        "<li>PE.</li>"
+#endif
         "</ul></p>"
         "<p>Report bugs to <a href=\"mailto:%3\">%3</a>.</p>"
         "<p>The software is distributed under the terms of <a href=\"%5\">%4</a>.</p>")
