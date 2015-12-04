@@ -25,6 +25,8 @@
 #include <nc/config.h>
 
 #include <QApplication>
+#include <QtPlugin>
+Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
 
 #include <nc/common/Branding.h>
 #include <nc/gui/MainWindow.h>
