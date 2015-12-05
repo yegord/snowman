@@ -25,11 +25,13 @@
 #include <nc/config.h>
 
 #include <QApplication>
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #if defined(Q_OS_WIN)
 	#include <QtPlugin>
 	Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
 #endif
-	
+#endif
+
 #include <nc/common/Branding.h>
 #include <nc/gui/MainWindow.h>
 
