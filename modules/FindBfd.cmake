@@ -35,6 +35,8 @@ find_path (LIBBFD_INCLUDE_DIRS
       /opt/include/binutils
       C:/msys32/mingw32/include/binutils
       C:/msys32/mingw64/include/binutils
+      C:/msys64/mingw32/include/binutils
+      C:/msys64/mingw64/include/binutils
       ENV CPATH)
 
 # Ugly, yes ugly...
@@ -50,6 +52,8 @@ find_library (LIBBFD_BFD_LIBRARY
       /opt/usr/lib64
       C:/msys32/mingw32/lib/binutils
       C:/msys32/mingw64/lib/binutils
+      C:/msys64/mingw32/lib/binutils
+      C:/msys64/mingw64/lib/binutils
       ENV LIBRARY_PATH
       ENV LD_LIBRARY_PATH)
 LIST(APPEND LIBBFD_LIBRARIES ${LIBBFD_BFD_LIBRARY})
@@ -69,6 +73,8 @@ find_library (LIBBFD_IBERTY_LIBRARY
       /opt/usr/lib64
       C:/msys32/mingw32/lib/binutils
       C:/msys32/mingw64/lib/binutils
+      C:/msys64/mingw32/lib/binutils
+      C:/msys64/mingw64/lib/binutils
       ENV LIBRARY_PATH
       ENV LD_LIBRARY_PATH)
 LIST(APPEND LIBBFD_LIBRARIES ${LIBBFD_IBERTY_LIBRARY})
@@ -85,6 +91,8 @@ find_library (LIBBFD_OPCODES_LIBRARY
       /opt/usr/lib64
       C:/msys32/mingw32/lib/binutils
       C:/msys32/mingw64/lib/binutils
+      C:/msys64/mingw32/lib/binutils
+      C:/msys64/mingw64/lib/binutils
       ENV LIBRARY_PATH
       ENV LD_LIBRARY_PATH)
 LIST(APPEND LIBBFD_LIBRARIES ${LIBBFD_OPCODES_LIBRARY})
