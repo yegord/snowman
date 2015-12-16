@@ -146,20 +146,18 @@ QString IdaFrontend::architecture() {
     } else if (inf.procName == QLatin1String("psp")) {
         return QLatin1String("allegrex");
 	} else if (inf.procName == QLatin1String("mipsl")) {
-        if (inf.filetype == f_WIN || inf.filetype == f_PE || inf.filetype == f_COFF || f_AOUT){
-        	return QLatin1String("mips-le");
-        } else if(parse_reg_name("$zero", &regsize)){
+		if(parse_reg_name("$zero", &regsize)){
         	switch (regsize.size){
+				case 4: return QLatin1String("mips-le");
         		case 8: return QLatin1String("mips64-le");
         	}
         } else {
         	return QLatin1String("mips-le");
         }
     } else if (inf.procName == QLatin1String("mipsb")) {
-        if (inf.filetype == f_WIN || inf.filetype == f_PE || inf.filetype == f_COFF || f_AOUT){
-        	return QLatin1String("mips-be");
-        } else if(parse_reg_name("$zero", &regsize)){
+		if(parse_reg_name("$zero", &regsize)){
         	switch (regsize.size){
+        		case 4: return QLatin1String("mips-be");
         		case 8: return QLatin1String("mips64-be");
         	}
         } else {
