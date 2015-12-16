@@ -134,7 +134,7 @@ class BfdParserImpl {
 
         switch (arch) {
         case bfd_arch_i386:
-            if(bfd_get_arch_size(abfd) == 32) {
+            if(bfd_arch_bits_per_address(abfd) == 32) {
                 image_->platform().setArchitecture(QLatin1String("i386"));
             } else {
                 image_->platform().setArchitecture(QLatin1String("x86-64"));
@@ -149,12 +149,12 @@ class BfdParserImpl {
             break;
         case bfd_arch_mips:
             if (byteOrder_ == ByteOrder::LittleEndian) {
-                if(bfd_get_arch_size(abfd) == 32) {
+                if(bfd_arch_bits_per_address(abfd) == 32) {
                     image_->platform().setArchitecture(QLatin1String("mips-le"));
                 } else {
                     image_->platform().setArchitecture(QLatin1String("mips64-le"));
                 }
-            } else if(bfd_get_arch_size(abfd) == 32) {
+            } else if(bfd_arch_bits_per_address(abfd) == 32) {
                 image_->platform().setArchitecture(QLatin1String("mips-be"));
             } else {
                 image_->platform().setArchitecture(QLatin1String("mips64-be"));
@@ -314,6 +314,7 @@ class BfdParserImpl {
                     QString name = getAsciizString(sym_name);
                     bfd_signed_vma addend = 0;
 					reloc_howto_type *fixupinfo = q->howto;
+                	//(void)bfd_simple_get_relocated_section_contents(abfd, (*q->sym_ptr_ptr)->section, NULL, q->sym_ptr_ptr);
     
                		if (q->addend) {
                 	 	/* TODO: Use fixupinfo here */
@@ -406,6 +407,7 @@ class BfdParserImpl {
                 QString name = getAsciizString(sym_name);
                 bfd_signed_vma addend = 0;
 				reloc_howto_type *fixupinfo = q->howto;
+				//(void)bfd_simple_get_relocated_section_contents(abfd, (*q->sym_ptr_ptr)->section, NULL, q->sym_ptr_ptr);
     
                 if (q->addend) {
                 	 /* TODO: Use fixupinfo here */
