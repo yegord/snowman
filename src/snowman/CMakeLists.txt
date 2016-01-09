@@ -16,7 +16,7 @@ if(MINGW)
 endif(MINGW)
 
 add_executable(snowman WIN32 ${RES_FILES} ${SOURCES})
-target_link_libraries(snowman nc-gui nc-core ${Boost_LIBRARIES} ${QT_LIBRARIES})
+target_link_libraries(snowman nc-gui nc-core ${Boost_LIBRARIES} ${QT_LIBRARIES} ${CMAKE_DL_LIBS})
 if(MSVC)
     set_target_properties(snowman PROPERTIES LINK_FLAGS /ENTRY:mainCRTStartup)
 endif()
