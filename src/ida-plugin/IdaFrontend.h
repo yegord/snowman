@@ -30,6 +30,7 @@
 
 #include <QString>
 
+#include <nc/common/ByteOrder.h>
 #include <nc/common/RangeClass.h>
 #include <nc/common/Types.h>
 #include <nc/core/image/Platform.h>
@@ -100,6 +101,11 @@ public:
      * \returns The name of the archtecture of the current binary.
      */
     static QString architecture();
+
+    /**
+     * \returns The byte order of the currently opened executable.
+     */
+    static ByteOrder byteOrder();
 
     /**
      * \returns The operating system of the current binary.

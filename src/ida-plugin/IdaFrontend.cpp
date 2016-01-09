@@ -137,10 +137,14 @@ void IdaFrontend::createSections(core::image::Image *image) {
     }
 }
 
+ByteOrder IdaFrontend::byteOrder() {
+    return inf.mf ? ByteOrder::BigEndian : ByteOrder::LittleEndian;
+}
+
 QString IdaFrontend::architecture() {
 	reg_info_t regsize;
     if (inf.procName == QLatin1String("ARM")) {
-        return QLatin1String("arm-le");
+        return QLatin1String(byteOrder() == ByteOrder::LittleEndian ? "arm-le" : "arm-be");
     } else if (inf.procName == QLatin1String("ARMB")) {
         return QLatin1String("arm-be");
     } else if (inf.procName == QLatin1String("psp")) {
