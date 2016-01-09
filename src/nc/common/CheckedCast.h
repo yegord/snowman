@@ -31,6 +31,7 @@
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/is_polymorphic.hpp>
 #include <boost/type_traits/is_pointer.hpp>
+#include <boost/type_traits/is_reference.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/mpl/and.hpp>
 
