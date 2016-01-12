@@ -7,13 +7,13 @@ namespace nc {
 
 namespace {
 
-#define NC_CONVERSION_TABLE(CONVERSION)     \
-    CONVERSION(toInt, int)                  \
-    CONVERSION(toUInt, unsigned int)        \
-    CONVERSION(toLong, long)                \
-    CONVERSION(toULong, unsigned long)      \
-    CONVERSION(toLong, long long)           \
-    CONVERSION(toULong, unsigned long long)
+#define NC_CONVERSION_TABLE(CONVERSION)         \
+    CONVERSION(toInt, int)                      \
+    CONVERSION(toUInt, unsigned int)            \
+    CONVERSION(toLong, long)                    \
+    CONVERSION(toULong, unsigned long)          \
+    CONVERSION(toLongLong, long long)           \
+    CONVERSION(toULongLong, unsigned long long)
 
 #define NC_CONVERSION_FUNCTION(METHOD, TYPE)                            \
     inline bool stringToInt(const QString &s, int base, TYPE &result) { \
