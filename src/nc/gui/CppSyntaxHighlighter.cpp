@@ -98,7 +98,15 @@ const char *cppKeywords[] = {
     "void", 
     "volatile", 
     "wchar_t", 
-    "while"
+    "while",
+    "int8_t",
+    "uint8_t",
+    "int16_t",
+    "uint16_t",
+    "int32_t",
+    "uint32_t",
+    "int64_t",
+    "uint64_t"
 };
 
 /* Highlighter state. */
@@ -132,7 +140,7 @@ CppSyntaxHighlighter::CppSyntaxHighlighter(QObject *parent): QSyntaxHighlighter(
 
     /* Init regexps. */
     mNumberRegexp   = QRegExp("\\b([0-9]+|0[xX][0-9a-fA-F]+|0[0-7]+)(\\.[0-9]+)?([eE][0-9]+)?\\b");
-    mOperatorRegexp = QRegExp("[\\(\\)\\[\\]{}\\:;,\\.!\\?/\\*-+<>%^&\\|=~]");
+    mOperatorRegexp = QRegExp("[\\(\\)\\[\\]{}\\:;,\\.!\\?/\\*\\-+<>%^&\\|=~]");
     mTextRegexp     = QRegExp("\\b[a-zA-Z_][a-zA-Z0-9_]+\\b");
 
     mIncludeRegexp  = QRegExp("^\\s*#\\s*include\\s*(<.+>|\\\".+\\\")");
