@@ -148,7 +148,9 @@ class BfdParserImpl {
             }
             break;
         case bfd_arch_mips:
-            if (byteOrder_ == ByteOrder::LittleEndian) {
+        	if(bfd_get_flavour(abfd) == bfd_target_elf_flavour && bfd_get_section_by_name(abfd, ".rodata.sceModuleInfo") != nullptr){ /* Assume this is a PSP / PRX ELF file. */
+                    image_->platform().setArchitecture(QLatin1String("allegrex"));
+            } else if (byteOrder_ == ByteOrder::LittleEndian) {
                 if(bfd_arch_bits_per_address(abfd) == 32) {
                     image_->platform().setArchitecture(QLatin1String("mips-le"));
                 } else {
