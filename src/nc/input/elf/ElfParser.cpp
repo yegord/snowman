@@ -139,6 +139,10 @@ public:
                 image_->addRelocation(std::move(relocation));
             }
         }
+
+        if (ehdr_.e_entry) {
+            image_->setEntryPoint(ehdr_.e_entry);
+        }
     }
 
 private:
@@ -165,6 +169,7 @@ private:
         byteOrder_.convertFrom(ehdr_.e_shoff);
         byteOrder_.convertFrom(ehdr_.e_shnum);
         byteOrder_.convertFrom(ehdr_.e_shstrndx);
+        byteOrder_.convertFrom(ehdr_.e_entry);
 
         switch (ehdr_.e_machine) {
             case EM_386:

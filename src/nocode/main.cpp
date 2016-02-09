@@ -100,6 +100,10 @@ void printSections(nc::core::Context &context, QTextStream &out) {
         out << QString(QLatin1String("section name = '%1', start = 0x%2, size = 0x%3, flags = %4"))
             .arg(section->name()).arg(section->addr(), 0, 16).arg(section->size(), 0, 16).arg(flags) << endl;
     }
+    auto entrypoint = context.image()->entrypoint();
+    if (entrypoint) {
+            out << QString(QLatin1String("entry point = 0x%1")).arg(*entrypoint, 0, 16) << endl;
+    }
 }
 
 void printSymbols(nc::core::Context &context, QTextStream &out) {

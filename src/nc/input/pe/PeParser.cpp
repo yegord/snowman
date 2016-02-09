@@ -131,6 +131,7 @@ public:
         parseSymbols();
         parseImports();
         parseExports();
+        image_->setEntryPoint(optionalHeader_.ImageBase + optionalHeader_.AddressOfEntryPoint);
     }
 
 private:
@@ -157,6 +158,7 @@ private:
         }
 
         peByteOrder.convertFrom(optionalHeader_.ImageBase);
+        peByteOrder.convertFrom(optionalHeader_.AddressOfEntryPoint);
 
         foreach (auto &entry, optionalHeader_.DataDirectory) {
             peByteOrder.convertFrom(entry.VirtualAddress);

@@ -62,6 +62,7 @@ class Image: public ByteSource {
     std::vector<std::unique_ptr<Relocation>> relocations_; ///< The list of relocations.
     boost::unordered_map<ByteAddr, Relocation *> address2relocation_; ///< Mapping from an address to the relocation with this address.
     std::unique_ptr<mangling::Demangler> demangler_; ///< Demangler.
+    boost::optional<ByteAddr> entrypoint_; ///< Entrypoint of image.
 
 public:
     /**
@@ -179,6 +180,18 @@ public:
      * \param demangler Valid pointer to the new demangler.
      */
     void setDemangler(std::unique_ptr<mangling::Demangler> demangler);
+
+    /**
+     * Sets the entry point address.
+     *
+     * \param address The entry point address.
+     */
+    void setEntryPoint(ByteAddr address);
+
+    /**
+     * \return Address of the entry point.
+     */
+    const boost::optional<ByteAddr> &entrypoint() const { return entrypoint_; }
 };
 
 }}} // namespace nc::core::image
