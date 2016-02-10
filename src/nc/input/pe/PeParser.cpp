@@ -131,6 +131,11 @@ public:
         parseSymbols();
         parseImports();
         parseExports();
+
+        auto startAddress = optionalHeader_.ImageBase + optionalHeader_.AddressOfEntryPoint;
+        image_->addSymbol(std::make_unique<core::image::Symbol>(core::image::SymbolType::FUNCTION, "_start",
+                                                                startAddress,
+                                                                image_->getSectionContainingAddress(startAddress)));
     }
 
 private:
@@ -157,6 +162,7 @@ private:
         }
 
         peByteOrder.convertFrom(optionalHeader_.ImageBase);
+        peByteOrder.convertFrom(optionalHeader_.AddressOfEntryPoint);
 
         foreach (auto &entry, optionalHeader_.DataDirectory) {
             peByteOrder.convertFrom(entry.VirtualAddress);
