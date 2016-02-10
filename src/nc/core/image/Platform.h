@@ -7,6 +7,8 @@
 
 #include <QString>
 
+#include <nc/common/Types.h>
+
 namespace nc { namespace core {
 
 namespace arch {
@@ -60,9 +62,22 @@ public:
      */
     OperatingSystem operatingSystem() const { return operatingSystem_; }
 
+    /**
+     * Sets size of int in bits for target platform.
+     *
+     * \param[in] intSize Size.
+     */
+    void setIntSize(SmallBitSize intSize) { intSize_ = intSize; }
+
+    /**
+     * \return Size of int in bits for target platform.
+     */
+    SmallBitSize intSize() const { return intSize_; }
+
 private:
     const arch::Architecture *architecture_;
     OperatingSystem operatingSystem_;
+    SmallBitSize intSize_;
 };
 
 }}} // namespace nc::core::image

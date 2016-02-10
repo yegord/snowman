@@ -57,6 +57,7 @@ namespace cgen {
 
 void CodeGenerator::makeCompilationUnit() {
     tree().setPointerSize(image().platform().architecture()->bitness());
+    tree().setIntSize(image().platform().intSize());
     tree().setRoot(std::make_unique<likec::CompilationUnit>());
 
     foreach (const Function *function, functions().list()) {
