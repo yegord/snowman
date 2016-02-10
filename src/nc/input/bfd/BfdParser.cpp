@@ -57,7 +57,6 @@ class BfdParserImpl {
         QFile *file = static_cast<QFile *>(source_);
         QString filename = file->fileName();
         source_->seek(0); /* Convention */
-        bfd_signed_vma start_address = 0;
 
         /* Read filename */
         if((abfd = bfd_openr(filename.toLatin1().data(), nullptr)) == nullptr) {
@@ -186,7 +185,7 @@ class BfdParserImpl {
         }
         
         /* Add entry point, IFF found, to functions */
-        start_address = bfd_get_start_address(abfd);
+        auto start_address = bfd_get_start_address(abfd);
         if(start_address != 0){
 			image_->addSymbol(std::make_unique<core::image::Symbol>(core::image::SymbolType::FUNCTION, "_start", start_address, image_->getSectionContainingAddress(start_address)));
         }
