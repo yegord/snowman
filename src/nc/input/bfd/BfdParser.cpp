@@ -57,6 +57,7 @@ class BfdParserImpl {
         QFile *file = static_cast<QFile *>(source_);
         QString filename = file->fileName();
         source_->seek(0); /* Convention */
+        unsigned long start_address = 0;
 
         /* Read filename */
         if((abfd = bfd_openr(filename.toLatin1().data(), nullptr)) == nullptr) {
@@ -125,7 +126,7 @@ class BfdParserImpl {
 			if (!bfd_check_format(abfd, bfd_object)){
 					bfd_close(abfd);
 					bfd_close(oldbfd);
-		    		throw ParseError(tr("Error nested archive not supprted yet."));
+		    		throw ParseError(tr("Error nested archive not supported yet."));
 			}
 		}
 
@@ -183,7 +184,13 @@ class BfdParserImpl {
         foreach (auto &section, sections_) {
             image_->addSection(std::move(section));
         }
-       
+        
+        /* Add entry point, IFF found, to functions */
+        start_address = static_cast<unsigned long>(bfd_get_start_address(abfd));
+        if(start_address != 0){
+			image_->addSymbol(std::make_unique<core::image::Symbol>(core::image::SymbolType::FUNCTION, "_start", start_address, image_->getSectionContainingAddress(start_address)));
+        }
+        
         bfd_close(abfd);
         if(isarchive){
         	bfd_close(oldbfd);
