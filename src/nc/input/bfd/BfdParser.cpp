@@ -561,7 +561,6 @@ class BfdParserImpl {
             }
 
             auto sym = std::make_unique<Symbol>(type, name, value, section);
-            symbols_.push_back(sym.get());
             image_->addSymbol(std::move(sym));
         }
 
