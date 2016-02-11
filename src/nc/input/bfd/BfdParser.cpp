@@ -189,6 +189,7 @@ class BfdParserImpl {
         start_address = bfd_get_start_address(abfd);
         if(start_address != 0){
 			image_->addSymbol(std::make_unique<core::image::Symbol>(core::image::SymbolType::FUNCTION, "_start", start_address, image_->getSectionContainingAddress(start_address)));
+			image_->setEntryPoint(start_address);
         }
         
         bfd_close(abfd);

@@ -136,6 +136,7 @@ public:
         image_->addSymbol(std::make_unique<core::image::Symbol>(core::image::SymbolType::FUNCTION, "_start",
                                                                 startAddress,
                                                                 image_->getSectionContainingAddress(startAddress)));
+		image_->setEntryPoint(startAddress);		
     }
 
 private:
