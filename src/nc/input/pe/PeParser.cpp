@@ -362,7 +362,7 @@ private:
                 image_->addRelocation(std::make_unique<core::image::Relocation>(
                     entryAddress,
                     image_->addSymbol(std::make_unique<core::image::Symbol>(
-                        core::image::SymbolType::FUNCTION, tr("%1:%2").arg(dllName).arg(entry.Name), boost::none))));
+                        core::image::SymbolType::FUNCTION, tr("%1:%2").arg(dllName).arg(entry.Name), entryAddress))));
             } else {
                 auto name = reader.readAsciizString(
                     optionalHeader_.ImageBase + entry.Name + sizeof(IMAGE_IMPORT_BY_NAME().Hint), 1024);
@@ -371,7 +371,7 @@ private:
 
                 image_->addRelocation(std::make_unique<core::image::Relocation>(
                     entryAddress, image_->addSymbol(std::make_unique<core::image::Symbol>(
-                                      core::image::SymbolType::FUNCTION, std::move(name), boost::none))));
+                                      core::image::SymbolType::FUNCTION, std::move(name), entryAddress))));
             }
         }
     }
