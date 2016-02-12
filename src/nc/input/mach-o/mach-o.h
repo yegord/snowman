@@ -48,6 +48,7 @@ static const uint32_t LC_SEGMENT = 0x1;
 static const uint32_t LC_SYMTAB = 0x2;
 static const uint32_t LC_DYSYMTAB = 0xb;
 static const uint32_t LC_SEGMENT_64 = 0x19;
+static const uint32_t LC_MAIN = 0x28;
 
 typedef uint32_t vm_prot_t;
 
@@ -198,5 +199,12 @@ static const uint8_t N_SECT = 0xe;
 static const uint8_t N_INDR = 0xa;
 
 static const uint8_t NO_SECT = 0;
+
+struct entry_point_command {
+    uint32_t cmd;
+    uint32_t cmdsize;
+    uint64_t entryoff;
+    uint64_t stacksize;
+};
 
 /* vim:set et sts=4 sw=4: */
