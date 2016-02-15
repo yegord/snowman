@@ -32,33 +32,10 @@ struct mach_header_64 {
 static const uint32_t MH_MAGIC = 0xfeedface;
 static const uint32_t MH_MAGIC_64 = 0xfeedfacf;
 
-static const cpu_type_t CPU_TYPE_ANY = -1;
-static const cpu_type_t CPU_TYPE_VAX = 1;
-static const cpu_type_t CPU_TYPE_ROMP = 2;
-static const cpu_type_t CPU_TYPE_MC68020 = 3;
-static const cpu_type_t CPU_TYPE_NS32032 = 4;
-static const cpu_type_t CPU_TYPE_NS32332 = 5;
-static const cpu_type_t CPU_TYPE_MC680x0 = 6;
 static const cpu_type_t CPU_TYPE_I386 = 7;
-static const cpu_type_t CPU_TYPE_X86 = CPU_TYPE_I386; /* Compability */
-static const cpu_type_t CPU_TYPE_MIPS = 8;
-static const cpu_type_t CPU_TYPE_NS32532 = 9;
-static const cpu_type_t CPU_TYPE_MC98000 = 10; // Old Motorola PowerPC;
-static const cpu_type_t CPU_TYPE_HPPA = 11;
+static const cpu_type_t CPU_TYPE_X86_64 = CPU_TYPE_I386 | 0x1000000;
 static const cpu_type_t CPU_TYPE_ARM = 12;
-static const cpu_type_t CPU_TYPE_MC88000= 13;
-static const cpu_type_t CPU_TYPE_SPARC= 14;
-static const cpu_type_t CPU_TYPE_I860= 15; /* BE */
-static const cpu_type_t CPU_TYPE_I860_LITTLE= 16; /* LE */
-static const cpu_type_t CPU_TYPE_ALPHA= 16;
-static const cpu_type_t CPU_TYPE_RS6000= 17;
-static const cpu_type_t CPU_TYPE_POWERPC= 18;
-static const cpu_type_t CPU_TYPE_VEO= 255;
-/* 64-bits CPUs */
-static const cpu_type_t CPU_TYPE_ARM64 = (CPU_TYPE_ARM | 0x1000000);
-static const cpu_type_t CPU_TYPE_POWERPC64 = (CPU_TYPE_POWERPC | 0x1000000);
-static const cpu_type_t CPU_TYPE_X86_64 = (CPU_TYPE_I386 | 0x1000000);
-
+static const cpu_type_t CPU_TYPE_MIPS = 8;
 
 struct load_command {
     uint32_t cmd;
@@ -71,6 +48,7 @@ static const uint32_t LC_SEGMENT = 0x1;
 static const uint32_t LC_SYMTAB = 0x2;
 static const uint32_t LC_DYSYMTAB = 0xb;
 static const uint32_t LC_SEGMENT_64 = 0x19;
+static const uint32_t LC_MAIN = 0x28;
 
 typedef uint32_t vm_prot_t;
 
@@ -159,9 +137,10 @@ static const uint32_t S_THREAD_LOCAL_ZEROFILL = 18;
 static const uint32_t S_THREAD_LOCAL_VARIABLES = 19;
 static const uint32_t S_THREAD_LOCAL_VARIABLE_POINTERS = 20;
 static const uint32_t S_THREAD_LOCAL_INIT_FUNCTION_POINTERS = 21;
+
 static const uint32_t S_ATTR_SOME_INSTRUCTIONS = 0x00000400;
 static const uint32_t S_ATTR_PURE_INSTRUCTIONS = 0x80000000;
- 
+
 static const uint32_t INDIRECT_SYMBOL_LOCAL = 0x80000000;
 static const uint32_t INDIRECT_SYMBOL_ABS = 0x40000000;
 
@@ -220,5 +199,12 @@ static const uint8_t N_SECT = 0xe;
 static const uint8_t N_INDR = 0xa;
 
 static const uint8_t NO_SECT = 0;
+
+struct entry_point_command {
+    uint32_t cmd;
+    uint32_t cmdsize;
+    uint64_t entryoff;
+    uint64_t stacksize;
+};
 
 /* vim:set et sts=4 sw=4: */

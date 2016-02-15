@@ -11,6 +11,7 @@
 #include <nc/common/LogToken.h>
 #include <nc/common/Unreachable.h>
 #include <nc/common/make_unique.h>
+#include <nc/common/Range.h>
 #include <nc/core/image/Image.h>
 #include <nc/core/image/Section.h>
 #include <nc/core/input/ParseError.h>
@@ -78,6 +79,7 @@ class MachOParserImpl {
     const LogToken &log_;
 
     ByteOrder byteOrder_;
+    boost::unordered_map<const core::image::Section *, uint64_t> section2foff_;
     std::vector<const core::image::Section *> sections_;
     std::vector<const core::image::Symbol *> symbols_;
     std::vector<IndirectSection> indirectSections_;
@@ -118,11 +120,11 @@ public:
             case CPU_TYPE_X86_64:
                 image_->platform().setArchitecture(QLatin1String("x86-64"));
                 break;
-            case CPU_TYPE_ARM:
-                image_->platform().setArchitecture(QLatin1String(byteOrder_ == ByteOrder::LittleEndian ? "arm-le" : "arm-be"));
-                break;
             case CPU_TYPE_MIPS:
                 image_->platform().setArchitecture(QLatin1String(byteOrder_ == ByteOrder::LittleEndian ? "mips-le" : "mips-be"));
+                break;
+            case CPU_TYPE_ARM:
+                image_->platform().setArchitecture(QLatin1String(byteOrder_ == ByteOrder::LittleEndian ? "arm-le" : "arm-be"));
                 break;
             default:
                 throw ParseError(tr("Unknown CPU type: %1.").arg(header.cputype));
@@ -169,6 +171,10 @@ private:
                 }
                 case LC_DYSYMTAB: {
                     parseDySymtabCommand<Mach>();
+                    break;
+                }
+                case LC_MAIN: {
+                    parseMainCommand<Mach>();
                     break;
                 }
             }
@@ -265,6 +271,7 @@ private:
         }
 
         sections_.push_back(imageSection.get());
+        section2foff_[imageSection.get()]= section.offset;
         image_->addSection(std::move(imageSection));
     }
 
@@ -372,11 +379,36 @@ private:
 
                 if (! (symbolIndex & INDIRECT_SYMBOL_LOCAL || symbolIndex & INDIRECT_SYMBOL_ABS)) {
                     if (symbolIndex >= symbols_.size()) {
-                        throw ParseError(tr("symbol index too large %1.").arg(symbolIndex));
+                        throw ParseError(tr("Symbol index %1 is too large.").arg(symbolIndex));
                     }
                     const core::image::Symbol * sym = symbols_[symbolIndex];
                     image_->addSymbol(std::make_unique<core::image::Symbol>(sym->type(), sym->name(), indirectSection.addr + i, indirectSection.section));
                 }
+            }
+        }
+    }
+    template<class Mach>
+    void parseMainCommand() {
+        entry_point_command command;
+        if (!read(source_, command)) {
+            throw ParseError(tr("Could not read entry point command."));
+        }
+        byteOrder_.convertFrom(command.entryoff);
+
+        log_.debug(tr("Found an entry point offset %1.").arg(command.entryoff));
+        foreach(const auto &section, sections_) {
+            auto offset = nc::find(section2foff_, section);
+            assert(offset);
+
+            if (offset <= command.entryoff && command.entryoff < offset+section->size()) {
+                auto entrypoint = command.entryoff - offset + section->addr();
+
+                log_.debug(tr("Entry point = 0x%1.").arg(entrypoint,8, 16));
+		        image_->addSymbol(std::make_unique<core::image::Symbol>(core::image::SymbolType::FUNCTION, "_start",
+                                                                entrypoint,
+                                                                image_->getSectionContainingAddress(entrypoint)));
+                image_->setEntryPoint(entrypoint);
+                break;
             }
         }
     }
