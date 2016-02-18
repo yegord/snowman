@@ -453,7 +453,7 @@ std::unique_ptr<Expression> Simplifier::simplify(std::unique_ptr<Typecast> node)
                                     {
                                         return simplify(std::make_unique<BinaryOperator>(
                                             BinaryOperator::ADD,
-                                            std::make_unique<Typecast>(likec::Typecast::C_STYLE_CAST, pointerType, std::move(typecast->operand())),
+                                            std::make_unique<Typecast>(likec::Typecast::REINTERPRET_CAST, pointerType, std::move(typecast->operand())),
                                             std::make_unique<IntegerConstant>(
                                                 constant->value().value() / pointeeSizeInBytes, constant->type())));
                                     }
