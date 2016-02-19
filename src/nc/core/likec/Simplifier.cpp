@@ -415,6 +415,7 @@ std::unique_ptr<Expression> Simplifier::simplify(std::unique_ptr<Typecast> node)
         }
     }
 
+#if 0
     /*
      * (int32_t*)(int64_t)expr -> (int32_t*)expr
      */
@@ -431,7 +432,24 @@ std::unique_ptr<Expression> Simplifier::simplify(std::unique_ptr<Typecast> node)
             }
         }
     }
+#else
+    /*
+     * (int32_t*)(int64_t)expr -> (int32_t*)expr
+     * and
+     * (int16_t)(int32_t)expr -> (int16_t)expr
+     */
+    if (node->type()->isScalar()) {
+        if (auto typecast = node->operand()->as<Typecast>()) {
+            auto operandType = typeCalculator_.getType(typecast->operand().get());
 
+            if (typecast->type()->isScalar() &&
+                operandType->isScalar())
+            {
+                node->operand() = std::move(typecast->operand());
+            }
+        }
+    }
+#endif
     /*
      * (int32_t*)((uintptr_t)expr + const) -> (int32_t)(expr + const / sizeof(int32_t))
      */
