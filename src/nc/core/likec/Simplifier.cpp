@@ -450,6 +450,7 @@ std::unique_ptr<Expression> Simplifier::simplify(std::unique_ptr<Typecast> node)
         }
     }
 #endif
+
     /*
      * (int32_t*)((uintptr_t)expr + const) -> (int32_t)(expr + const / sizeof(int32_t))
      */

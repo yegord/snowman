@@ -65,9 +65,10 @@ n32n64CallingConvention::n32n64CallingConvention(const Mips64Architecture *archi
     addNonVolatileRegisterLocation(Mips64Registers::s6()->memoryLocation());
     addNonVolatileRegisterLocation(Mips64Registers::s7()->memoryLocation());
     addNonVolatileRegisterLocation(Mips64Registers::fp()->memoryLocation());
-    addNonVolatileRegisterLocation(Mips64Registers::sp()->memoryLocation());
     addNonVolatileRegisterLocation(Mips64Registers::ra()->memoryLocation());*/
     addNonVolatileRegisterLocation(Mips64Registers::gp()->memoryLocation());
+    addNonVolatileRegisterLocation(Mips64Registers::sp()->memoryLocation());
+
     
     /* FP registers */
 	/*addNonVolatileRegisterLocation(Mips64Registers::f20()->memoryLocation());
