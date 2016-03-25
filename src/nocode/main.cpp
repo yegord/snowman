@@ -102,7 +102,7 @@ void printSections(nc::core::Context &context, QTextStream &out) {
     }
     auto entrypoint = context.image()->entrypoint();
     if (entrypoint) {
-            out << QString(QLatin1String("entry point = 0x%1")).arg(*entrypoint, 0, 16) << endl;
+        out << QString(QLatin1String("entry point = 0x%1")).arg(*entrypoint, 0, 16) << endl;
     }
 }
 
