@@ -108,13 +108,6 @@ void Image::setDemangler(std::unique_ptr<mangling::Demangler> demangler) {
     demangler_ = std::move(demangler);
 }
 
-void Image::setEntryPoint(ByteAddr address) {
-    auto section = getSectionContainingAddress(address);
-
-    if (section && section->isExecutable()) {
-        entrypoint_ = address;
-    }
-}
 }}} // namespace nc::core::image
 
 /* vim:set et sts=4 sw=4: */
