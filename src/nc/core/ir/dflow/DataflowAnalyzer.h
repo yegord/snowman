@@ -109,8 +109,7 @@ public:
      */
     void execute(const Statement *statement, ReachingDefinitions &definitions);
 
-protected:
-
+private:
     /**
      * Computes the value of the given term.
      *

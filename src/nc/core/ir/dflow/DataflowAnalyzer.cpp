@@ -341,7 +341,7 @@ Value *DataflowAnalyzer::computeValue(const Term *term, const MemoryLocation &me
     /*
      * Merge abstract values.
      */
-    auto abstractValue = value->abstractValue();
+    AbstractValue abstractValue(value->abstractValue().size(), 0, 0);
 
     foreach (const auto &chunk, definitions.chunks()) {
         assert(memoryLocation.covers(chunk.location()));
@@ -375,12 +375,14 @@ Value *DataflowAnalyzer::computeValue(const Term *term, const MemoryLocation &me
             /* Project the value to the defined location. */
             definitionAbstractValue.project(mask);
 
-            /* Update term's value. */
-            abstractValue.merge(definitionAbstractValue);
+            /* Update the new abstract value. */
+            abstractValue = AbstractValue(abstractValue.size(),
+                abstractValue.zeroBits() | definitionAbstractValue.zeroBits(),
+                abstractValue.oneBits() | definitionAbstractValue.oneBits());
         }
     }
 
-    value->setAbstractValue(abstractValue.resize(term->size()));
+    value->setAbstractValue(abstractValue);
 
     /*
      * Merge stack offset and product flags.
@@ -438,7 +440,7 @@ Value *DataflowAnalyzer::computeValue(const UnaryOperator *unary, const Reaching
     auto value = dataflow().getValue(unary);
     auto operandValue = computeValue(unary->operand(), definitions);
 
-    value->setAbstractValue(apply(unary, operandValue->abstractValue()).merge(value->abstractValue()));
+    value->setAbstractValue(apply(unary, operandValue->abstractValue()));
 
     switch (unary->operatorKind()) {
         case UnaryOperator::SIGN_EXTEND:
@@ -471,7 +473,7 @@ Value *DataflowAnalyzer::computeValue(const BinaryOperator *binary, const Reachi
     auto leftValue = computeValue(binary->left(), definitions);
     auto rightValue = computeValue(binary->right(), definitions);
 
-    value->setAbstractValue(apply(binary, leftValue->abstractValue(), rightValue->abstractValue()).merge(value->abstractValue()));
+    value->setAbstractValue(apply(binary, leftValue->abstractValue(), rightValue->abstractValue()));
 
     /* Compute stack offset. */
     switch (binary->operatorKind()) {
