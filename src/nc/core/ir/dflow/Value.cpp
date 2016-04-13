@@ -75,7 +75,7 @@ bool bitTwiddlingWorks = (NC_UNUSED(bitTwiddlingWorks), testBitTwiddling());
 #endif
 
 Value::Value(SmallBitSize size):
-    abstractValue_(size, 0, 0),
+    abstractValue_(size, -1, -1),
     isStackOffset_(false), isNotStackOffset_(false),
     isProduct_(false), isNotProduct_(false),
     isReturnAddress_(false), isNotReturnAddress_(false)

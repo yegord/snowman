@@ -153,20 +153,6 @@ public:
     }
 
     /**
-     * Componentwise merges *this with the given abstract value.
-     *
-     * \param that Abstract value.
-     *
-     * \return *this.
-     */
-    AbstractValue &merge(const AbstractValue &that) {
-        size_      = std::max(size_, that.size_);
-        zeroBits_ |= that.zeroBits_;
-        oneBits_  |= that.oneBits_;
-        return *this;
-    }
-
-    /**
      * Ands each component of the abstract value with the mask.
      *
      * \param mask Bit mask.

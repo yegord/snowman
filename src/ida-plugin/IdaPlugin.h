@@ -31,6 +31,8 @@
 #include <boost/function.hpp>
 #include <boost/functional/factory.hpp>
 
+#include <nc/common/Unused.h>
+
 namespace nc { namespace ida {
 
 /**
@@ -72,8 +74,9 @@ static_assert(                                                                  
     boost::is_base_of< ::nc::ida::IdaPlugin, plugin_class>::value,              \
     "Plugins registered with NC_IDA_REGISTER_PLUGIN macro must implement IdaPlugin interface." \
 );                                                                              \
-static bool BOOST_PP_CAT(registered_, __LINE__) =                               \
-    ::nc::ida::detail::IdaPluginRegistrator::registerPlugin(boost::factory<plugin_class *>()); \
+static bool BOOST_PP_CAT(registered_, plugin_class) =                           \
+    (NC_UNUSED(BOOST_PP_CAT(registered_, plugin_class)),                        \
+     ::nc::ida::detail::IdaPluginRegistrator::registerPlugin(boost::factory<plugin_class *>()));\
 
 }} // namespace nc::ida
 
