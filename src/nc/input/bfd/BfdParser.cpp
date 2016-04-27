@@ -149,9 +149,7 @@ class BfdParserImpl {
             }
             break;
         case bfd_arch_mips:
-        	if(bfd_get_flavour(abfd) == bfd_target_elf_flavour && bfd_get_section_by_name(abfd, ".rodata.sceModuleInfo") != nullptr){ /* Assume this is a PSP / PRX ELF file. */
-                    image_->platform().setArchitecture(QLatin1String("allegrex"));
-            } else if (byteOrder_ == ByteOrder::LittleEndian) {
+           if (byteOrder_ == ByteOrder::LittleEndian) {
                 if(bfd_arch_bits_per_address(abfd) == 32) {
                     image_->platform().setArchitecture(QLatin1String("mips-le"));
                 } else {
@@ -166,6 +164,9 @@ class BfdParserImpl {
         default:
             const char *id = bfd_printable_name(abfd);
             bfd_close(abfd);
+            if(isarchive){
+		bfd_close(oldbfd);
+            }
             throw ParseError(tr("Unknown machine id: %1.").arg(getAsciizString(id)));
         }
 
@@ -594,7 +595,13 @@ bool BfdParser::doCanParse(QIODevice *source) const {
     if(((arch == bfd_arch_unknown) || (arch == bfd_arch_obscure)) && !bfd_check_format(abfd, bfd_archive)) {
         bfd_close(abfd);
         return false;
+    } else if(arch == bfd_arch_mips){
+  	  if(bfd_get_flavour(abfd) == bfd_target_elf_flavour && bfd_get_section_by_name(abfd, ".rodata.sceModuleInfo") != nullptr){ /* Assume this is a PSP / PRX ELF file. */
+		bfd_close(abfd);
+		return false;
+	  }
     }
+
     bfd_close(abfd);
     return true;
 }
