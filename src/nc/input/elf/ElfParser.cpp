@@ -55,6 +55,7 @@ class Elf32 {
 public:
     static const unsigned char elfclass = ELFCLASS32;
     typedef Elf32_Ehdr Ehdr;
+    typedef Elf32_Phdr Phdr;
     typedef Elf32_Shdr Shdr;
     typedef Elf32_Sym Sym;
     typedef Elf32_Rel Rel;
@@ -68,6 +69,7 @@ class Elf64 {
 public:
     static const unsigned char elfclass = ELFCLASS64;
     typedef Elf64_Ehdr Ehdr;
+    typedef Elf64_Phdr Phdr;
     typedef Elf64_Shdr Shdr;
     typedef Elf64_Sym Sym;
     typedef Elf64_Rel Rel;
@@ -110,6 +112,7 @@ class ElfParserImpl {
 
     typename Elf::Ehdr ehdr_;
     ByteOrder byteOrder_;
+    std::vector<typename Elf::Phdr> phdrs_;
     std::vector<typename Elf::Shdr> shdrs_;
     std::vector<std::unique_ptr<core::image::Section>> sections_;
     boost::unordered_map<std::size_t, std::vector<std::unique_ptr<core::image::Symbol>>> symbolTables_;
@@ -122,9 +125,18 @@ public:
 
     void parse() {
         parseElfHeader();
+
+        if (ehdr_.e_shnum) {
         parseSections();
+        } else {
+            parseProgramHeaders();
+        }
+
+        // TODO: Handle dynamic segments.
+        if (shdrs_.size()) {
         parseSymbols();
         parseRelocations();
+        }
 
         foreach (auto &section, sections_) {
             image_->addSection(std::move(section));
@@ -169,6 +181,8 @@ private:
         }
 
         byteOrder_.convertFrom(ehdr_.e_machine);
+        byteOrder_.convertFrom(ehdr_.e_phoff);
+        byteOrder_.convertFrom(ehdr_.e_phnum);
         byteOrder_.convertFrom(ehdr_.e_shoff);
         byteOrder_.convertFrom(ehdr_.e_shnum);
         byteOrder_.convertFrom(ehdr_.e_shstrndx);
@@ -283,6 +297,69 @@ private:
                 	sections_[i]->setExecutable(false);
                 }
             }
+        }
+    }
+
+    void parseProgramHeaders() {
+        source_->seek(ehdr_.e_phoff);
+
+        /*
+         * Read program headers.
+         */
+        phdrs_.resize(ehdr_.e_phnum);
+        if (!read(source_, *phdrs_.data(), phdrs_.size())) {
+            throw ParseError(tr("Cannot read program headers."));
+        }
+
+        /*
+         * Read section contents.
+         */
+        sections_.reserve(phdrs_.size());
+
+        foreach (typename Elf::Phdr &phdr, phdrs_) {
+            byteOrder_.convertFrom(phdr.p_type);
+            byteOrder_.convertFrom(phdr.p_offset);
+            byteOrder_.convertFrom(phdr.p_vaddr);
+            byteOrder_.convertFrom(phdr.p_paddr);
+            byteOrder_.convertFrom(phdr.p_filesz);
+            byteOrder_.convertFrom(phdr.p_memsz);
+            byteOrder_.convertFrom(phdr.p_flags);
+            byteOrder_.convertFrom(phdr.p_align);
+
+            auto section = std::make_unique<core::image::Section>(QString(), phdr.p_vaddr, phdr.p_memsz);
+
+            section->setAllocated(phdr.p_type == PT_LOAD);
+            section->setReadable(phdr.p_flags & PF_R);
+            section->setWritable(phdr.p_flags & PF_W);
+            section->setExecutable(phdr.p_flags & PF_X);
+
+            section->setCode(section->isExecutable());
+            section->setData(section->isAllocated() && !section->isCode());
+
+            if (section->isCode()) {
+                section->setName("CODE");
+            } else {
+                section->setName("DATA");
+            }
+
+            if (section->isAllocated()) {
+                if (source_->seek(phdr.p_offset)) {
+                    auto bytes = source_->read(phdr.p_filesz);
+
+                    if (bytes.size() != static_cast<int>(phdr.p_filesz)) {
+                        log_.warning(tr("Could read only 0x%1 bytes of segment %2, althought its size is 0x%3.")
+                                         .arg(bytes.size(), 0, 16)
+                                         .arg(section->name())
+                                         .arg(phdr.p_filesz));
+                    }
+
+                    section->setContent(std::move(bytes));
+                } else {
+                    log_.warning(tr("Could not seek to the data of segment %1.").arg(section->name()));
+                }
+            }
+
+            sections_.push_back(std::move(section));
         }
     }
 
