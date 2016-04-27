@@ -192,7 +192,7 @@ namespace nc {
 
                     core::ir::BasicBlock *cachedDirectSuccessor = nullptr;
                     auto directSuccessor = [&]() -> core::ir::BasicBlock * {
-						if (!cachedDirectSuccessor) {
+			if (!cachedDirectSuccessor) {
                             cachedDirectSuccessor = program->createBasicBlock(instruction->endAddr());
                         }
                         return cachedDirectSuccessor;
@@ -200,7 +200,7 @@ namespace nc {
 
                     core::ir::BasicBlock *cachedDirectSuccessorButOne = nullptr;
                     auto directSuccessorButOne = [&]() -> core::ir::BasicBlock * {
-						if (!cachedDirectSuccessorButOne) {
+			if (!cachedDirectSuccessorButOne) {
                             cachedDirectSuccessorButOne = program->createBasicBlock(instruction->endAddr() + instruction->size());
                         }
                         return cachedDirectSuccessorButOne;
@@ -546,8 +546,8 @@ namespace nc {
                         auto rs = signed_(sign_extend(gpr(0), 64));
                         auto rt = signed_(sign_extend(gpr(1), 64));
                         _[
-                            lo ^= truncate((std::move(rs) / std::move(rt)), 32),
-                            hi ^= truncate((std::move(rs) % std::move(rt)), 32)
+                            lo ^= truncate((rs / rt), 32),
+                            hi ^= truncate((rs % rt), 32)
                         ];
                         break;
                     }
@@ -555,8 +555,8 @@ namespace nc {
                         auto rs = unsigned_(zero_extend(gpr(0), 64));
                         auto rt = unsigned_(zero_extend(gpr(1), 64));
                         _[
-                            lo ^= truncate((std::move(rs) / std::move(rt)), 32),
-                            hi ^= truncate((std::move(rs) % std::move(rt)), 32)
+                            lo ^= truncate((rs / rt), 32),
+                            hi ^= truncate((rs % rt), 32)
                         ];
                         break;
                     }
@@ -760,8 +760,8 @@ namespace nc {
                         _[
                             tmp64 ^= std::move(rs) * std::move(rt),
 
-                                lo ^= truncate(tmp64, 32),
-                                hi ^= truncate(signed_(tmp64) >> constant(32), 32)
+                            lo ^= truncate(tmp64, 32),
+                            hi ^= truncate(signed_(tmp64) >> constant(32), 32)
                         ];
                         break;
                     }
