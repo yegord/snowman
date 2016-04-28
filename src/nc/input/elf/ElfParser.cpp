@@ -250,7 +250,7 @@ private:
             byteOrder_.convertFrom(shdr.sh_offset);
             byteOrder_.convertFrom(shdr.sh_link);
 
-            auto section = std::make_unique<core::image::Section>(QString(), shdr.sh_addr, shdr.sh_size);
+            auto section = std::make_unique<core::image::Section>(QString(), shdr.sh_offset, shdr.sh_size);
 
             section->setAllocated(shdr.sh_flags & SHF_ALLOC);
             section->setReadable();
@@ -326,7 +326,7 @@ private:
             byteOrder_.convertFrom(phdr.p_flags);
             byteOrder_.convertFrom(phdr.p_align);
 
-            auto section = std::make_unique<core::image::Section>(QString(), phdr.p_vaddr, phdr.p_memsz);
+            auto section = std::make_unique<core::image::Section>(QString(), phdr.p_offset, phdr.p_memsz);
 
             section->setAllocated(phdr.p_type == PT_LOAD);
             section->setReadable(phdr.p_flags & PF_R);
@@ -334,12 +334,12 @@ private:
             section->setExecutable(phdr.p_flags & PF_X);
 
             section->setCode(section->isExecutable());
-            section->setData(section->isAllocated() && !section->isCode());
+            section->setData(section->isAllocated() && !section->isCode() && !section->isBss());
 
             if (section->isCode()) {
-                section->setName("CODE");
+                section->setName(".text");
             } else {
-                section->setName("DATA");
+                section->setName(".data");
             }
 
             if (section->isAllocated()) {
