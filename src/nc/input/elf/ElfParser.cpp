@@ -326,7 +326,11 @@ private:
             byteOrder_.convertFrom(phdr.p_flags);
             byteOrder_.convertFrom(phdr.p_align);
 
-            auto section = std::make_unique<core::image::Section>(QString(), phdr.p_offset, phdr.p_memsz);
+            if (phdr.p_type == PT_MIPS_PSPREL2) {
+		continue; /* We don't handle these yet! */
+            }
+
+            auto section = std::make_unique<core::image::Section>(QString(), phdr.p_offset, phdr.p_filesz);
 
             section->setAllocated(phdr.p_type == PT_LOAD);
             section->setReadable(phdr.p_flags & PF_R);
@@ -334,12 +338,15 @@ private:
             section->setExecutable(phdr.p_flags & PF_X);
 
             section->setCode(section->isExecutable());
-            section->setData(section->isAllocated() && !section->isCode() && !section->isBss());
+            section->setData(section->isAllocated() && !section->isCode());
 
             if (section->isCode()) {
                 section->setName(".text");
             } else {
-                section->setName(".data");
+	    	if(!section->isWritable())
+			section->setName(".rodata");
+		else
+	                section->setName(".data");
             }
 
             if (section->isAllocated()) {
@@ -359,7 +366,43 @@ private:
                 }
             }
 
-            sections_.push_back(std::move(section));
+		/* Try to detect .bss section */
+	    if (phdr.p_filesz != phdr.p_memsz) {
+		    log_.debug(tr("Suspected .bss section found in segment %1.").arg(section->name()));
+		    auto bss_section = std::make_unique<core::image::Section>(QString(), (phdr.p_offset + phdr.p_filesz), (phdr.p_memsz - phdr.p_filesz));
+		    /* Inherit properties from parent segment */
+		    bss_section->setReadable(section->isReadable());
+		    bss_section->setWritable(section->isWritable());
+		    bss_section->setAllocated(section->isAllocated());
+		    bss_section->setExecutable(section->isExecutable());
+
+		    /* Mark it as the BSS section */
+		    bss_section->setBss();
+		    bss_section->setName(".bss");
+
+		    /* Fill it with data */
+	            if (bss_section->isAllocated()) {
+        	        if (source_->seek((phdr.p_offset + phdr.p_filesz))) {
+	                    auto bytes = source_->read((phdr.p_memsz - phdr.p_filesz));
+
+	                    if (bytes.size() != static_cast<int>((phdr.p_memsz - phdr.p_filesz))) {
+	                        log_.warning(tr("Could read only 0x%1 bytes of segment %2, althought its size is 0x%3.")
+	                                         .arg(bytes.size(), 0, 16)
+	                                         .arg(bss_section->name())
+	                                         .arg((phdr.p_memsz - phdr.p_filesz)));
+	                    }
+
+	                    bss_section->setContent(std::move(bytes));
+	                } else {
+	                    log_.warning(tr("Could not seek to the data of segment %1.").arg(bss_section->name()));
+	                }
+	            }
+		    
+	    	    sections_.push_back(std::move(section));
+		    sections_.push_back(std::move(bss_section));
+	    } else {
+	    	    sections_.push_back(std::move(section));
+	    }
         }
     }
 

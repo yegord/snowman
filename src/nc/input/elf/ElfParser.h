@@ -27,6 +27,8 @@
 
 #include <nc/core/input/Parser.h>
 
+#define PT_MIPS_PSPREL2 0x700000A1 /* Sony PRX relocations (packed) */
+
 namespace nc {
 namespace input {
 namespace elf {
