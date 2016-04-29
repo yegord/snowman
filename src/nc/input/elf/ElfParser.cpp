@@ -345,6 +345,8 @@ private:
 
             if (section->isCode()) {
                 section->setName(".text");
+            } else if (phdr.p_type == PT_DYNAMIC) {
+                section->setName(".dynamic");
             } else {
 	    	if(!section->isWritable())
 			section->setName(".rodata");
