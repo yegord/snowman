@@ -149,7 +149,9 @@ class BfdParserImpl {
             }
             break;
         case bfd_arch_mips:
-           if (byteOrder_ == ByteOrder::LittleEndian) {
+       	    if((bfd_get_flavour(abfd) == bfd_target_elf_flavour) && bfd_little_endian(abfd) && (bfd_arch_bits_per_address(abfd) == 64) && (bfd_get_section_by_name(abfd, ".rodata.sceModuleInfo") != nullptr)){ /* Assume this is a PSP / PRX ELF file. */
+                    image_->platform().setArchitecture(QLatin1String("allegrex"));
+            } else if (byteOrder_ == ByteOrder::LittleEndian) {
                 if(bfd_arch_bits_per_address(abfd) == 32) {
                     image_->platform().setArchitecture(QLatin1String("mips-le"));
                 } else {
@@ -593,21 +595,13 @@ bool BfdParser::doCanParse(QIODevice *source) const {
     }
     bfd_architecture arch = bfd_get_arch(abfd);
     if(((arch == bfd_arch_unknown) || (arch == bfd_arch_obscure)) && !bfd_check_format(abfd, bfd_archive)) {
+        /* Obscure file format found */
         bfd_close(abfd);
         return false;
-    } else {
-    	if((bfd_get_flavour(abfd) == bfd_target_elf_flavour)){
-		if(bfd_count_sections(abfd) == 0){
-			bfd_close(abfd);
-			return false;
-		}
-		else if((arch == bfd_arch_mips) && bfd_little_endian(abfd) && (bfd_arch_bits_per_address(abfd) == 64) /* Yeah, 64 bits for Allegrex!? */){
-	  		if((bfd_get_section_by_name(abfd, ".rodata.sceModuleInfo") != nullptr)){ /* Assume this is a PSP / PRX ELF file. */
-				bfd_close(abfd);
-				return false;
-			}
-		}
-	}
+    } else if((bfd_get_flavour(abfd) == bfd_target_elf_flavour) && (bfd_count_sections(abfd) == 0)){
+        /* Parse ELF without section table with the ELF parser since it handles program headers */
+	bfd_close(abfd);
+	return false;
     }
     bfd_close(abfd);
     return true;

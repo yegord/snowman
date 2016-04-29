@@ -111,6 +111,7 @@ class ElfParserImpl {
     const LogToken &log_;
 
     typename Elf::Ehdr ehdr_;
+    bool is_allegrex;
     ByteOrder byteOrder_;
     std::vector<typename Elf::Phdr> phdrs_;
     std::vector<typename Elf::Shdr> shdrs_;
@@ -189,6 +190,8 @@ private:
        	byteOrder_.convertFrom(ehdr_.e_entry);
        	byteOrder_.convertFrom(ehdr_.e_flags);
 
+	is_allegrex = false;
+
         switch (ehdr_.e_machine) {
             case EM_386:
                 image_->platform().setArchitecture(QLatin1String("i386"));
@@ -208,6 +211,7 @@ private:
                 if (byteOrder_ == ByteOrder::LittleEndian) {
                     if ((ehdr_.e_flags & 0x00FF0000) == 0x00A20000) { // E_MIPS_ALLEGREX
                         image_->platform().setArchitecture(QLatin1String("allegrex"));
+			is_allegrex = true;
                     } else if(!(ehdr_.e_flags & EF_MIPS_ABI2) && ehdr_.e_ident[EI_CLASS] != ELFCLASS64) {
                         image_->platform().setArchitecture(QLatin1String("mips-le"));
                     } else {
@@ -325,11 +329,11 @@ private:
             byteOrder_.convertFrom(phdr.p_flags);
             byteOrder_.convertFrom(phdr.p_align);
 
-            if (phdr.p_type == PT_MIPS_PSPREL2) {
+            if (is_allegrex && (phdr.p_type == PT_MIPS_PSPREL2)) {
 		continue; /* We don't handle these yet! */
             }
 
-            auto section = std::make_unique<core::image::Section>(QString(), phdr.p_offset, phdr.p_filesz);
+            auto section = std::make_unique<core::image::Section>(QString(), phdr.p_vaddr, phdr.p_filesz);
 
             section->setAllocated(phdr.p_type == PT_LOAD);
             section->setReadable(phdr.p_flags & PF_R);
@@ -368,7 +372,7 @@ private:
 		/* Try to detect .bss section */
 	    if (phdr.p_filesz != phdr.p_memsz) {
 		    log_.debug(tr("Suspected .bss section found in segment %1.").arg(section->name()));
-		    auto bss_section = std::make_unique<core::image::Section>(QString(), (phdr.p_offset + phdr.p_filesz), (phdr.p_memsz - phdr.p_filesz));
+		    auto bss_section = std::make_unique<core::image::Section>(QString(), (phdr.p_vaddr + phdr.p_filesz), (phdr.p_memsz - phdr.p_filesz));
 		    /* Inherit properties from parent segment */
 		    bss_section->setReadable(section->isReadable());
 		    bss_section->setWritable(section->isWritable());
@@ -378,24 +382,6 @@ private:
 		    /* Mark it as the BSS section */
 		    bss_section->setBss();
 		    bss_section->setName(".bss");
-
-		    /* Fill it with data */
-	            if (bss_section->isAllocated()) {
-        	        if (source_->seek((phdr.p_offset + phdr.p_filesz))) {
-	                    auto bytes = source_->read((phdr.p_memsz - phdr.p_filesz));
-
-	                    if (bytes.size() != static_cast<int>((phdr.p_memsz - phdr.p_filesz))) {
-	                        log_.warning(tr("Could read only 0x%1 bytes of segment %2, althought its size is 0x%3.")
-	                                         .arg(bytes.size(), 0, 16)
-	                                         .arg(bss_section->name())
-	                                         .arg((phdr.p_memsz - phdr.p_filesz)));
-	                    }
-
-	                    bss_section->setContent(std::move(bytes));
-	                } else {
-	                    log_.warning(tr("Could not seek to the data of segment %1.").arg(bss_section->name()));
-	                }
-	            }
 		    
 	    	    sections_.push_back(std::move(section));
 		    sections_.push_back(std::move(bss_section));
