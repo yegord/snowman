@@ -6,6 +6,8 @@
 #include <algorithm> /* std::max() */
 
 #include <nc/core/image/ByteSource.h>
+#include <nc/core/image/Image.h>
+#include <nc/core/image/Relocation.h>
 
 #include <nc/common/CancellationToken.h>
 
@@ -16,7 +18,7 @@ namespace nc {
 namespace core {
 namespace arch {
 
-void Disassembler::disassemble(const image::ByteSource *source, ByteAddr begin, ByteAddr end, InstructionCallback callback, const CancellationToken &canceled) {
+void Disassembler::disassemble(const image::Image *image, const image::ByteSource *source, ByteAddr begin, ByteAddr end, InstructionCallback callback, const CancellationToken &canceled) {
     assert(source != nullptr);
     assert(begin <= end);
 
@@ -31,6 +33,14 @@ void Disassembler::disassemble(const image::ByteSource *source, ByteAddr begin, 
         if (pc + maxInstructionSize > bufferEnd && bufferEnd < end) {
             bufferBegin = pc;
             bufferEnd = bufferBegin + source->readBytes(pc, buffer.get(), std::min(bufferSize, end - pc));
+        }
+
+        const image::Relocation* reloc = image->getRelocation(pc);
+        // If a relocation starts at a particular address it does make sense for there to be an instruction
+        // there as well so skip over it
+        if (reloc) {
+            pc += reloc->size();
+            continue;
         }
 
         auto instruction = disassembleSingleInstruction(pc, buffer.get() + (pc - bufferBegin), bufferEnd - pc);

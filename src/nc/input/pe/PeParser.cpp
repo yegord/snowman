@@ -130,6 +130,7 @@ public:
         parseSections();
         parseSymbols();
         parseImports();
+        parseBaseRelocs();
         parseExports();
 
         auto startAddress = optionalHeader_.ImageBase + optionalHeader_.AddressOfEntryPoint;
@@ -362,7 +363,8 @@ private:
                 image_->addRelocation(std::make_unique<core::image::Relocation>(
                     entryAddress,
                     image_->addSymbol(std::make_unique<core::image::Symbol>(
-                        core::image::SymbolType::FUNCTION, tr("%1:%2").arg(dllName).arg(entry.Name), entryAddress))));
+                        core::image::SymbolType::FUNCTION, tr("%1:%2").arg(dllName).arg(entry.Name), entryAddress)),
+                    sizeof(IMPORT_LOOKUP_TABLE_ENTRY)));
             } else {
                 auto name = reader.readAsciizString(
                     optionalHeader_.ImageBase + entry.Name + sizeof(IMAGE_IMPORT_BY_NAME().Hint), 1024);
@@ -371,7 +373,8 @@ private:
 
                 image_->addRelocation(std::make_unique<core::image::Relocation>(
                     entryAddress, image_->addSymbol(std::make_unique<core::image::Symbol>(
-                                      core::image::SymbolType::FUNCTION, std::move(name), entryAddress))));
+                                      core::image::SymbolType::FUNCTION, std::move(name), entryAddress)),
+                    sizeof(IMPORT_LOOKUP_TABLE_ENTRY)));
             }
         }
     }
@@ -434,6 +437,86 @@ private:
             auto name = reader.readAsciizString(optionalHeader_.ImageBase + nameRVA, 1024);
             image_->addSymbol(std::make_unique<core::image::Symbol>(core::image::SymbolType::FUNCTION, std::move(name),
                                                                     optionalHeader_.ImageBase + entry));
+        }
+    }
+
+    void parseBaseRelocs() {
+        if (optionalHeader_.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress == 0) {
+            return;
+        }
+
+        auto reader = core::image::Reader(image_);
+
+        auto headerAddress =
+            optionalHeader_.ImageBase + optionalHeader_.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress;
+
+        auto end = headerAddress + optionalHeader_.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size;
+        const core::image::Section *section = image_->getSectionByName(".reloc");
+        if (!section)
+            return;
+
+        const core::image::Symbol *baseSymbol = image_->addSymbol(std::make_unique<core::image::Symbol>(
+                                                                  core::image::SymbolType::NOTYPE, "__image_base", boost::none));
+
+        while (headerAddress < end) {
+            IMAGE_BASE_RELOC_BLOCK_HEADER header;
+            if (section->readBytes(headerAddress, reinterpret_cast<char *>(&header), sizeof(header)) != sizeof(header)) {
+                log_.warning(tr("Cannot read the image base reloc header."));
+                return;
+            }
+            peByteOrder.convertFrom(header.PageRVA);
+            peByteOrder.convertFrom(header.Size);
+
+            int num = (header.Size - 8) / 2;
+            for (int i = 0; i < num; i++ ) {
+                WORD reloc;
+                if (section->readBytes(headerAddress + 8 + i * sizeof(reloc),
+                                       reinterpret_cast<char *>(&reloc), sizeof(reloc)) != sizeof(reloc)) {
+                    log_.warning(tr("Cannot read the base reloc number %1.").arg(i));
+                    return;
+                }
+                peByteOrder.convertFrom(reloc);
+                WORD type = reloc >> 12;
+                WORD offset = reloc & ((1<<12) - 1);
+                DWORD address = header.PageRVA + offset + optionalHeader_.ImageBase;
+                ByteSize addend;
+                int size;
+
+                switch (type) {
+                    case IMAGE_REL_BASED_HIGHLOW:
+                        {
+                            size = 4;
+                            DWORD currentValue;
+                            if (image_->readBytes(address,
+                                                  reinterpret_cast<char *>(&currentValue), sizeof(currentValue)) != sizeof(currentValue)) {
+                                log_.warning(tr("Cannot read reloc at %1.").arg(address));
+                                continue;
+                            }
+                            addend = currentValue - optionalHeader_.ImageBase;
+                            break;
+                        }
+                    case IMAGE_REL_BASED_DIR64:
+                        {
+                            size = 8;
+                            ByteAddr currentValue;
+                            if (image_->readBytes(address,
+                                                  reinterpret_cast<char *>(&currentValue), sizeof(currentValue)) != sizeof(currentValue)) {
+                                log_.warning(tr("Cannot read reloc at %1.").arg(address));
+                                continue;
+                            }
+                            addend = currentValue - optionalHeader_.ImageBase;
+                            break;
+                        }
+                    case IMAGE_REL_BASED_ABSOLUTE:
+                        continue;
+                    default:
+                        log_.warning(tr("Unknown base reloc type %1.").arg(type));
+                        continue;
+                }
+
+                image_->addRelocation(std::make_unique<core::image::Relocation>(address, baseSymbol, size, addend));
+            }
+            headerAddress += header.Size;
         }
     }
 };
