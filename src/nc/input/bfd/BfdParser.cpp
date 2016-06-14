@@ -338,7 +338,7 @@ class BfdParserImpl {
                         auto tmpsym = symbols_[m];
                         if(tmpsym->name() == name) {
                             log_.debug(tr("Found relocation for %1.").arg(name));
-                            auto relocation = std::make_unique<core::image::Relocation>(q->address, tmpsym, addend);
+                            auto relocation = std::make_unique<core::image::Relocation>(q->address, tmpsym, bfd_get_reloc_size(fixupinfo), addend);
                             image_->addRelocation(std::move(relocation));
                             break;
                         }
@@ -431,7 +431,7 @@ class BfdParserImpl {
                     auto tmpsym = symbols_[m];
                     if(tmpsym->name() == name) {
                         log_.debug(tr("Found dynamic relocation for %1.").arg(name));
-                        auto relocation = std::make_unique<core::image::Relocation>(q->address, tmpsym, addend);
+                        auto relocation = std::make_unique<core::image::Relocation>(q->address, tmpsym, bfd_get_reloc_size(fixupinfo), addend);
                         image_->addRelocation(std::move(relocation));
                         break;
                     }

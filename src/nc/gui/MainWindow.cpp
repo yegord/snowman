@@ -166,7 +166,7 @@ void MainWindow::createWidgets() {
     progressDialog_->setRange(0, 0);
     progressDialog_->setWindowModality(Qt::WindowModal);
     progressDialog_->setWindowTitle(windowTitle());
-#if QT_VERSION > QT_VERSION_CHECK(5,4,0) //https://bugreports.qt.io/browse/QTBUG-47042
+#if QT_VERSION >= QT_VERSION_CHECK(5,4,0) //https://bugreports.qt.io/browse/QTBUG-47042
     progressDialog_->reset();
 #endif
 }
