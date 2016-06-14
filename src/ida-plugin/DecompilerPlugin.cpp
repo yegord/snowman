@@ -33,6 +33,7 @@
 #include <nc/common/Foreach.h>
 #include <nc/common/make_unique.h>
 #include <nc/core/Context.h>
+#include <nc/core/arch/Architecture.h>
 #include <nc/core/arch/Instruction.h>
 #include <nc/core/image/Image.h>
 #include <nc/core/image/Relocation.h>
@@ -244,7 +245,8 @@ std::unique_ptr<gui::Project> DecompilerPlugin::createIdaProject() const {
     foreach(const Import &import, IdaFrontend::importedFunctions()) {
         image->addRelocation(std::make_unique<Relocation>(
             import.first,
-            image->addSymbol(std::make_unique<Symbol>(SymbolType::FUNCTION, import.second, boost::none))));
+            image->addSymbol(std::make_unique<Symbol>(SymbolType::FUNCTION, import.second, boost::none)),
+            image->platform().architecture()->bitness() / CHAR_BIT));
     }
 
     return project;

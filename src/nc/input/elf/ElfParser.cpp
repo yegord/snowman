@@ -60,6 +60,7 @@ public:
     typedef Elf32_Sym Sym;
     typedef Elf32_Rel Rel;
     typedef Elf32_Rela Rela;
+    typedef Elf32_Addr Addr;
 
     static unsigned char st_type(unsigned char info) { return ELF32_ST_TYPE(info); }
     static Elf32_Addr r_sym(Elf32_Addr offset) { return ELF32_R_SYM(offset); }
@@ -74,6 +75,7 @@ public:
     typedef Elf64_Sym Sym;
     typedef Elf64_Rel Rel;
     typedef Elf64_Rela Rela;
+    typedef Elf64_Addr Addr;
 
     static unsigned char st_type(unsigned char info) { return ELF64_ST_TYPE(info); }
     static Elf64_Addr r_sym(Elf64_Addr offset) { return ELF64_R_SYM(offset); }
@@ -499,10 +501,9 @@ private:
             Relocation::convertFrom(byteOrder_, rel);
 
             auto symbolIndex = Elf::r_sym(rel.r_info);
-
             if (symbolIndex < symbolTable.size()) {
                 result.push_back(std::make_unique<core::image::Relocation>(
-                    rel.r_offset, symbolTable[symbolIndex].get(), Relocation::addend(rel)));
+                    rel.r_offset, symbolTable[symbolIndex].get(), sizeof(typename Elf::Addr), Relocation::addend(rel)));
             } else {
                 log_.warning(tr("Symbol index %1 is out of range: symbol table has only %2 elements.").arg(symbolIndex).arg(symbolTable.size()));
             }

@@ -82,6 +82,7 @@ void Driver::disassemble(Context &context, const image::ByteSource *source, Byte
         auto newInstructions = std::make_shared<arch::Instructions>(*context.instructions());
 
         context.image()->platform().architecture()->createDisassembler()->disassemble(
+            context.image().get(),
             source,
             begin,
             end,
