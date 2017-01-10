@@ -61,7 +61,7 @@ class TextEditSearcher: public QObject, public Searcher {
      *
      * \param textEdit Valid pointer to the controlled widget.
      */
-    TextEditSearcher(QPlainTextEdit *textEdit);
+    explicit TextEditSearcher(QPlainTextEdit *textEdit);
 
     public Q_SLOTS:
 

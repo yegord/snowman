@@ -61,7 +61,7 @@ public:
      *
      * \param parent Parent widget.
      */
-    DisassemblyDialog(QWidget *parent = nullptr);
+    explicit DisassemblyDialog(QWidget *parent = nullptr);
 
     /**
      * Sets the associated executable image.

@@ -63,7 +63,7 @@ class InspectorView: public QDockWidget {
      *
      * \param[in] parent Pointer to the parent widget. Can be nullptr.
      */
-    InspectorView(QWidget *parent = nullptr);
+    explicit InspectorView(QWidget *parent = nullptr);
 
     /**
      * Destructor.

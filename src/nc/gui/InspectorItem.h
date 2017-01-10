@@ -74,7 +74,7 @@ class InspectorItem {
      *
      * \param[in] text Item's text.
      */
-    InspectorItem(const QString &text):
+    explicit InspectorItem(const QString &text):
         text_(text),
         node_(nullptr),
         term_(nullptr),

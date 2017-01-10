@@ -49,7 +49,7 @@ class GotoLineWidget: public QWidget {
      * \param[in] textEdit  Valid pointer to the associated QPlainTextEdit instance.
      * \param[in] parent    Pointer to the parent widget. Can be nullptr.
      */
-    GotoLineWidget(QPlainTextEdit *textEdit, QWidget *parent = nullptr);
+    explicit GotoLineWidget(QPlainTextEdit *textEdit, QWidget *parent = nullptr);
 
     /**
      * \return Valid pointer to the associated QPlainTextEdit instance.

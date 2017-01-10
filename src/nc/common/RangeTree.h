@@ -12,13 +12,6 @@
 
 namespace nc {
 
-namespace core { namespace likec {
-    class TreeNode;
-    class Tree;
-}}
-
-namespace gui {
-
 class RangeTree {
     std::unique_ptr<RangeNode> root_;
 
@@ -38,6 +31,6 @@ public:
     std::vector<const RangeNode *> handleInsertion(int position, int nchars);
 };
 
-}} // namespace nc::gui
+} // namespace nc
 
 /* vim:set et sts=4 sw=4: */

@@ -167,6 +167,8 @@ set(SOURCES
     likec/CompilationUnit.cpp
     likec/CompilationUnit.h
     likec/Continue.h
+    likec/CxxDocument.cpp
+    likec/CxxDocument.h
     likec/Declaration.h
     likec/DefaultLabel.h
     likec/DoWhile.cpp

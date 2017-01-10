@@ -1,0 +1,16 @@
+language: cpp
+dist: trusty
+sudo: false
+addons:
+  apt:
+    packages:
+      - ninja-build
+      - libboost-dev
+      - libqt4-dev
+      - exuberant-ctags
+      - cmake
+      - cmake-data
+compiler: clang
+script: |
+  mkdir build_output
+  make BUILD_DIR=build_output

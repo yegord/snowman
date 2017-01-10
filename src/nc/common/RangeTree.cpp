@@ -4,7 +4,6 @@
 #include "RangeTree.h"
 
 namespace nc {
-namespace gui {
 
 RangeTree::RangeTree() {}
 
@@ -163,6 +162,6 @@ std::vector<const RangeNode *> RangeTree::handleInsertion(int position, int ncha
     return result;
 }
 
-}} // namespace nc::gui
+} // namespace nc
 
 /* vim:set et sts=4 sw=4: */

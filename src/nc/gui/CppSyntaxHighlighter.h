@@ -64,7 +64,7 @@ public:
      * 
      * \param[in] parent Pointer to the parent object. Can be nullptr.
      */
-    CppSyntaxHighlighter(QObject *parent = nullptr);
+    explicit CppSyntaxHighlighter(QObject *parent = nullptr);
 
     /**
      * Virtual destructor.

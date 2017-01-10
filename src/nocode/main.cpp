@@ -48,11 +48,14 @@
 #include <nc/core/ir/Terms.h>
 #include <nc/core/ir/cflow/Graphs.h>
 #include <nc/core/likec/Tree.h>
+#include <nc/core/likec/CxxDocument.h>
 
 #include <QCoreApplication>
 #include <QFile>
 #include <QStringList>
 #include <QTextStream>
+
+#include <memory>
 
 const char *self = "nocode";
 
@@ -128,6 +131,21 @@ void printRegionGraphs(nc::core::Context &context, QTextStream &out) {
     out << "}" << endl;
 }
 
+void printRanges(nc::core::Context &context, QTextStream &out) {
+    nc::core::likec::CxxDocument document(&context);
+
+    foreach (const auto &instr, context.instructions()->all()) {
+        auto addr = QString("%1").arg(instr->addr(), sizeof(instr->addr()) * CHAR_BIT / 4, 16, QChar('0'));
+
+        std::vector<nc::Range<int>> ranges;
+        document.getRanges(&(*instr), ranges);
+
+        foreach (auto range, ranges) {
+            out << "0x" << addr << " " << range.start() << endl;
+        }
+    }
+}
+
 void help() {
     auto branding = nc::branding();
     branding.setApplicationName("Nocode");
@@ -144,6 +162,7 @@ void help() {
          << "  --print-ir[=FILE]           Print intermediate representation in DOT language to the file." << endl
          << "  --print-regions[=FILE]      Print results of structural analysis in DOT language to the file." << endl
          << "  --print-cxx[=FILE]          Print reconstructed program into given file." << endl
+         << "  --print-ranges[=FILE]       Print mapping of instruction to source code ranges into given file." << endl
          << endl
          << branding.applicationName() << " is a command-line native code to C/C++ decompiler." << endl
          << "It parses given files, decompiles them, and prints the requested" << endl
@@ -178,6 +197,7 @@ int main(int argc, char *argv[]) {
         QString irFile;
         QString regionsFile;
         QString cxxFile;
+        QString rangeFile;
 
         bool autoDefault = true;
         bool verbose = false;
@@ -212,6 +232,7 @@ int main(int argc, char *argv[]) {
             FILE_OPTION("--print-ir", irFile)
             FILE_OPTION("--print-regions", regionsFile)
             FILE_OPTION("--print-cxx", cxxFile)
+            FILE_OPTION("--print-ranges", rangeFile)
 
             #undef FILE_OPTION
 
@@ -253,17 +274,18 @@ int main(int argc, char *argv[]) {
         openFileForWritingAndCall(sectionsFile, [&](QTextStream &out) { printSections(context, out); });
         openFileForWritingAndCall(symbolsFile, [&](QTextStream &out) { printSymbols(context, out); });
 
-        if (!instructionsFile.isEmpty() || !cfgFile.isEmpty() || !irFile.isEmpty() || !regionsFile.isEmpty() || !cxxFile.isEmpty()) {
+        if (!instructionsFile.isEmpty() || !cfgFile.isEmpty() || !irFile.isEmpty() || !regionsFile.isEmpty() || !cxxFile.isEmpty() || !rangeFile.isEmpty()) {
             nc::core::Driver::disassemble(context);
             openFileForWritingAndCall(instructionsFile, [&](QTextStream &out) { context.instructions()->print(out); });
 
-            if (!cfgFile.isEmpty() || !irFile.isEmpty() || !regionsFile.isEmpty() || !cxxFile.isEmpty()) {
+            if (!cfgFile.isEmpty() || !irFile.isEmpty() || !regionsFile.isEmpty() || !cxxFile.isEmpty() || !rangeFile.isEmpty()) {
                 nc::core::Driver::decompile(context);
 
                 openFileForWritingAndCall(cfgFile,     [&](QTextStream &out) { context.program()->print(out); });
                 openFileForWritingAndCall(irFile,      [&](QTextStream &out) { context.functions()->print(out); });
                 openFileForWritingAndCall(regionsFile, [&](QTextStream &out) { printRegionGraphs(context, out); });
                 openFileForWritingAndCall(cxxFile,     [&](QTextStream &out) { context.tree()->print(out); });
+                openFileForWritingAndCall(rangeFile,   [&](QTextStream &out) { printRanges(context, out); });
             }
         }
     } catch (const nc::Exception &e) {

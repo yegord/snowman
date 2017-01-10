@@ -107,7 +107,7 @@ public:
      * \param[in] branding  Branding.
      * \param[in] parent    Pointer to the parent widget. Can be nullptr.
      */
-    MainWindow(Branding branding, QWidget *parent = nullptr);
+    explicit MainWindow(Branding branding, QWidget *parent = nullptr);
 
     /**
      * Destructor.

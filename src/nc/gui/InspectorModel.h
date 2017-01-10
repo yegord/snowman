@@ -67,7 +67,7 @@ public:
      * \param parent  Pointer to the parent object. Can be nullptr.
      * \param context Pointer to the context. Can be nullptr.
      */
-    InspectorModel(QObject *parent = nullptr, std::shared_ptr<const core::Context> context = nullptr);
+    explicit InspectorModel(QObject *parent = nullptr, std::shared_ptr<const core::Context> context = nullptr);
 
     /**
      * Destructor.

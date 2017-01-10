@@ -54,7 +54,7 @@ class CommandQueue: public QObject {
      *
      * \param parent Pointer to the parent widget. Can be nullptr.
      */
-    CommandQueue(QObject *parent = nullptr);
+    explicit CommandQueue(QObject *parent = nullptr);
 
     /**
      * Destructor.

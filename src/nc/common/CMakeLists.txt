@@ -37,6 +37,10 @@ set(SOURCES
     Version.h
     ilist.h
     make_unique.h
+    RangeNode.h
+    RangeTree.cpp
+    RangeTree.h
+    RangeTreeBuilder.h
 )
 
 qt4_wrap_cpp(SOURCES ${MOC_HEADERS} OPTIONS -DQ_MOC_RUN)

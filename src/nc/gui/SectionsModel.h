@@ -59,7 +59,7 @@ public:
      * \param parent    Pointer to the parent object. Can be nullptr.
      * \param image     Pointer to the image. Can be nullptr.
      */
-    SectionsModel(QObject *parent = nullptr, std::shared_ptr<const core::image::Image> image = nullptr);
+    explicit SectionsModel(QObject *parent = nullptr, std::shared_ptr<const core::image::Image> image = nullptr);
 
     /**
      * \param index Model index.

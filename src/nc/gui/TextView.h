@@ -62,7 +62,7 @@ public:
      * \param[in] title     Title of the widget.
      * \param[in] parent    Parent widget.
      */
-    TextView(const QString &title, QWidget *parent = 0);
+    explicit TextView(const QString &title, QWidget *parent = 0);
 
     /**
      * \return Valid pointer to the text widget.

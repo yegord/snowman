@@ -58,7 +58,7 @@ public:
      *
      * \param parent Pointer to the parent widget. Can be nullptr.
      */
-    SectionsView(QWidget *parent = 0);
+    explicit SectionsView(QWidget *parent = 0);
 
     /**
      * \return Pointer to the model being viewed. Can be nullptr.

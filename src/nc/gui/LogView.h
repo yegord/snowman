@@ -42,7 +42,7 @@ class LogView: public TextView {
      *
      * \param[in] parent Pointer to the parent widget. Can be nullptr.
      */
-    LogView(QWidget *parent = 0);
+    explicit LogView(QWidget *parent = 0);
 
     public Q_SLOTS:
 

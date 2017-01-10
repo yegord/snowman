@@ -38,7 +38,7 @@ public:
      *
      * \param parent Pointer to the parent widget. Can be nullptr.
      */
-    SymbolsView(QWidget *parent = 0);
+    explicit SymbolsView(QWidget *parent = 0);
 
     /**
      * \return Pointer to the model being viewed. Can be nullptr.

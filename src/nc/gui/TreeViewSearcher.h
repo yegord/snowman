@@ -64,7 +64,7 @@ class TreeViewSearcher: public QObject, public Searcher {
      *
      * \param treeView Valid pointer to the controlled widget.
      */
-    TreeViewSearcher(QTreeView *treeView);
+    explicit TreeViewSearcher(QTreeView *treeView);
 
     public Q_SLOTS:
 

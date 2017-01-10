@@ -63,7 +63,7 @@ public:
      *
      * \param parent Pointer to the parent widget. Can be nullptr.
      */
-    InstructionsView(QWidget *parent = 0);
+    explicit InstructionsView(QWidget *parent = 0);
 
     /**
      * \return Pointer to the assembler document being viewed. Can be nullptr.

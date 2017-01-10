@@ -88,7 +88,7 @@ class Project: public QObject {
      *
      * \param parent Pointer to the parent object. Can be nullptr.
      */
-    Project(QObject *parent = nullptr);
+    explicit Project(QObject *parent = nullptr);
 
     /**
      * Destructor.

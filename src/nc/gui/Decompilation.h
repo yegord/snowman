@@ -53,7 +53,7 @@ class Decompilation: public Activity {
      *
      * \param context Valid pointer to the context.
      */
-    Decompilation(const std::shared_ptr<core::Context> &context);
+    explicit Decompilation(const std::shared_ptr<core::Context> &context);
 
     /**
      * Destructor.
