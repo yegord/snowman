@@ -14,5 +14,5 @@ Contribute
 ----------
 We are not done yet.
 We want better generated code, even more convenient GUI, support for other architectures.
-Feel free to link:doc/todo.asciidoc[pick a problem], solve it, and send a link:https://github.com/nihilus/snowman/pulls[pull request].
+Feel free to link:doc/todo.asciidoc[pick a problem], solve it, and send a link:https://github.com/yegord/snowman/pulls[pull request].
 Write to our link:http://lists.derevenets.com/mailman/listinfo/snowman[mailing list] if you have questions.
