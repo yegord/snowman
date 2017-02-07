@@ -7,7 +7,7 @@ Snowman is link:doc/licenses.asciidoc[free software].
 
 Use
 ---
-Clone the https://github.com/nihilus/snowman[repository], follow the link:doc/build.asciidoc[build instructions], run the decompiler.
+Clone the https://github.com/yegord/snowman[repository], follow the link:doc/build.asciidoc[build instructions], run the decompiler.
 Alternatively, download the http://derevenets.com/[prebuilt packages], unpack, and run.
 
 Contribute
