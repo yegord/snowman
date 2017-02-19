@@ -51,7 +51,7 @@ std::unique_ptr<T> as(std::unique_ptr<U> ptr) {
 
 } // anonymous namespace
 
-Simplifier::Simplifier(Tree &tree) : typeCalculator_(tree) {
+Simplifier::Simplifier(Tree &tree) : tree_(tree), typeCalculator_(tree) {
 }
 
 std::unique_ptr<CompilationUnit> Simplifier::simplify(std::unique_ptr<CompilationUnit> node) {
@@ -415,6 +415,7 @@ std::unique_ptr<Expression> Simplifier::simplify(std::unique_ptr<Typecast> node)
         }
     }
 
+#if 0
     /*
      * (int32_t*)(int64_t)expr -> (int32_t*)expr
      */
@@ -428,6 +429,65 @@ std::unique_ptr<Expression> Simplifier::simplify(std::unique_ptr<Typecast> node)
                 typecast->type()->size() == operandType->size())
             {
                 node->operand() = std::move(typecast->operand());
+            }
+        }
+    }
+#else
+    /*
+     * (int32_t*)(int64_t)expr -> (int32_t*)expr
+     * and
+     * (int16_t)(int32_t)expr -> (int16_t)expr
+     */
+    if (node->type()->isScalar()) {
+        if (auto typecast = node->operand()->as<Typecast>()) {
+            auto operandType = typeCalculator_.getType(typecast->operand().get());
+
+            if (typecast->type()->isScalar() &&
+                operandType->isScalar())
+            {
+                node->operand() = std::move(typecast->operand());
+            }
+        }
+    }
+#endif
+
+    /*
+     * (int32_t*)((uintptr_t)expr + const) -> (int32_t)(expr + const / sizeof(int32_t))
+     */
+    if (auto pointerType = node->type()->as<PointerType>()) {
+        if (pointerType->pointeeType()->size() && pointerType->pointeeType()->size() % CHAR_BIT == 0) {
+            ByteSize pointeeSizeInBytes = pointerType->pointeeType()->size() / CHAR_BIT;
+
+            if (auto binary = node->operand()->as<BinaryOperator>()) {
+                if (binary->operatorKind() == BinaryOperator::ADD) {
+                    auto rewrite = [&](Expression *binaryLeft, Expression *binaryRight) -> std::unique_ptr<Expression> {
+                        if (auto typecast = binaryLeft->as<Typecast>()) {
+                            if (typecast->type()->isInteger() &&
+                                typecast->type()->size() == tree_.pointerSize() &&
+                                typeCalculator_.getType(typecast->operand().get())->isPointer())
+                            {
+                                if (auto constant = binaryRight->as<IntegerConstant>()) {
+                                    if (constant->type()->size() <= tree_.pointerSize() &&
+                                        constant->value().value() % pointeeSizeInBytes == 0)
+                                    {
+                                        return simplify(std::make_unique<BinaryOperator>(
+                                            BinaryOperator::ADD,
+                                            std::make_unique<Typecast>(likec::Typecast::REINTERPRET_CAST, pointerType, std::move(typecast->operand())),
+                                            std::make_unique<IntegerConstant>(
+                                                constant->value().value() / pointeeSizeInBytes, constant->type())));
+                                    }
+                                }
+                            }
+                        }
+                        return nullptr;
+                    };
+
+                    if (auto result = rewrite(binary->left().get(), binary->right().get())) {
+                        return result;
+                    } else if (auto result = rewrite(binary->right().get(), binary->left().get())) {
+                        return result;
+                    }
+                }
             }
         }
     }

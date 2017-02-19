@@ -132,7 +132,12 @@ public:
         parseImports();
         parseBaseRelocs();
         parseExports();
-        image_->setEntryPoint(optionalHeader_.ImageBase + optionalHeader_.AddressOfEntryPoint);
+
+        auto startAddress = optionalHeader_.ImageBase + optionalHeader_.AddressOfEntryPoint;
+        image_->addSymbol(std::make_unique<core::image::Symbol>(core::image::SymbolType::FUNCTION, "_start",
+                                                                startAddress,
+                                                                image_->getSectionContainingAddress(startAddress)));
+		image_->setEntryPoint(startAddress);		
     }
 
 private:
@@ -358,7 +363,7 @@ private:
                 image_->addRelocation(std::make_unique<core::image::Relocation>(
                     entryAddress,
                     image_->addSymbol(std::make_unique<core::image::Symbol>(
-                        core::image::SymbolType::FUNCTION, tr("%1:%2").arg(dllName).arg(entry.Name), boost::none)),
+                        core::image::SymbolType::FUNCTION, tr("%1:%2").arg(dllName).arg(entry.Name), entryAddress)),
                     sizeof(IMPORT_LOOKUP_TABLE_ENTRY)));
             } else {
                 auto name = reader.readAsciizString(
@@ -368,7 +373,7 @@ private:
 
                 image_->addRelocation(std::make_unique<core::image::Relocation>(
                     entryAddress, image_->addSymbol(std::make_unique<core::image::Symbol>(
-                                      core::image::SymbolType::FUNCTION, std::move(name), boost::none)),
+                                      core::image::SymbolType::FUNCTION, std::move(name), entryAddress)),
                     sizeof(IMPORT_LOOKUP_TABLE_ENTRY)));
             }
         }
@@ -547,6 +552,16 @@ void PeParser::doParse(QIODevice *source, core::image::Image *image, const LogTo
         case IMAGE_FILE_MACHINE_ARM: /* FALLTHROUGH */
         case IMAGE_FILE_MACHINE_THUMB:
             image->platform().setArchitecture(QLatin1String("arm-le"));
+            break;
+        case IMAGE_FILE_MACHINE_R3000_BE: /* FALLTHROUGH */
+        case IMAGE_FILE_MACHINE_MIPSFPU:
+            image->platform().setArchitecture(QLatin1String("mips-be"));
+            break;
+        case IMAGE_FILE_MACHINE_R3000: /* FALLTHROUGH */
+        case IMAGE_FILE_MACHINE_R4000:
+        case IMAGE_FILE_MACHINE_R10000:
+        case IMAGE_FILE_MACHINE_WCEMIPSV2:
+            image->platform().setArchitecture(QLatin1String("mips-le"));
             break;
         default:
             throw ParseError(tr("Unknown machine id: 0x%1.").arg(fileHeader.Machine, 0, 16));

@@ -12,6 +12,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS YES)
 # Link against qtmain.lib automatically.
 cmake_policy(SET CMP0020 NEW)
 
+#Don't use the RPATH on OS X.
+set(CMAKE_MACOSX_RPATH 0)
+
 #
 # Include additional scripts.
 #
@@ -129,6 +132,9 @@ if(${NC_QT5})
     endmacro()
 
     set(QT_LIBRARIES Qt5::Core Qt5::Widgets)
+
+    # This is used to produce standalone bundles on Windows.
+    include(DeployQt5)
 else()
     # Find Qt4.
     find_package(Qt4 REQUIRED QtCore QtGui)
@@ -140,6 +146,25 @@ endif()
 
 if(QT_NAMESPACE)
     add_definitions(-DQT_NAMESPACE=${QT_NAMESPACE})
+endif()
+
+#Find libbfd
+find_package(Bfd)
+
+if(LIBBFD_FOUND)
+  add_definitions(-DHAVE_LIBBFD=1)
+  find_package(Intl)
+  if(Intl_FOUND)
+  	LIST(APPEND LIBBFD_LIBRARIES ${Intl_LIBRARIES})
+  endif()
+  find_package(Iconv)
+  if(Iconv_FOUND)
+  	LIST(APPEND LIBBFD_LIBRARIES ${Iconv_LIBRARIES})
+  endif()
+  find_package(ZLIB)
+  if(ZLIB_FOUND)
+  	LIST(APPEND LIBBFD_LIBRARIES ${ZLIB_LIBRARIES})
+  endif()
 endif()
 
 # Find IDA SDK.

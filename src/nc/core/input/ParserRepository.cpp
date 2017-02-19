@@ -29,6 +29,9 @@
 #include <nc/common/Foreach.h>
 #include <nc/common/make_unique.h>
 
+#ifdef HAVE_LIBBFD
+#include <nc/input/bfd/BfdParser.h>
+#endif
 #include <nc/input/elf/ElfParser.h>
 #include <nc/input/mach-o/MachOParser.h>
 #include <nc/input/pe/PeParser.h>
@@ -41,9 +44,14 @@ namespace {
 
 ParserRepository *createInstance() {
     static ParserRepository result;
-    result.registerParser(std::make_unique<nc::input::elf::ElfParser>());
+
     result.registerParser(std::make_unique<nc::input::mach_o::MachOParser>());
     result.registerParser(std::make_unique<nc::input::pe::PeParser>());
+#ifdef HAVE_LIBBFD
+	result.registerParser(std::make_unique<nc::input::bfdparser::BfdParser>());
+#endif
+    result.registerParser(std::make_unique<nc::input::elf::ElfParser>());
+
     return &result;
 }
 

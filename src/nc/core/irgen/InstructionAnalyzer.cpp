@@ -43,6 +43,7 @@ void InstructionAnalyzer::createStatements(const arch::Instructions *instruction
                                            const CancellationToken &canceled, const LogToken &log) {
     assert(instructions);
     assert(program);
+    setInstructions(instructions);
     doCreateStatements(instructions, program, canceled, log);
 }
 
@@ -70,6 +71,15 @@ void InstructionAnalyzer::createStatements(const arch::Instruction *instruction,
         }
         throw;
     }
+}
+
+void InstructionAnalyzer::setInstructions(const arch::Instructions *instructions) {
+    instructions_ = instructions;
+}
+
+
+const nc::core::arch::Instructions * InstructionAnalyzer::instructions() const {
+    return instructions_;
 }
 
 std::unique_ptr<ir::Term> InstructionAnalyzer::createTerm(const arch::Register *reg) {

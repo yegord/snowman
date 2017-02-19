@@ -120,6 +120,9 @@ public:
             case CPU_TYPE_X86_64:
                 image_->platform().setArchitecture(QLatin1String("x86-64"));
                 break;
+            case CPU_TYPE_MIPS:
+                image_->platform().setArchitecture(QLatin1String(byteOrder_ == ByteOrder::LittleEndian ? "mips-le" : "mips-be"));
+                break;
             case CPU_TYPE_ARM:
                 image_->platform().setArchitecture(QLatin1String(byteOrder_ == ByteOrder::LittleEndian ? "arm-le" : "arm-be"));
                 break;
@@ -401,6 +404,9 @@ private:
                 auto entrypoint = command.entryoff - offset + section->addr();
 
                 log_.debug(tr("Entry point = 0x%1.").arg(entrypoint,8, 16));
+		        image_->addSymbol(std::make_unique<core::image::Symbol>(core::image::SymbolType::FUNCTION, "_start",
+                                                                entrypoint,
+                                                                image_->getSectionContainingAddress(entrypoint)));
                 image_->setEntryPoint(entrypoint);
                 break;
             }

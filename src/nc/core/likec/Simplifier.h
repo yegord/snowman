@@ -41,7 +41,9 @@ class While;
  * This class can simplify LikeC code.
  */
 class Simplifier {
+	Tree &tree_;
     TypeCalculator typeCalculator_;
+
 
 public:
     /**

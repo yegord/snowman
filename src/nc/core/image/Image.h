@@ -186,7 +186,7 @@ public:
      *
      * \param address The entry point address.
      */
-    void setEntryPoint(ByteAddr address) { entrypoint_ = address; }
+    void setEntryPoint(ByteAddr address);
 
     /**
      * \return Address of the entry point.

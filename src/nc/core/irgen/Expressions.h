@@ -1207,7 +1207,7 @@ public:
      * Constructor.
      *
      * \param factory       Expression factory to use to create separate statements.
-     * \param basicBlock    Basic block to add statements to.
+     * \param basicBlock    Valid pointer to the basic block to which statements must be added.
      * \param instruction   Instruction to set to the created statements.
      */
     ExpressionFactoryCallback(ExpressionFactory &factory, ir::BasicBlock *basicBlock, const arch::Instruction *instruction):
@@ -1219,17 +1219,28 @@ public:
     }
 
     /**
-     * \return Basic block to which statements are added.
+     * \return Valid pointer to the basic block to which statements are added.
      */
     ir::BasicBlock *basicBlock() const { return mBasicBlock; }
+
+    /**
+     * Sets the basic block to which the statements are added.
+     *
+     * \param basicBlock    Valid pointer to the basic block to which statements must be added.
+     */
+    void setBasicBlock(ir::BasicBlock *basicBlock) {
+        assert(basicBlock != nullptr);
+        mBasicBlock = basicBlock;
+    }
 
     /**
      * \param statement                 Call statement to create IR statement from.
      *                                  Created statement will be added to the basic block.
      */
     template<class E>
-    void operator[](StatementBase<E> &&statement) const {
+    const ExpressionFactoryCallback & operator[](StatementBase<E> &&statement) const {
         doCallback(statement.derived());
+        return *this;
     }
 
     void operator()(std::unique_ptr<ir::Statement> statement) const {

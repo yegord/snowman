@@ -15,6 +15,8 @@ QString SymbolType::getName(Type type) {
     switch (type) {
         case NOTYPE:
             return tr("None");
+        case DEBUG:
+            return tr("Debug");
         case FUNCTION:
             return tr("Function");
         case OBJECT:

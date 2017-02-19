@@ -142,10 +142,31 @@ ByteOrder IdaFrontend::byteOrder() {
 }
 
 QString IdaFrontend::architecture() {
+	reg_info_t regsize;
     if (inf.procName == QLatin1String("ARM")) {
         return QLatin1String(byteOrder() == ByteOrder::LittleEndian ? "arm-le" : "arm-be");
     } else if (inf.procName == QLatin1String("ARMB")) {
         return QLatin1String("arm-be");
+    } else if (inf.procName == QLatin1String("psp")) {
+        return QLatin1String("allegrex");
+	} else if (inf.procName == QLatin1String("mipsl")) {
+		if(parse_reg_name("$zero", &regsize)){
+        	switch (regsize.size){
+				case 4: return QLatin1String("mips-le");
+        		case 8: return QLatin1String("mips64-le");
+        	}
+        } else {
+        	return QLatin1String("mips-le");
+        }
+    } else if (inf.procName == QLatin1String("mipsb")) {
+		if(parse_reg_name("$zero", &regsize)){
+        	switch (regsize.size){
+        		case 4: return QLatin1String("mips-be");
+        		case 8: return QLatin1String("mips64-be");
+        	}
+        } else {
+        	return QLatin1String("mips-be");
+        }
     } else {
         /* Assume x86 by default. */
         if (segment_t *segment = get_segm_by_name(".text")) {
@@ -161,7 +182,7 @@ QString IdaFrontend::architecture() {
 }
 
 core::image::Platform::OperatingSystem IdaFrontend::operatingSystem() {
-    if (inf.filetype == f_WIN || inf.filetype == f_COFF || inf.filetype == f_PE) {
+    if (inf.filetype == f_WIN || inf.filetype == f_PE) {
         return core::image::Platform::Windows;
     }
     return core::image::Platform::UnknownOS;
@@ -224,7 +245,7 @@ void IdaFrontend::print(const QString &message) {
 QWidget *IdaFrontend::createWidget(const QString &caption) {
     HWND hwnd;
     TForm *form = create_tform(caption.toLocal8Bit().constData(), &hwnd);
-    open_tform(form, FORM_MDI | FORM_TAB | FORM_MENU | FORM_QWIDGET);
+    open_tform(form, /*FORM_MDI |*/ FORM_TAB | FORM_MENU | FORM_QWIDGET);
     return reinterpret_cast<QWidget *>(form);
 }
 

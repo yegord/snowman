@@ -166,7 +166,7 @@ void MainWindow::createWidgets() {
     progressDialog_->setRange(0, 0);
     progressDialog_->setWindowModality(Qt::WindowModal);
     progressDialog_->setWindowTitle(windowTitle());
-#if QT_VERSION > QT_VERSION_CHECK(5,4,0) //https://bugreports.qt.io/browse/QTBUG-47042
+#if QT_VERSION >= QT_VERSION_CHECK(5,4,0) //https://bugreports.qt.io/browse/QTBUG-47042
     progressDialog_->reset();
 #endif
 }
@@ -656,13 +656,19 @@ void MainWindow::about() {
         "<p>This is version %2.</p>"
         "<p>%1 supports the following architectures:<ul>"
         "<li>ARM (little endian, big endian, powered by <a href=\"http://http://www.capstone-engine.org/\">Capstone</a>),</li>"
+        "<li>MIPS (little endian, big endian, powered by <a href=\"http://http://www.capstone-engine.org/\">Capstone</a>),</li>"
         "<li>Intel x86,</li>"
         "<li>Intel x86-64.</li>"
         "</ul></p>"
         "<p>%1 supports the following input file formats:<ul>"
         "<li>ELF,</li>"
         "<li>Mach-O,</li>"
+#ifdef HAVE_LIBBFD
+        "<li>libbfd-supported files,</li>"
         "<li>PE.</li>"
+#else
+        "<li>PE.</li>"
+#endif
         "</ul></p>"
         "<p>Report bugs to <a href=\"mailto:%3\">%3</a>.</p>"
         "<p>The software is distributed under the terms of <a href=\"%5\">%4</a>.</p>")

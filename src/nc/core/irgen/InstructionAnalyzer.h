@@ -40,6 +40,7 @@ namespace ir {
 }
 
 namespace arch {
+    class Instructions;
     class Instruction;
     class Instructions;
     class Register;
@@ -79,6 +80,10 @@ public:
      */
     static std::unique_ptr<ir::Term> createTerm(const arch::Register *reg);
 
+    void setInstructions(const nc::core::arch::Instructions *);
+
+    const nc::core::arch::Instructions *instructions() const;
+
 protected:
     /**
      * Actually creates intermediate representation of the given set of instructions.
@@ -98,6 +103,9 @@ protected:
      * \param[out] program      Valid pointer to the intermediate representation of a program.
      */
     virtual void doCreateStatements(const arch::Instruction *instruction, ir::Program *program) = 0;
+
+private:
+    const nc::core::arch::Instructions *instructions_;
 };
 
 } // namespace irgen
