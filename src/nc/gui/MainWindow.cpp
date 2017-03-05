@@ -655,7 +655,7 @@ void MainWindow::about() {
         "<p>%1 is a native code to C/C++ decompiler.</p>"
         "<p>This is version %2.</p>"
         "<p>%1 supports the following architectures:<ul>"
-        "<li>ARM (little endian, big endian, powered by <a href=\"http://http://www.capstone-engine.org/\">Capstone</a>),</li>"
+        "<li>ARM (little endian, big endian, powered by <a href=\"http://www.capstone-engine.org/\">Capstone</a>),</li>"
         "<li>Intel x86,</li>"
         "<li>Intel x86-64.</li>"
         "</ul></p>"
