@@ -133,32 +133,87 @@ public:
         /* Describing semantics */
         switch (ud_obj_.mnemonic) {
             case UD_Iadc: {
-                _[
-                    operand(0) ^= operand(0) + operand(1) + zero_extend(cf),
-                    cf ^= intrinsic(),
-                    pf ^= intrinsic(),
-                    zf ^= operand(0) == constant(0),
-                    sf ^= signed_(operand(0)) < constant(0),
-                    of ^= intrinsic(),
-                    af ^= intrinsic(),
-                    less ^= ~(sf == of),
-                    less_or_equal ^= less | zf,
-                    below_or_equal ^= cf | zf
-                ];
+#define adc_bitness(bitness) if(operand(0).size() == bitness)\
+                _[\
+                    regizter(X86Registers::tmp##bitness ()) ^= operand(0) + operand(1) + zero_extend(cf),\
+                    cf ^= unsigned_(regizter(X86Registers::tmp##bitness ())) < unsigned_(operand(0)),\
+                    operand(0) ^= regizter(X86Registers::tmp##bitness ()),\
+                    pf ^= intrinsic(),\
+                    zf ^= operand(0) == constant(0),\
+                    sf ^= signed_(operand(0)) < constant(0),\
+                    of ^= intrinsic(),\
+                    af ^= intrinsic(),\
+                    less ^= ~(sf == of),\
+                    less_or_equal ^= less | zf,\
+                    below_or_equal ^= cf | zf\
+                ]; else{}
+
+                adc_bitness(8);
+                adc_bitness(16);
+                adc_bitness(32);
+                adc_bitness(64);
+#undef adc_bitness
                 break;
             }
             case UD_Iadd: {
+#define add_bitness(bitness) if(operand(0).size() == bitness)\
+                _[\
+                    regizter(X86Registers::tmp##bitness ()) ^= operand(0) + operand(1),\
+                    cf ^= unsigned_(regizter(X86Registers::tmp##bitness ())) < unsigned_(operand(0)),\
+                    operand(0) ^= regizter(X86Registers::tmp##bitness ()),\
+                    pf ^= intrinsic(),\
+                    zf ^= operand(0) == constant(0),\
+                    sf ^= signed_(operand(0)) < constant(0),\
+                    of ^= intrinsic(),\
+                    af ^= intrinsic(),\
+                    less ^= ~(sf == of),\
+                    less_or_equal ^= less | zf,\
+                    below_or_equal ^= cf | zf\
+                ]; else{}
+                add_bitness(8);
+                add_bitness(16);
+                add_bitness(32);
+                add_bitness(64);
+                break;
+#undef add_bitness
+            }
+            case UD_Iclc: {
                 _[
-                    operand(0) ^= operand(0) + operand(1),
-                    cf ^= intrinsic(),
-                    pf ^= intrinsic(),
-                    zf ^= operand(0) == constant(0),
-                    sf ^= signed_(operand(0)) < constant(0),
-                    of ^= intrinsic(),
-                    af ^= intrinsic(),
-                    less ^= ~(sf == of),
-                    less_or_equal ^= less | zf,
-                    below_or_equal ^= cf | zf
+                        cf ^= constant(0),
+                                below_or_equal ^= cf | zf
+                ];
+                break;
+            }
+            case UD_Icmc: {
+                _[
+                        cf ^= ~cf,
+                                below_or_equal ^= cf | zf
+                ];
+                break;
+            }
+            case UD_Istc: {
+                _[
+                        cf ^= constant(1),
+                                below_or_equal ^= cf | zf
+                ];
+                break;
+            }
+            case UD_Isahf: {
+                _[
+                        sf ^= truncate(unsigned_(regizter(X86Registers::ah())) >> constant(6), 1),
+                        zf ^= truncate(unsigned_(regizter(X86Registers::ah())) >> constant(5), 1),
+                        af ^= truncate(unsigned_(regizter(X86Registers::ah())) >> constant(3), 1),
+                        pf ^= truncate(unsigned_(regizter(X86Registers::ah())) >> constant(1), 1),
+                        cf ^= truncate(unsigned_(regizter(X86Registers::ah())), 1),
+                        less ^= ~(sf == of),
+                        less_or_equal ^= less | zf,
+                        below_or_equal ^= cf | zf
+                ];
+                break;
+            }
+            case UD_Ifnstsw: {
+                _[
+                        operand(0) ^= regizter(X86Registers::fpu_status_word())
                 ];
                 break;
             }
