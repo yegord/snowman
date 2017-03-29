@@ -206,6 +206,31 @@ public:
                 ];
                 break;
             }
+            case UD_Ibswap: {
+                if(operand(0).size() == 32) {
+                    _[
+                            operand(0)  ^= ((unsigned_(operand(0))>>constant(24))&constant(0xFF)) |
+                            ((unsigned_(operand(0))>>constant(8))&constant(0xFF00))
+                            | ((operand(0)<<constant(8))&constant(0xFF0000))
+                            | ((operand(0)<<constant(24))&constant(0xFF000000))
+                    ];
+                }
+                else if(operand(0).size() == 64) {
+                    _[
+                        temporary(64) ^= ((operand(0) & constant(0xFFFFFFFFUL, 64)) << constant(32))
+                        | (unsigned_(operand(0) & constant(0xFFFFFFFF00000000UL)) >> constant(32)),
+                        temporary(64) ^= (temporary(64) & constant(0x0000FFFF0000FFFFUL)) << constant(16)
+                        | unsigned_(temporary(64) & constant(0xFFFF0000FFFF0000UL)) >> constant(16),
+                        operand(0) ^= (temporary(64) & constant(0x00FF00FF00FF00FFUL)) << constant(8)
+                        | unsigned_(temporary(64) & constant(0xFF00FF00FF00FF00UL)) >> constant(8)
+
+                    ];
+                }
+                else {
+                    unreachable();
+                }
+                break;
+            }
             case UD_Iand: {
                 if (operandsAreTheSame(0, 1)) {
                     _[operand(0) ^= operand(0)];
