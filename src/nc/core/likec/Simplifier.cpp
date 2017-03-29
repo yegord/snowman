@@ -420,9 +420,8 @@ std::unique_ptr<MemberAccessOperator> Simplifier::simplify(std::unique_ptr<Membe
 std::unique_ptr<Expression> Simplifier::simplify(std::unique_ptr<Typecast> node) {
     node->operand() = simplify(std::move(node->operand()));
     /*
-     * simplify casts within casts
-     * woooooo! this works!
-     * and, it has a fairly noticeable impact
+     * reinterpret_cast<int16_t>(*reinterpret_cast<uint16_t*>(&edi2))
+     * will become *reinterpret_cast<int16_t*>(&edi2)
      */
     if(node->operand()->is<UnaryOperator>()
                                           && node->type()->isInteger() &&
@@ -449,14 +448,12 @@ std::unique_ptr<Expression> Simplifier::simplify(std::unique_ptr<Typecast> node)
                 auto ptrType = innerCast->type()->as<PointerType>();
                 if (ptrType->pointeeType()->size() == node->type()->size()
                     && ptrType->pointeeType()->isInteger()) {
-                    
                     auto integerPointee = ptrType->pointeeType()->as<IntegerType>();
-
                     deref->operand() =
-                    std::make_unique<Typecast>(Typecast::CastKind::REINTERPRET_CAST, new PointerType(
-                            innerCast->type()->size(), node->type()
-                    ), std::move(innerCast->operand()));
-                    return std::move(node->operand());
+                    std::make_unique<Typecast>(Typecast::CastKind::REINTERPRET_CAST,
+                    typeCalculator_.getTree().makePointerType(innerCast->type()->size(), node->type()),
+                                               std::move(innerCast->operand()));
+                    return simplify(std::move(node->operand()));
                 }
             }
         }
