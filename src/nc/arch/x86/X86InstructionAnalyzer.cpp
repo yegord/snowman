@@ -134,8 +134,9 @@ public:
         switch (ud_obj_.mnemonic) {
             case UD_Iadc: {
                 _[
-                    operand(0) ^= operand(0) + operand(1) + zero_extend(cf),
-                    cf ^= intrinsic(),
+                    temporary(operand(0).size()) ^= operand(0) + operand(1) + zero_extend(cf),
+                    cf ^= unsigned_(temporary(operand(0).size())) < unsigned_(operand(0)),
+                    operand(0) ^= temporary(operand(0).size()),
                     pf ^= intrinsic(),
                     zf ^= operand(0) == constant(0),
                     sf ^= signed_(operand(0)) < constant(0),
@@ -143,22 +144,65 @@ public:
                     af ^= intrinsic(),
                     less ^= ~(sf == of),
                     less_or_equal ^= less | zf,
-                    below_or_equal ^= cf | zf
+                    below_or_equal ^= cf | zf\
                 ];
                 break;
             }
             case UD_Iadd: {
                 _[
-                    operand(0) ^= operand(0) + operand(1),
-                    cf ^= intrinsic(),
-                    pf ^= intrinsic(),
-                    zf ^= operand(0) == constant(0),
-                    sf ^= signed_(operand(0)) < constant(0),
-                    of ^= intrinsic(),
-                    af ^= intrinsic(),
-                    less ^= ~(sf == of),
-                    less_or_equal ^= less | zf,
-                    below_or_equal ^= cf | zf
+                        temporary(operand(0).size()) ^= operand(0) + operand(1),
+                        cf ^= unsigned_(temporary(operand(0).size())) < unsigned_(operand(0)),
+                        operand(0) ^= temporary(operand(0).size()),
+                        pf ^= intrinsic(),
+                        zf ^= operand(0) == constant(0),
+                        sf ^= signed_(operand(0)) < constant(0),
+                        of ^= intrinsic(),
+                        af ^= intrinsic(),
+                        less ^= ~(sf == of),
+                        less_or_equal ^= less | zf,
+                        below_or_equal ^= cf | zf\
+                ];
+                break;
+            }
+            case UD_Iclc: {
+                _[
+                        cf ^= constant(0),
+                                below_or_equal ^= cf | zf
+                ];
+                break;
+            }
+            case UD_Icmc: {
+                _[
+                        cf ^= ~cf,
+                                below_or_equal ^= cf | zf
+                ];
+                break;
+            }
+            case UD_Istc: {
+                _[
+                        cf ^= constant(1),
+                                below_or_equal ^= cf | zf
+                ];
+                break;
+            }
+            case UD_Isahf: {
+#define extractFlag(offs) MemoryLocationExpression(X86Registers::ah()->memoryLocation().resized(1).shifted(offs))
+                _[
+                        cf ^= MemoryLocationExpression(X86Registers::ah()->memoryLocation().resized(1)),
+                        pf ^= extractFlag(1),
+                        af ^= extractFlag(3),
+                        zf ^= extractFlag(5),
+                        sf ^= extractFlag(6),
+                        less ^= ~(sf == of),
+                        less_or_equal ^= less | zf,
+                        below_or_equal ^= cf | zf
+                ];
+#undef extractFlag
+                break;
+            }
+            case UD_Ifnstsw: {
+                _[
+                        operand(0) ^= regizter(X86Registers::fpu_status_word())
                 ];
                 break;
             }
