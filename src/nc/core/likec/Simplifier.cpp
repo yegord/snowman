@@ -345,26 +345,23 @@ std::unique_ptr<Expression> Simplifier::simplify(std::unique_ptr<BinaryOperator>
      * x = x - 1; -> --x;
      */
     if (node->operatorKind() == BinaryOperator::ASSIGN) {
-        if (VariableIdentifier *leftIdent = node->left()->as<VariableIdentifier>()) {
-             /*
-             * if the right hand side is a cast to the type of
-             * the left hand side, check to see if the right hand side expression
-             * will automatically be upgraded to the type of the left hand side
-             * only works for integer types.
-             */
-            if(node->left()->is<VariableIdentifier>() && node->right()->is<Typecast>()) {
-                auto dest = node->left()->as<VariableIdentifier>();
-                auto src = node->right()->as<Typecast>();
-                auto destType = dest->declaration()->type();
-                auto cstType = typeCalculator_.getType(src->operand().get());//src->type();
-                if(destType->isInteger() && cstType->isInteger() && destType->size() >= cstType->size()) {
-                    if(destType->as<IntegerType>()->isSigned() == cstType->as<IntegerType>()->isSigned()) {
-                        node->right() = std::move(src->operand());
-                        return std::move(simplify(std::move(node)));
-                    }
+        /*
+         * if the right hand side is a cast to the type of
+         * the left hand side, check to see if the right hand side expression
+         * will automatically be upgraded to the type of the left hand side
+         * only works for integer types.
+         */
+        if(auto src = node->right()->as<Typecast>()) {
+            auto destType = typeCalculator_.getType(node->left().get());//leftIdent->declaration()->type();
+            auto cstType = typeCalculator_.getType(src->operand().get());//src->type();
+            if(destType->isInteger() && cstType->isInteger() && destType->size() >= cstType->size()) {
+                if(destType->as<IntegerType>()->isSigned() == cstType->as<IntegerType>()->isSigned()) {
+                    node->right() = std::move(src->operand());
+                    return std::move(simplify(std::move(node)));
                 }
             }
-            
+        }
+        if (VariableIdentifier *leftIdent = node->left()->as<VariableIdentifier>()) {
             if (BinaryOperator *binary = node->right()->as<BinaryOperator>()) {
 
                 auto rewrite = [&](const Expression *left, const Expression *right) -> std::unique_ptr<Expression> {
