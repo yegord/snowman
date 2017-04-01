@@ -134,8 +134,9 @@ public:
         switch (ud_obj_.mnemonic) {
             case UD_Iadc: {
                 _[
-                    operand(0) ^= operand(0) + operand(1) + zero_extend(cf),
-                    cf ^= intrinsic(),
+                    temporary(operand(0).size()) ^= operand(0) + operand(1) + zero_extend(cf),
+                    cf ^= unsigned_(temporary(operand(0).size())) < unsigned_(operand(0)),
+                    operand(0) ^= temporary(operand(0).size()),
                     pf ^= intrinsic(),
                     zf ^= operand(0) == constant(0),
                     sf ^= signed_(operand(0)) < constant(0),
@@ -149,8 +150,9 @@ public:
             }
             case UD_Iadd: {
                 _[
-                    operand(0) ^= operand(0) + operand(1),
-                    cf ^= intrinsic(),
+                    temporary(operand(0).size()) ^= operand(0) + operand(1),
+                    cf ^= unsigned_(temporary(operand(0).size())) < unsigned_(operand(0)),
+                    operand(0) ^= temporary(operand(0).size()),
                     pf ^= intrinsic(),
                     zf ^= operand(0) == constant(0),
                     sf ^= signed_(operand(0)) < constant(0),
@@ -160,6 +162,73 @@ public:
                     less_or_equal ^= less | zf,
                     below_or_equal ^= cf | zf
                 ];
+                break;
+            }
+            case UD_Iclc: {
+                _[
+                    cf ^= constant(0),
+                    below_or_equal ^= cf | zf
+                ];
+                break;
+            }
+            case UD_Icmc: {
+                _[
+                    cf ^= ~cf,
+                    below_or_equal ^= cf | zf
+                ];
+                break;
+            }
+            case UD_Istc: {
+                _[
+                    cf ^= constant(1),
+                    below_or_equal ^= cf | zf
+                ];
+                break;
+            }
+            case UD_Isahf: {
+#define extractFlag(offs) MemoryLocationExpression(X86Registers::ah()->memoryLocation().resized(1).shifted(offs))
+                _[
+                    cf ^= MemoryLocationExpression(X86Registers::ah()->memoryLocation().resized(1)),
+                    pf ^= extractFlag(1),
+                    af ^= extractFlag(3),
+                    zf ^= extractFlag(5),
+                    sf ^= extractFlag(6),
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf
+                ];
+#undef extractFlag
+                break;
+            }
+            case UD_Ifnstsw: {
+                _[
+                    operand(0) ^= regizter(X86Registers::fpu_status_word())
+                ];
+                break;
+            }
+            case UD_Ibswap: {
+                if(operand(0).size() == 32) {
+                    _[
+                        operand(0)  ^= ((unsigned_(operand(0))>>constant(24))) |
+                        ((unsigned_(operand(0))>>constant(8))&constant(0xFF00))
+                        | ((operand(0)<<constant(8))&constant(0xFF0000))
+                        | ((operand(0)<<constant(24)))
+                    ];
+                }
+                else if(operand(0).size() == 64) {
+                    _[
+                        temporary(64) ^= ((operand(0) & constant(0xFFFFFFFFUL, 64)) << constant(32))
+                        | (unsigned_(operand(0) & constant(0xFFFFFFFF00000000UL)) >> constant(32)),
+                        temporary(64) ^= (temporary(64) & constant(0x0000FFFF0000FFFFUL)) << constant(16)
+                        | unsigned_(temporary(64) & constant(0xFFFF0000FFFF0000UL)) >> constant(16),
+                        operand(0) ^= (temporary(64) & constant(0x00FF00FF00FF00FFUL)) << constant(8)
+                        | unsigned_(temporary(64) & constant(0xFF00FF00FF00FF00UL)) >> constant(8)
+
+                    ];
+                }
+                else {
+                    unreachable();
+                }
                 break;
             }
             case UD_Iand: {
