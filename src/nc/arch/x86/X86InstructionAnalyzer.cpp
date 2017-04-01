@@ -144,75 +144,75 @@ public:
                     af ^= intrinsic(),
                     less ^= ~(sf == of),
                     less_or_equal ^= less | zf,
-                    below_or_equal ^= cf | zf\
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
             case UD_Iadd: {
                 _[
-                        temporary(operand(0).size()) ^= operand(0) + operand(1),
-                        cf ^= unsigned_(temporary(operand(0).size())) < unsigned_(operand(0)),
-                        operand(0) ^= temporary(operand(0).size()),
-                        pf ^= intrinsic(),
-                        zf ^= operand(0) == constant(0),
-                        sf ^= signed_(operand(0)) < constant(0),
-                        of ^= intrinsic(),
-                        af ^= intrinsic(),
-                        less ^= ~(sf == of),
-                        less_or_equal ^= less | zf,
-                        below_or_equal ^= cf | zf\
+                    temporary(operand(0).size()) ^= operand(0) + operand(1),
+                    cf ^= unsigned_(temporary(operand(0).size())) < unsigned_(operand(0)),
+                    operand(0) ^= temporary(operand(0).size()),
+                    pf ^= intrinsic(),
+                    zf ^= operand(0) == constant(0),
+                    sf ^= signed_(operand(0)) < constant(0),
+                    of ^= intrinsic(),
+                    af ^= intrinsic(),
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
             case UD_Iclc: {
                 _[
-                        cf ^= constant(0),
-                                below_or_equal ^= cf | zf
+                    cf ^= constant(0),
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
             case UD_Icmc: {
                 _[
-                        cf ^= ~cf,
-                                below_or_equal ^= cf | zf
+                    cf ^= ~cf,
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
             case UD_Istc: {
                 _[
-                        cf ^= constant(1),
-                                below_or_equal ^= cf | zf
+                    cf ^= constant(1),
+                    below_or_equal ^= cf | zf
                 ];
                 break;
             }
             case UD_Isahf: {
 #define extractFlag(offs) MemoryLocationExpression(X86Registers::ah()->memoryLocation().resized(1).shifted(offs))
                 _[
-                        cf ^= MemoryLocationExpression(X86Registers::ah()->memoryLocation().resized(1)),
-                        pf ^= extractFlag(1),
-                        af ^= extractFlag(3),
-                        zf ^= extractFlag(5),
-                        sf ^= extractFlag(6),
-                        less ^= ~(sf == of),
-                        less_or_equal ^= less | zf,
-                        below_or_equal ^= cf | zf
+                    cf ^= MemoryLocationExpression(X86Registers::ah()->memoryLocation().resized(1)),
+                    pf ^= extractFlag(1),
+                    af ^= extractFlag(3),
+                    zf ^= extractFlag(5),
+                    sf ^= extractFlag(6),
+                    less ^= ~(sf == of),
+                    less_or_equal ^= less | zf,
+                    below_or_equal ^= cf | zf
                 ];
 #undef extractFlag
                 break;
             }
             case UD_Ifnstsw: {
                 _[
-                        operand(0) ^= regizter(X86Registers::fpu_status_word())
+                    operand(0) ^= regizter(X86Registers::fpu_status_word())
                 ];
                 break;
             }
             case UD_Ibswap: {
                 if(operand(0).size() == 32) {
                     _[
-                            operand(0)  ^= ((unsigned_(operand(0))>>constant(24))&constant(0xFF)) |
-                            ((unsigned_(operand(0))>>constant(8))&constant(0xFF00))
-                            | ((operand(0)<<constant(8))&constant(0xFF0000))
-                            | ((operand(0)<<constant(24))&constant(0xFF000000))
+                        operand(0)  ^= ((unsigned_(operand(0))>>constant(24))) |
+                        ((unsigned_(operand(0))>>constant(8))&constant(0xFF00))
+                        | ((operand(0)<<constant(8))&constant(0xFF0000))
+                        | ((operand(0)<<constant(24)))
                     ];
                 }
                 else if(operand(0).size() == 64) {
