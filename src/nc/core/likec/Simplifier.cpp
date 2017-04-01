@@ -448,7 +448,7 @@ std::unique_ptr<Expression> Simplifier::simplify(std::unique_ptr<Typecast> node)
                     auto integerPointee = ptrType->pointeeType()->as<IntegerType>();
                     deref->operand() =
                     std::make_unique<Typecast>(Typecast::CastKind::REINTERPRET_CAST,
-                    typeCalculator_.getTree().makePointerType(innerCast->type()->size(), node->type()),
+                    typeCalculator_.tree().makePointerType(innerCast->type()->size(), node->type()),
                                                std::move(innerCast->operand()));
                     return simplify(std::move(node->operand()));
                 }
