@@ -352,8 +352,8 @@ std::unique_ptr<Expression> Simplifier::simplify(std::unique_ptr<BinaryOperator>
          * only works for integer types.
          */
         if(auto src = node->right()->as<Typecast>()) {
-            auto destType = typeCalculator_.getType(node->left().get());//leftIdent->declaration()->type();
-            auto cstType = typeCalculator_.getType(src->operand().get());//src->type();
+            auto destType = typeCalculator_.getType(node->left().get());
+            auto cstType = typeCalculator_.getType(src->operand().get());
             if(destType->isInteger() && cstType->isInteger() && destType->size() >= cstType->size()) {
                 if(destType->as<IntegerType>()->isSigned() == cstType->as<IntegerType>()->isSigned()) {
                     node->right() = std::move(src->operand());
@@ -420,9 +420,7 @@ std::unique_ptr<Expression> Simplifier::simplify(std::unique_ptr<Typecast> node)
      * reinterpret_cast<int16_t>(*reinterpret_cast<uint16_t*>(&edi2))
      * will become *reinterpret_cast<int16_t*>(&edi2)
      */
-    if(node->operand()->is<UnaryOperator>()
-                                          && node->type()->isInteger() &&
-            node->operand()->as<UnaryOperator>()->operatorKind() == UnaryOperator::DEREFERENCE) {
+    if(node->operand()->is<UnaryOperator>() && node->type()->isInteger() && node->operand()->as<UnaryOperator>()->operatorKind() == UnaryOperator::DEREFERENCE) {
         /*
          * node's operand is dereference. node is a cast to an IntegerType
          */
@@ -443,11 +441,9 @@ std::unique_ptr<Expression> Simplifier::simplify(std::unique_ptr<Typecast> node)
             if (innerCast->type()->isPointer() && !node->type()->isPointer()) {
                 //inner cast is a pointer type
                 auto ptrType = innerCast->type()->as<PointerType>();
-                if (ptrType->pointeeType()->size() == node->type()->size()
-                    && ptrType->pointeeType()->isInteger()) {
+                if (ptrType->pointeeType()->size() == node->type()->size() && ptrType->pointeeType()->isInteger()) {
                     auto integerPointee = ptrType->pointeeType()->as<IntegerType>();
-                    deref->operand() =
-                    std::make_unique<Typecast>(Typecast::CastKind::REINTERPRET_CAST,
+                    deref->operand() = std::make_unique<Typecast>(Typecast::CastKind::REINTERPRET_CAST,
                     typeCalculator_.tree().makePointerType(innerCast->type()->size(), node->type()),
                                                std::move(innerCast->operand()));
                     return simplify(std::move(node->operand()));
