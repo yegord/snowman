@@ -45,7 +45,7 @@ public:
     const Type *getType(const VariableIdentifier *node);
     const Type *getType(const UndeclaredIdentifier *node);
     const Type *getBinaryOperatorType(int operatorKind, const Expression *left, const Expression *right);
-    Tree& getTree() {
+    Tree& tree() {
         return tree_;
     }
 };
