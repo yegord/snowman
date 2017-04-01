@@ -357,7 +357,7 @@ std::unique_ptr<Expression> Simplifier::simplify(std::unique_ptr<BinaryOperator>
             if(destType->isInteger() && cstType->isInteger() && destType->size() >= cstType->size()) {
                 if(destType->as<IntegerType>()->isSigned() == cstType->as<IntegerType>()->isSigned()) {
                     node->right() = std::move(src->operand());
-                    return std::move(simplify(std::move(node)));
+                    return simplify(std::move(node));
                 }
             }
         }
@@ -442,7 +442,6 @@ std::unique_ptr<Expression> Simplifier::simplify(std::unique_ptr<Typecast> node)
                 //inner cast is a pointer type
                 auto ptrType = innerCast->type()->as<PointerType>();
                 if (ptrType->pointeeType()->size() == node->type()->size() && ptrType->pointeeType()->isInteger()) {
-                    auto integerPointee = ptrType->pointeeType()->as<IntegerType>();
                     deref->operand() = std::make_unique<Typecast>(Typecast::CastKind::REINTERPRET_CAST,
                     typeCalculator_.tree().makePointerType(innerCast->type()->size(), node->type()),
                                                std::move(innerCast->operand()));
