@@ -375,6 +375,28 @@ private:
             }
             break;
         }
+        case ARM_INS_MLA: {
+            _[operand(0) ^= operand(1) * operand(2) + operand(3)];
+            if (detail_->update_flags) {
+                _[
+                    n ^= signed_(operand(0)) < constant(0),
+                    z ^= operand(0) == constant(0),
+                    c ^= intrinsic()
+                ];
+            }
+            break;
+        }
+        case ARM_INS_MLS: {
+            _[operand(0) ^= operand(1) * operand(2) - operand(3)];
+            if (detail_->update_flags) {
+                _[
+                    n ^= signed_(operand(0)) < constant(0),
+                    z ^= operand(0) == constant(0),
+                    c ^= intrinsic()
+                ];
+            }
+            break;
+        }
         case ARM_INS_MVN: {
             _[operand(0) ^= ~operand(1)];
             if (!handleWriteToPC(bodyBasicBlock)) {
