@@ -3,6 +3,7 @@ set(SOURCES
 )
 
 add_executable(nocode ${SOURCES})
+set_target_properties(nocode PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
 target_link_libraries(nocode nc-core ${Boost_LIBRARIES} ${QT_LIBRARIES})
 
 if (NOT ${IDA_PLUGIN_ENABLED})
