@@ -30,6 +30,17 @@ public:
 
     virtual ~ArmDisassembler();
 
+    int mode() {
+        return mode_;
+    }
+
+    void setMode(int mode) {
+        if (mode_ != mode) {
+            mode_ = mode;
+            capstone_->setMode(mode);
+        }
+    }
+
     std::shared_ptr<core::arch::Instruction> disassembleSingleInstruction(ByteAddr pc, const void *buffer, ByteSize size) override;
 };
 

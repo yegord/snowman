@@ -5,6 +5,8 @@
 
 #include <algorithm> /* std::max() */
 
+#include <capstone/capstone.h>
+
 #include <nc/core/image/ByteSource.h>
 #include <nc/core/image/Image.h>
 #include <nc/core/image/Relocation.h>
@@ -35,6 +37,17 @@ void Disassembler::disassemble(const image::Image *image, const image::ByteSourc
             bufferEnd = bufferBegin + source->readBytes(pc, buffer.get(), std::min(bufferSize, end - pc));
         }
 
+        const image::Symbol* symbol;
+        const image::Symbol* symbol1;
+        symbol = image->getSymbol(pc);
+        symbol1 = image->getSymbol(pc + 1);
+        if (symbol && !symbol1) {
+            setMode(CS_MODE_ARM);
+        }
+        if (!symbol && symbol1) {
+            setMode(CS_MODE_THUMB);
+        }
+
         const image::Relocation* reloc = image->getRelocation(pc);
         // If a relocation starts at a particular address it does make sense for there to be an instruction
         // there as well so skip over it
@@ -50,7 +63,13 @@ void Disassembler::disassemble(const image::Image *image, const image::ByteSourc
             pc = instruction->endAddr();
             callback(std::move(instruction));
         } else {
-            ++pc;
+            int mode = this->mode();
+            if (mode == CS_MODE_ARM) {
+                pc += 4;
+            }
+            if (mode == CS_MODE_THUMB) {
+                pc += 2;
+            }
         }
     }
 }

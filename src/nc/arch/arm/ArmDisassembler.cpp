@@ -29,7 +29,7 @@ ArmDisassembler::~ArmDisassembler() {}
 std::shared_ptr<core::arch::Instruction> ArmDisassembler::disassembleSingleInstruction(ByteAddr pc, const void *buffer, ByteSize size) {
     if (auto instr = capstone_->disassemble(pc, buffer, size, 1)) {
         /* Instructions must be aligned to their size. */
-        if ((instr->address & (instr->size - 1)) == 0) {
+        if ((instr->address & (instr->size - 1)) == 0 || mode_ == CS_MODE_THUMB) {
             return std::make_shared<ArmInstruction>(mode_, instr->address, instr->size, buffer);
         }
     }

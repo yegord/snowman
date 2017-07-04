@@ -77,6 +77,7 @@ public:
     Capstone &operator=(Capstone &&other) {
         close();
         handle_ = other.handle_;
+        mode_ = other.mode_;
         other.handle_ = 0;
         return *this;
     }

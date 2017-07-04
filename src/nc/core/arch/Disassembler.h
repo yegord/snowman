@@ -50,6 +50,9 @@ public:
      */
     virtual ~Disassembler() {}
 
+    virtual int mode() { return 0; }
+    virtual void setMode(int) {}
+
     typedef std::function<void(std::shared_ptr<Instruction>)> InstructionCallback;
 
     /**
