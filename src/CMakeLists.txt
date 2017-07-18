@@ -98,6 +98,14 @@ elseif(${MSVC})
     add_definitions(-DWINVER=0x0501)
 endif()
 
+#
+# Sanitizers.
+#
+if(${SANITIZER})
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fsanitize=leak -fsanitize=undefined")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize=leak -fsanitize=undefined")
+endif()
+
 # Add source dir to includes.
 include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/3rd-party)
 
