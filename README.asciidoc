@@ -2,7 +2,7 @@ Snowman
 =======
 
 http://derevenets.com/[Snowman] is a native code to C/C++ decompiler, supporting x86, AMD64, and ARM architectures.
-You can use it as a link:src/snowman[standalone GUI application], a link:src/nocode[command-line tool], an link:src/ida-plugin[IDA plug-in], a link:https://github.com/radare/radare2-pm/blob/master/db/r2snow[radare2] plugin, or a link:src/nc[library].
+You can use it as a link:src/snowman[standalone GUI application], a link:src/nocode[command-line tool], an link:src/ida-plugin[IDA plug-in], a link:https://github.com/radare/radare2-pm/blob/master/db/r2snow[radare2] plugin, an link:https://github.com/x64dbg/snowman[x64dbg] plugin or a link:src/nc[library].
 Snowman is link:doc/licenses.asciidoc[free software].
 
 Use
