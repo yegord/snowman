@@ -700,7 +700,7 @@ void MainWindow::about() {
         "<li>Mach-O,</li>"
         "<li>PE.</li>"
         "</ul></p>"
-        "<p>Report bugs to <a href=\"mailto:%3\">%3</a>.</p>"
+        "<p>Report bugs to <a href=\"%3\">%3</a>.</p>"
         "<p>The software is distributed under the terms of <a href=\"%5\">%4</a>.</p>")
         .arg(branding_.applicationName())
         .arg(branding_.applicationVersion())
