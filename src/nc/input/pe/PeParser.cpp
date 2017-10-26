@@ -184,7 +184,6 @@ private:
             peByteOrder.convertFrom(sectionHeader.SizeOfRawData);
             peByteOrder.convertFrom(sectionHeader.Characteristics);
             peByteOrder.convertFrom(sectionHeader.PointerToRawData);
-            peByteOrder.convertFrom(sectionHeader.SizeOfRawData);
 
             auto section = std::make_unique<core::image::Section>(
                 getAsciizString(sectionHeader.Name), sectionHeader.VirtualAddress + optionalHeader_.ImageBase,
