@@ -134,19 +134,17 @@ public:
      * Adds a menu item in the IDA's UI.
      *
      * param[in] menuItem              Path to the menu item after which the insertion will take place.
-     * param[in] name                  Name of menu item.
-     * param[in] hotkey                Hotkey for menu item.
-     * param[in] callback              Valid pointer to the function which gets called when the user selects it.
-     *                                 If it returns true, IDA refreshes the screen.
+     * param[in] actionDesc            Action descriptor for menu item.
      */
-    static void addMenuItem(const QString &menuItem, const QString &name, const QString &hotkey, bool (*callback)());
+	static void addMenuItem(const QString &menuItem, const action_desc_t& actionDesc);
 
     /**
      * Deletes a menu item in the IDA's UI.
      *
-     * param[in] menuItem              Path to the menu item after which the insertion will take place.
+     * param[in] menuItem              Path to the menu item after which the deletion will take place.
+     * param[in] actionDesc            Action descriptor for menu item.
      */
-    static void deleteMenuItem(const QString &menuItem);
+    static void deleteMenuItem(const QString &menuItem, const action_desc_t& actionDesc);
 
     /**
      * Prints a message to IDA console.

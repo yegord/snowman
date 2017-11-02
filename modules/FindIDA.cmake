@@ -6,7 +6,7 @@ set(IDA_SDK_FOUND FALSE)
 #
 
 find_path(IDA_PATH
-    NAME "idag.exe" "idaq.exe"
+    NAME "idag.exe" "idaq.exe" "ida.exe"
     HINTS $ENV{IDA_DIR} $ENV{IDADIR}
     PATHS "C:/Program Files/IDA" "C:/Program Files (x86)/IDA"
     DOC "IDA installation directory.")
@@ -101,16 +101,16 @@ if(IDA_SDK_PATH)
 
     if(WIN32)
         if(IDA_64_BIT_EA_T)
-            set(IDA_PLUGIN_EXT ".p64")
+            set(IDA_PLUGIN_EXT ".dll")
         else()
-            set(IDA_PLUGIN_EXT ".plw")
+            set(IDA_PLUGIN_EXT ".dll")
         endif()
     elseif(APPLE)
         if(IDA_64_BIT_EA_T)
-            set(IDA_PLUGIN_EXT ".pmc64")
+            set(IDA_PLUGIN_EXT ".dylib")
             set(IDA_SHARED_LIB_NAME ida64)
         else()
-            set(IDA_PLUGIN_EXT ".pmc")
+            set(IDA_PLUGIN_EXT ".dylib")
             set(IDA_SHARED_LIB_NAME ida)
         endif()
         if (IDA_PATH)
@@ -121,9 +121,9 @@ if(IDA_SDK_PATH)
         set(IDA_LIBRARIES ${IDA_LIBRARIES} ${IDA_SHARED_LIBRARY})
     else()
         if(IDA_64_BIT_EA_T)
-            set(IDA_PLUGIN_EXT ".plx64")
+            set(IDA_PLUGIN_EXT ".so")
         else()
-            set(IDA_PLUGIN_EXT ".plx")
+            set(IDA_PLUGIN_EXT ".so")
         endif()
     endif()
 

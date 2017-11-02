@@ -85,7 +85,7 @@ namespace {
         return PLUGIN_KEEP;
     }
 
-    void idaapi run(int /*arg*/) {
+    bool idaapi run(size_t /*arg*/) {
         /* Documentation says:
          * 
          * The plugin can be passed an integer argument from the plugins.cfg
@@ -96,6 +96,7 @@ namespace {
         foreach (auto &plugin, storage->plugins) {
             (*plugin)();
         }
+		return true;
     }
 
     void idaapi terminate() {

@@ -43,6 +43,7 @@
 #include "IdaDemangler.h"
 #include "IdaFrontend.h"
 #include "NavigationHelper.h"
+#include <kernwin.hpp>
 
 namespace nc { namespace ida {
 
@@ -56,21 +57,40 @@ const char *hexDumpMenuItem = "Hex dump";
 const char *decompileFunctionMenuItem = "Decompile a function";
 const char *decompileProgramMenuItem  = "Decompile a program";
 
+const char *decompileFunctionActionName = "snowman:decompile_function";
+const char *decompileProgramActionName  = "snowman:decompile_program";
+
 DecompilerPlugin *globalPluginInstance = NULL;
 
 } // anonymous namespace
 
-extern "C" {
-    static bool decompileFunctionCallback() {
-        globalPluginInstance->decompileFunction();
-        return true;
-    }
 
-    static bool decompileAllCallback() {
-        globalPluginInstance->decompileProgram();
-        return true;
-    }
-}
+struct ahandler_t : public action_handler_t
+{
+  bool functionOnly;
+  ahandler_t(bool _functionOnly) : functionOnly(_functionOnly) {}
+  virtual int idaapi activate(action_activation_ctx_t *)
+  {
+    if (functionOnly)
+      globalPluginInstance->decompileFunction()
+    else
+      globalPluginInstance->decompileProgram();
+    return true;
+  }
+
+  virtual action_state_t idaapi update(action_update_ctx_t *)
+  {
+    return AST_ENABLE_ALWAYS;
+  }
+};
+static ahandler_t decompileFunctionActionHandler(true);
+static ahandler_t decompileProgramActionHandler(false);
+
+static const action_desc_t actions[] = {
+	ACTION_DESC_LITERAL(decompileProgramActionName,  decompileProgramMenuItem,  decompileProgramActionHandler,  NULL, decompileProgramHotkey,  -1),
+	ACTION_DESC_LITERAL(decompileFunctionActionName, decompileFunctionMenuItem, decompileFunctionActionHandler, NULL, decompileFunctionHotkey, -1),
+};
+
 
 DecompilerPlugin::DecompilerPlugin():
     programWindow_(NULL)
@@ -89,14 +109,10 @@ DecompilerPlugin::DecompilerPlugin():
 
     IdaFrontend::addMenuItem(
         tr("%1/%2").arg(subviewsMenuPath).arg(hexDumpMenuItem),
-        tr(decompileProgramMenuItem),
-        decompileProgramHotkey,
-        &decompileAllCallback);
+        actions[0]);
     IdaFrontend::addMenuItem(
         tr("%1/%2").arg(subviewsMenuPath).arg(hexDumpMenuItem),
-        tr(decompileFunctionMenuItem),
-        decompileFunctionHotkey,
-        &decompileFunctionCallback);
+        actions[1]);
 
     IdaFrontend::print(tr(
         "%1 plugin %2 loaded.\n"
