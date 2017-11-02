@@ -50,31 +50,31 @@ bool IdaFrontend::jumpToAddress(ByteAddr address) {
 }
 
 QString IdaFrontend::functionName(ByteAddr address) {
-    char buffer[MAXSTR];
-    if(::get_func_name(checked_cast<ea_t>(address), buffer, sizeof(buffer)) == NULL)
+	qstring buffer;
+    if(::get_func_name(&buffer, checked_cast<ea_t>(address)) == NULL)
         return QString();
-    return QLatin1String(buffer);
+    return QLatin1String(buffer.c_str());
 }
 
 QString IdaFrontend::addressName(ByteAddr address) {
-    char buffer[MAXSTR];
-    if(::get_true_name(BADADDR, checked_cast<ea_t>(address), buffer, sizeof(buffer)) == NULL)
+    qstring buffer;
+    if(::get_ea_name(&buffer, checked_cast<ea_t>(address)) == NULL)
         return QString();
-    return QLatin1String(buffer);
+    return QLatin1String(buffer.c_str());
+}
+
+int idaapi import_num_cb(ea_t ea, const char *name, uval_t ord, void *param)
+{
+	std::vector<std::pair<ByteAddr, QString> >& result = *(std::vector<std::pair<ByteAddr, QString> >*)param;
+	result.push_back(std::make_pair(ea, QLatin1String(name)));
+	return 1;
 }
 
 std::vector<std::pair<ByteAddr, QString> > IdaFrontend::importedFunctions() {
     std::vector<std::pair<ByteAddr, QString> > result;
 
-    for(int i = 0, n = import_node.altval(-1); i < n; i++) {
-        netnode module(import_node.altval(i));
-
-        for(ea_t address = module.sup1st(); address != BADNODE; address = module.supnxt(address)) {
-            char functionName[MAXSTR];
-            ssize_t size = module.supval(address, functionName, sizeof(functionName));
-            if(size != -1)
-                result.push_back(std::make_pair(address, QLatin1String(functionName)));
-        }
+    for(int i = 0, n = ::get_import_module_qty(); i < n; i++) {
+        ::enum_import_names(i, import_num_cb, &result);
     }
 
     return result;
@@ -98,7 +98,7 @@ std::vector<ByteAddr> IdaFrontend::functionStarts() {
     for(std::size_t i = 0, n = get_func_qty(); i < n; i++) {
         func_t *func = getn_func(i);
         if(func != NULL)
-            result.push_back(func->startEA);
+            result.push_back(func->start_ea);
     }
 
     return result;
@@ -110,17 +110,17 @@ void IdaFrontend::createSections(core::image::Image *image) {
 
         assert(idaSegment != NULL);
 
-        char segName[MAXSTR];
-        ssize_t segNameSize = get_segm_name(idaSegment, segName, sizeof(segName) - 1);
+        qstring segName;
+        ssize_t segNameSize = get_segm_name(&segName, idaSegment);
         if(segNameSize < 0) {
-            segName[0] = '\0';
+            segName = "";
         } else if(segNameSize > 0 && segName[0] == '_') {
             segName[0] = '.';
         }
 
         auto section = std::make_unique<core::image::Section>(
-            segName,
-            checked_cast<ByteAddr>(idaSegment->startEA),
+            segName.c_str(),
+            checked_cast<ByteAddr>(idaSegment->start_ea),
             checked_cast<ByteSize>(idaSegment->size())
         );
 
@@ -138,13 +138,13 @@ void IdaFrontend::createSections(core::image::Image *image) {
 }
 
 ByteOrder IdaFrontend::byteOrder() {
-    return inf.mf ? ByteOrder::BigEndian : ByteOrder::LittleEndian;
+    return inf.is_be() ? ByteOrder::BigEndian : ByteOrder::LittleEndian;
 }
 
 QString IdaFrontend::architecture() {
-    if (inf.procName == QLatin1String("ARM")) {
+    if (inf.procname == QLatin1String("ARM")) {
         return QLatin1String(byteOrder() == ByteOrder::LittleEndian ? "arm-le" : "arm-be");
-    } else if (inf.procName == QLatin1String("ARMB")) {
+    } else if (inf.procname == QLatin1String("ARMB")) {
         return QLatin1String("arm-be");
     } else {
         /* Assume x86 by default. */
@@ -177,13 +177,13 @@ std::vector<AddressRange> IdaFrontend::functionAddresses(ByteAddr address) {
         return result;
     }
 
-    auto startAddr = checked_cast<ByteAddr>(function->startEA);
-    auto endAddr = checked_cast<ByteAddr>(function->endEA);
+    auto startAddr = checked_cast<ByteAddr>(function->start_ea);
+    auto endAddr = checked_cast<ByteAddr>(function->end_ea);
     result.push_back(AddressRange(startAddr, endAddr));
 
     for (int i = 0; i < function->tailqty; ++i) {
-        auto chunkStartAddr = checked_cast<ByteAddr>(function->tails[i].startEA);
-        auto chunkEndAddr = checked_cast<ByteAddr>(function->tails[i].endEA);
+        auto chunkStartAddr = checked_cast<ByteAddr>(function->tails[i].start_ea);
+        auto chunkEndAddr = checked_cast<ByteAddr>(function->tails[i].end_ea);
         result.push_back(AddressRange(chunkStartAddr, chunkEndAddr));
     }
     
@@ -194,27 +194,19 @@ ByteAddr IdaFrontend::screenAddress() {
     return checked_cast<ByteAddr>(get_screen_ea());
 }
 
-namespace {
-
-/* Stdcall -> cdecl adaptor. */
-bool idaapi callbackThunk(void *realCallback) {
-    return reinterpret_cast<bool (*)()>(realCallback)();
+void IdaFrontend::addMenuItem(const QString &menuItem, const action_desc_t& actionDesc) {
+	::register_action(actionDesc);
+	::attach_action_to_menu(
+		menuItem.toLocal8Bit().constData(),
+		actionDesc.name,
+		SETMENU_APP);
 }
 
-} // anonymous namespace
-
-void IdaFrontend::addMenuItem(const QString &menuItem, const QString &name, const QString &hotkey, bool (*callback)()) {
-    ::add_menu_item(
-        menuItem.toLocal8Bit().constData(),
-        name.toLocal8Bit().constData(),
-        hotkey.toLocal8Bit().constData(),
-        SETMENU_APP,
-        callbackThunk,
-        reinterpret_cast<void *>(callback));
-}
-
-void IdaFrontend::deleteMenuItem(const QString &menuItem) {
-    ::del_menu_item(menuItem.toLocal8Bit().constData());
+void IdaFrontend::deleteMenuItem(const QString &menuItem, const action_desc_t& actionDesc) {
+	::unregister_action(actionDesc.name);
+	::detach_action_from_menu(
+		menuItem.toLocal8Bit().constData(),
+		actionDesc.name);
 }
 
 void IdaFrontend::print(const QString &message) {
@@ -222,18 +214,17 @@ void IdaFrontend::print(const QString &message) {
 }
 
 QWidget *IdaFrontend::createWidget(const QString &caption) {
-    HWND hwnd;
-    TForm *form = create_tform(caption.toLocal8Bit().constData(), &hwnd);
-    open_tform(form, FORM_MDI | FORM_TAB | FORM_MENU | FORM_QWIDGET);
-    return reinterpret_cast<QWidget *>(form);
+    TWidget *widget = find_widget(caption.toLocal8Bit().constData());
+    display_widget(widget, FORM_MDI | FORM_TAB | FORM_MENU | FORM_QWIDGET);
+    return reinterpret_cast<QWidget *>(widget);
 }
 
 void IdaFrontend::activateWidget(QWidget *widget) {
-    ::switchto_tform(reinterpret_cast<TForm *>(widget), true);
+    ::activate_widget(reinterpret_cast<TWidget *>(widget), true);
 }
 
 void IdaFrontend::closeWidget(QWidget *widget) {
-    ::close_tform(reinterpret_cast<TForm *>(widget), 0);
+    ::close_widget(reinterpret_cast<TWidget *>(widget), 0);
 }
 
 }} // namespace nc::ida

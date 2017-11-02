@@ -44,7 +44,7 @@ ByteSize doReadBytes(ByteAddr addr, void *buf, ByteSize size) {
 #error You are trying to shoot your leg. IDA API is not thread-safe.
 #endif
 
-    if (get_many_bytes(checked_cast<ea_t>(addr), buf, checked_cast<ssize_t>(size))) {
+    if (get_bytes(buf, checked_cast<ssize_t>(size), checked_cast<ea_t>(addr))) {
         return size;
     }
 
@@ -55,8 +55,8 @@ ByteSize doReadBytes(ByteAddr addr, void *buf, ByteSize size) {
 
         char value = get_byte(idaAddr);
         if (value == 0) {
-            flags_t flags = getFlags(idaAddr);
-            if (!hasValue(flags)) {
+            flags_t flags = get_flags(idaAddr);
+            if (!has_value(flags)) {
                 break;
             }
         }
