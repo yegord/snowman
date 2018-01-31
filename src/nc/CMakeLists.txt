@@ -304,6 +304,8 @@ set(SOURCES
     input/pe/PeParser.cpp
     input/pe/PeParser.h
     input/pe/pe.h
+    input/le/LeParser.cpp
+    input/le/LeParser.h
     ${MOC_HEADERS}
 )
 

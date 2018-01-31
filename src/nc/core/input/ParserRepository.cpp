@@ -32,6 +32,7 @@
 #include <nc/input/elf/ElfParser.h>
 #include <nc/input/mach-o/MachOParser.h>
 #include <nc/input/pe/PeParser.h>
+#include <nc/input/le/LeParser.h>
 
 #include "Parser.h"
 
@@ -44,6 +45,7 @@ ParserRepository *createInstance() {
     result.registerParser(std::make_unique<nc::input::elf::ElfParser>());
     result.registerParser(std::make_unique<nc::input::mach_o::MachOParser>());
     result.registerParser(std::make_unique<nc::input::pe::PeParser>());
+    result.registerParser(std::make_unique<nc::input::le::LeParser>());
     return &result;
 }
 

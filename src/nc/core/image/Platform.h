@@ -24,7 +24,8 @@ class Platform {
 public:
     enum OperatingSystem {
         UnknownOS,
-        Windows
+        Windows,
+        DOS
     };
 
     Platform();
