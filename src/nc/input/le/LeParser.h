@@ -16,6 +16,6 @@ protected:
     virtual void doParse(QIODevice *source, core::image::Image *image, const LogToken &log) const override;
 };
 
-} // namespace mzle
+} // namespace le
 } // namespace input
 } // namespace nc
