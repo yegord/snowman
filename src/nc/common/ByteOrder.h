@@ -72,6 +72,16 @@ public:
         convert(&buf, sizeof(buf), *this, Current);
     }
 
+    /**
+     * Converts the contents of buf from Current byte order to the *this byte order.
+     *
+     * \param[in,out] buf   Buffer to be converted.
+     */
+    template<class T>
+    void convertTo(T &buf) const {
+        convert(&buf, sizeof(buf), Current, *this);
+    }
+
 private:
     /** Byte order type. */
     Type type_;

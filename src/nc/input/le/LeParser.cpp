@@ -339,7 +339,7 @@ void LeParser::doParse(QIODevice *in, core::image::Image *image, const LogToken 
 
             if (width == 4) {
                 uint32_t dst_virt = dst + image->sections()[dstobj - 1]->addr();
-                ByteOrder::convert(&dst_virt, width, ByteOrder::Current, bo);
+                bo.convertTo(dst_virt);
                 bytes[seci].replace(
                         page_virt_addr + fh.srcoff - image->sections()[seci]->addr(), // section offset
                         width, reinterpret_cast<char *>(&dst_virt), width);
