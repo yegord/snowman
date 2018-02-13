@@ -202,6 +202,7 @@ void LeParser::doParse(QIODevice *in, core::image::Image *image, const LogToken 
     // = loading sections =
 
     std::vector<obj_header> sec_headers;
+    std::vector<QByteArray> bytes(h.object_table_entries);
     for (uint32_t oi = 0; oi < h.object_table_entries; ++oi) {
         qint64 pos = hpos.le + h.offset_of_object_table + 24 * oi;
         obj_header oh;
@@ -228,11 +229,9 @@ void LeParser::doParse(QIODevice *in, core::image::Image *image, const LogToken 
         if (oi == h.object_table_entries - 1) { // last object has last page
             len -= h.memory_page_size - h.bytes_on_last_page;
         }
-        QByteArray bytes;
-        if (!in->seek(off) || (bytes = in->read(len), bytes.size() != len)) {
+        if (!in->seek(off) || (bytes[oi] = in->read(len), bytes[oi].size() != len)) {
             throw ParseError(tr("Truncated object body at 0x%1:0x%2 for object %3").arg(off, 1, 16).arg(len, 1, 16).arg(oi));
         }
-        section->setContent(std::move(bytes));
         log.debug(tr("Adding section %1 at 0x%2:0x%3").arg(section->name()).arg(off, 1, 16).arg(len, 1, 16));
         image->addSection(std::move(section));
         if (h.initial_object_CS_number - 1 == oi) {
@@ -335,8 +334,21 @@ void LeParser::doParse(QIODevice *in, core::image::Image *image, const LogToken 
             image->addRelocation(std::make_unique<core::image::Relocation>(
                     page_virt_addr + fh.srcoff,   // relocation virtual address
                     image->symbols()[dstobj - 1], // section alias as base
-                    width,                        // 4 byte relocations only
+                    width,
                     dst));                        // offset from section start
+
+            if (width == 4) {
+                uint32_t dst_virt = dst + image->sections()[dstobj - 1]->addr();
+                ByteOrder::convert(&dst_virt, width, ByteOrder::Current, bo);
+                bytes[seci].replace(
+                        page_virt_addr + fh.srcoff - image->sections()[seci]->addr(), // section offset
+                        width, reinterpret_cast<char *>(&dst_virt), width);
+            }
+        }
+
+        // setting section contents we've been holding until relocations applied
+        for (uint32_t i = 0; i < bytes.size(); ++i) {
+            image->sections()[i]->setContent(std::move(bytes[i]));
         }
     }
 }
