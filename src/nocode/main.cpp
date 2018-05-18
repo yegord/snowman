@@ -54,6 +54,8 @@
 #include <QStringList>
 #include <QTextStream>
 
+#include <nc/core/image/Section.h>
+
 const char *self = "nocode";
 
 QTextStream qin(stdin, QIODevice::ReadOnly);
@@ -144,6 +146,8 @@ void help() {
          << "  --print-ir[=FILE]           Print intermediate representation in DOT language to the file." << endl
          << "  --print-regions[=FILE]      Print results of structural analysis in DOT language to the file." << endl
          << "  --print-cxx[=FILE]          Print reconstructed program into given file." << endl
+         << "  --from[=ADDR]               From disassemble boundary." << endl
+         << "  --to[=ADDR]                 To disassemble boundary." << endl
          << endl
          << branding.applicationName() << " is a command-line native code to C/C++ decompiler." << endl
          << "It parses given files, decompiles them, and prints the requested" << endl
@@ -178,6 +182,8 @@ int main(int argc, char *argv[]) {
         QString irFile;
         QString regionsFile;
         QString cxxFile;
+        nc::ByteAddr from_addr = 0;
+        nc::ByteAddr to_addr = 0;
 
         bool autoDefault = true;
         bool verbose = false;
@@ -204,6 +210,11 @@ int main(int argc, char *argv[]) {
             } else if (arg.startsWith(option "=")) {    \
                 variable = arg.section('=', 1);         \
                 autoDefault = false;
+            #define ADDR_OPTION(option, variable)                   \
+            } else if (arg.startsWith(option "=")) {                \
+                bool ok;                                            \
+                variable = arg.section('=', 1).toInt(&ok,16);       \
+                autoDefault = true;
 
             FILE_OPTION("--print-sections", sectionsFile)
             FILE_OPTION("--print-symbols", symbolsFile)
@@ -212,8 +223,11 @@ int main(int argc, char *argv[]) {
             FILE_OPTION("--print-ir", irFile)
             FILE_OPTION("--print-regions", regionsFile)
             FILE_OPTION("--print-cxx", cxxFile)
+            ADDR_OPTION("--from", from_addr)
+            ADDR_OPTION("--to", to_addr)
 
             #undef FILE_OPTION
+            #undef ADDR_OPTION
 
             } else if (arg == "--") {
                 while (++i < args.size()) {
@@ -254,7 +268,15 @@ int main(int argc, char *argv[]) {
         openFileForWritingAndCall(symbolsFile, [&](QTextStream &out) { printSymbols(context, out); });
 
         if (!instructionsFile.isEmpty() || !cfgFile.isEmpty() || !irFile.isEmpty() || !regionsFile.isEmpty() || !cxxFile.isEmpty()) {
-            nc::core::Driver::disassemble(context);
+            if(from_addr && to_addr)
+            {
+                foreach (const nc::core::image::Section *section, context.image()->sections())
+                    if( from_addr >= section->addr() && to_addr <= section->endAddr() )
+                        nc::core::Driver::disassemble(context, section, from_addr, to_addr);
+            }
+            else
+                nc::core::Driver::disassemble(context);
+
             openFileForWritingAndCall(instructionsFile, [&](QTextStream &out) { context.instructions()->print(out); });
 
             if (!cfgFile.isEmpty() || !irFile.isEmpty() || !regionsFile.isEmpty() || !cxxFile.isEmpty()) {
