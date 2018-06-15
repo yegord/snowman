@@ -214,6 +214,8 @@ class ArrayType: public PointerType {
     virtual BitSize sizeOf() const override { return elementType()->size() * length(); }
 
     virtual void print(QTextStream &out) const override;
+
+    virtual bool isScalar() const override { return false; }
 };
 
 } // namespace likec

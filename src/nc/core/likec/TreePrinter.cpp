@@ -276,7 +276,14 @@ void TreePrinter::printSignature(const FunctionDeclaration *node) {
 }
 
 void TreePrinter::doPrint(const MemberDeclaration *node) {
-    out_ << *node->type() << ' ' << node->identifier() << ';';
+    if (!node->type()->isScalar()) {
+        const ArrayType* arrayTy = reinterpret_cast<const ArrayType*>(node->type());
+        out_ << *arrayTy->elementType() << ' ';
+        out_ << node->identifier() << '[' << arrayTy->length() << "];";     
+    }
+    else {
+        out_ << *node->type() << ' ' << node->identifier() << ';';
+    }
 }
 
 void TreePrinter::doPrint(const StructTypeDeclaration *node) {
@@ -293,9 +300,16 @@ void TreePrinter::doPrint(const StructTypeDeclaration *node) {
 
 void TreePrinter::doPrint(const VariableDeclaration *node) {
     printComment(node);
-
-    out_ << *node->type() << ' ';
-    print(node->variableIdentifier());
+    if (!node->type()->isScalar()) {
+        const ArrayType* arrayTy = reinterpret_cast<const ArrayType*>(node->type());
+        out_ << *arrayTy->elementType() << ' ';
+        print(node->variableIdentifier());   
+        out_ << '[' << arrayTy->length() << "];";     
+    }
+    else {
+        out_ << *node->type() << ' ';
+        print(node->variableIdentifier());
+    }
     if (node->initialValue()) {
         out_ << " = ";
         print(node->initialValue());
