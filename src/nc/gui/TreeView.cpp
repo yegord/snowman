@@ -200,11 +200,18 @@ bool TreeView::eventFilter(QObject *watched, QEvent *event) {
         if (event->type() == QEvent::Wheel) {
             auto wheelEvent = static_cast<QWheelEvent *>(event);
 
-            if (wheelEvent->orientation() == Qt::Vertical && wheelEvent->modifiers() & Qt::ControlModifier) {
-                if (wheelEvent->delta() > 0) {
-                    zoomIn(1 + wheelEvent->delta() / 360);
+            int delta;
+            #if QT_VERSION >= 0x050000
+                delta = wheelEvent->angleDelta().y();
+            #else
+                delta = wheelEvent->orientation() == Qt::Vertical ? wheelEvent->delta() : 0;
+            #endif
+
+            if (wheelEvent->modifiers() & Qt::ControlModifier) {
+                if (delta > 0) {
+                    zoomIn(1 + delta / 360);
                 } else {
-                    zoomOut(1 - wheelEvent->delta() / 360);
+                    zoomOut(1 - delta / 360);
                 }
                 return true;
             }
