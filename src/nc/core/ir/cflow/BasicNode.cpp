@@ -44,15 +44,15 @@ void BasicNode::print(QTextStream &out) const {
     QTextStream ls(&label);
 
     if (basicBlock()->address()) {
-        ls << QString("address %1").arg(*basicBlock()->address(), 0, 16) << endl;
+        ls << QString("address %1").arg(*basicBlock()->address(), 0, 16) << '\n';
     }
-    ls << QString("basic block %1").arg(reinterpret_cast<uintptr_t>(basicBlock()), 0, 16) << endl;
+    ls << QString("basic block %1").arg(reinterpret_cast<uintptr_t>(basicBlock()), 0, 16) << '\n';
 
     foreach (const Statement *statement, basicBlock()->statements()) {
         ls << *statement;
     }
 
-    out << "node" << this << " [shape=box,label=\"" << escapeDotString(label) << "\"]" << endl;
+    out << "node" << this << " [shape=box,label=\"" << escapeDotString(label) << "\"]" << '\n';
 }
 
 bool BasicNode::isCondition() const {

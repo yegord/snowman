@@ -205,10 +205,10 @@ void TreePrinter::doPrint(const TreeNode *node) {
 
 void TreePrinter::doPrint(const CompilationUnit *node) {
     foreach (const auto &declaration, node->declarations()) {
-        out_ << endl;
+        out_ << '\n';
         printIndent();
         print(declaration);
-        out_ << endl;
+        out_ << '\n';
     }
 }
 
@@ -280,12 +280,12 @@ void TreePrinter::doPrint(const MemberDeclaration *node) {
 }
 
 void TreePrinter::doPrint(const StructTypeDeclaration *node) {
-    out_ << "struct " << node->identifier() << " {" << endl;
+    out_ << "struct " << node->identifier() << " {" << '\n';
     indentMore();
     foreach (const auto &member, node->type()->members()) {
         printIndent();
         print(member);
-        out_ << endl;
+        out_ << '\n';
     }
     indentLess();
     out_ << "};";
@@ -664,17 +664,17 @@ void TreePrinter::doPrint(const Statement *node) {
 }
 
 void TreePrinter::doPrint(const Block *node) {
-    out_ << "{" << endl;
+    out_ << "{" << '\n';
     indentMore();
 
     foreach (const auto &declaration, node->declarations()) {
         printIndent();
         print(declaration);
-        out_ << endl;
+        out_ << '\n';
     }
 
     if (!node->declarations().empty() && !node->statements().empty()) {
-        out_ << endl;
+        out_ << '\n';
     }
 
     foreach (const auto &statement, node->statements()) {
@@ -688,7 +688,7 @@ void TreePrinter::doPrint(const Block *node) {
 
         printIndent();
         print(statement);
-        out_ << endl;
+        out_ << '\n';
 
         if (isCaseLabel) {
             indentMore();
@@ -785,7 +785,7 @@ void TreePrinter::printNestedStatement(const Statement *statement) {
     if (statement->is<Block>()) {
         print(statement);
     } else {
-        out_ << endl;
+        out_ << '\n';
         indentMore();
         printIndent();
         print(statement);
@@ -801,14 +801,14 @@ void TreePrinter::printComment(const Commentable *node) {
     QStringList lines = node->comment().split('\n');
 
     if (lines.size() == 1) {
-        out_ << "/* " << lines.first() << " */" << endl;
+        out_ << "/* " << lines.first() << " */" << '\n';
     } else {
-        out_ << "/*" << endl;
+        out_ << "/*" << '\n';
         foreach (const QString &line, lines) {
             printIndent();
-            out_ << " * " << line << endl;
+            out_ << " * " << line << '\n';
         }
-        out_ << " */" << endl;
+        out_ << " */" << '\n';
     }
 }
 

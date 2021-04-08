@@ -44,7 +44,7 @@ void InlineAssembly::print(QTextStream &out) const {
     if (instruction()) {
         out << *instruction();
     }
-    out << " }" << endl;
+    out << " }" << '\n';
 }
 
 Assignment::Assignment(std::unique_ptr<Term> left, std::unique_ptr<Term> right):
@@ -63,7 +63,7 @@ std::unique_ptr<Statement> Assignment::doClone() const {
 }
 
 void Assignment::print(QTextStream &out) const {
-    out << *left_ << " = " << *right_ << endl;
+    out << *left_ << " = " << *right_ << '\n';
 }
 
 Touch::Touch(std::unique_ptr<Term> term, Term::AccessType accessType):
@@ -89,7 +89,7 @@ void Touch::print(QTextStream &out) const {
         default:
             unreachable();
     }
-    out << "(" << *term_ << ")" << endl;
+    out << "(" << *term_ << ")" << '\n';
 }
 
 Call::Call(std::unique_ptr<Term> target):
@@ -106,7 +106,7 @@ std::unique_ptr<Statement> Call::doClone() const {
 }
 
 void Call::print(QTextStream &out) const {
-    out << "call " << *target_ << endl;
+    out << "call " << *target_ << '\n';
 }
 
 std::unique_ptr<Statement> Halt::doClone() const {
@@ -114,7 +114,7 @@ std::unique_ptr<Statement> Halt::doClone() const {
 }
 
 void Halt::print(QTextStream &out) const {
-    out << "halt" << endl;
+    out << "halt" << '\n';
 }
 
 std::unique_ptr<Statement> Callback::doClone() const {
@@ -122,7 +122,7 @@ std::unique_ptr<Statement> Callback::doClone() const {
 }
 
 void Callback::print(QTextStream &out) const {
-    out << "callback" << endl;
+    out << "callback" << '\n';
 }
 
 std::unique_ptr<Statement> RememberReachingDefinitions::doClone() const {
@@ -130,7 +130,7 @@ std::unique_ptr<Statement> RememberReachingDefinitions::doClone() const {
 }
 
 void RememberReachingDefinitions::print(QTextStream &out) const {
-    out << "remember_reaching_definitions" << endl;
+    out << "remember_reaching_definitions" << '\n';
 }
 
 } // namespace ir

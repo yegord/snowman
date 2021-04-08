@@ -167,13 +167,13 @@ void BasicBlock::print(QTextStream &out) const {
     } else {
         ls << "None";
     }
-    ls << endl;
+    ls << '\n';
 
     foreach (const Statement *statement, statements()) {
         ls << *statement;
     }
 
-    out << escapeDotString(label) << "\"];" << endl;
+    out << escapeDotString(label) << "\"];" << '\n';
 }
 
 } // namespace ir

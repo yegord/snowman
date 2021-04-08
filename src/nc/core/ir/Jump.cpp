@@ -72,9 +72,9 @@ std::unique_ptr<Statement> Jump::doClone() const {
 
 void Jump::print(QTextStream &out) const {
     if (isConditional()) {
-        out << "if " << *condition() << " goto " << thenTarget() << " else goto " << elseTarget() << endl;
+        out << "if " << *condition() << " goto " << thenTarget() << " else goto " << elseTarget() << '\n';
     } else {
-        out << "goto " << thenTarget() << endl;
+        out << "goto " << thenTarget() << '\n';
     }
 }
 

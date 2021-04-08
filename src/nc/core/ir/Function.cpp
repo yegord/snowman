@@ -56,9 +56,9 @@ bool Function::isEmpty() const {
 }
 
 void Function::print(QTextStream &out) const {
-    out << "subgraph cluster" << this << " {" << endl;
+    out << "subgraph cluster" << this << " {" << '\n';
     out << CFG(basicBlocks());
-    out << '}' << endl;
+    out << '}' << '\n';
 }
 
 } // namespace ir

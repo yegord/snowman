@@ -129,9 +129,9 @@ BasicBlock *Program::takeOwnership(std::unique_ptr<BasicBlock> basicBlock) {
 }
 
 void Program::print(QTextStream &out) const {
-    out << "digraph Program" << this << " {" << endl;
+    out << "digraph Program" << this << " {" << '\n';
     out << CFG(basicBlocks());
-    out << "}" << endl;
+    out << "}" << '\n';
 }
 
 } // namespace ir

@@ -100,11 +100,11 @@ void printSections(nc::core::Context &context, QTextStream &out) {
             flags += QLatin1String(",bss");
         }
         out << QString(QLatin1String("section name = '%1', start = 0x%2, size = 0x%3, flags = %4"))
-            .arg(section->name()).arg(section->addr(), 0, 16).arg(section->size(), 0, 16).arg(flags) << endl;
+            .arg(section->name()).arg(section->addr(), 0, 16).arg(section->size(), 0, 16).arg(flags) << '\n';
     }
     auto entrypoint = context.image()->entrypoint();
     if (entrypoint) {
-        out << QString(QLatin1String("entry point = 0x%1")).arg(*entrypoint, 0, 16) << endl;
+        out << QString(QLatin1String("entry point = 0x%1")).arg(*entrypoint, 0, 16) << '\n';
     }
 }
 
@@ -118,57 +118,57 @@ void printSymbols(nc::core::Context &context, QTextStream &out) {
         }
         out << QString("symbol name = '%1', type = %2, value = 0x%3, section = %4")
             .arg(symbol->name()).arg(symbol->type().getName()).arg(value)
-            .arg(symbol->section() ? symbol->section()->name() : QString()) << endl;
+            .arg(symbol->section() ? symbol->section()->name() : QString()) << '\n';
     }
 }
 
 void printRegionGraphs(nc::core::Context &context, QTextStream &out) {
-    out << "digraph Functions { compound=true; " << endl;
+    out << "digraph Functions { compound=true; " << '\n';
     foreach (const auto *function, context.functions()->list()) {
         context.graphs()->at(function)->print(out);
     }
-    out << "}" << endl;
+    out << "}" << '\n';
 }
 
 void help() {
     auto branding = nc::branding();
     branding.setApplicationName("Nocode");
 
-    qout << "Usage: " << self << " [options] [--] file..." << endl
-         << endl
-         << "Options:" << endl
-         << "  --help, -h                  Produce this help message and quit." << endl
-         << "  --verbose, -v               Print progress information to stderr." << endl
-         << "  --print-sections[=FILE]     Print information about sections of the executable file." << endl
-         << "  --print-symbols[=FILE]      Print the symbols from the executable file." << endl
-         << "  --print-instructions[=FILE] Print parsed instructions to the file." << endl
-         << "  --print-cfg[=FILE]          Print control flow graph in DOT language to the file." << endl
-         << "  --print-ir[=FILE]           Print intermediate representation in DOT language to the file." << endl
-         << "  --print-regions[=FILE]      Print results of structural analysis in DOT language to the file." << endl
-         << "  --print-cxx[=FILE]          Print reconstructed program into given file." << endl
-         << "  --from[=ADDR]               From disassemble boundary." << endl
-         << "  --to[=ADDR]                 To disassemble boundary." << endl
-         << endl
-         << branding.applicationName() << " is a command-line native code to C/C++ decompiler." << endl
-         << "It parses given files, decompiles them, and prints the requested" << endl
-         << "information (by default, C++ code) to the specified files." << endl
-         << "When a file name is '-' or omitted, stdout is used." << endl
-         << endl;
+    qout << "Usage: " << self << " [options] [--] file..." << '\n'
+         << '\n'
+         << "Options:" << '\n'
+         << "  --help, -h                  Produce this help message and quit." << '\n'
+         << "  --verbose, -v               Print progress information to stderr." << '\n'
+         << "  --print-sections[=FILE]     Print information about sections of the executable file." << '\n'
+         << "  --print-symbols[=FILE]      Print the symbols from the executable file." << '\n'
+         << "  --print-instructions[=FILE] Print parsed instructions to the file." << '\n'
+         << "  --print-cfg[=FILE]          Print control flow graph in DOT language to the file." << '\n'
+         << "  --print-ir[=FILE]           Print intermediate representation in DOT language to the file." << '\n'
+         << "  --print-regions[=FILE]      Print results of structural analysis in DOT language to the file." << '\n'
+         << "  --print-cxx[=FILE]          Print reconstructed program into given file." << '\n'
+         << "  --from[=ADDR]               From disassemble boundary." << '\n'
+         << "  --to[=ADDR]                 To disassemble boundary." << '\n'
+         << '\n'
+         << branding.applicationName() << " is a command-line native code to C/C++ decompiler." << '\n'
+         << "It parses given files, decompiles them, and prints the requested" << '\n'
+         << "information (by default, C++ code) to the specified files." << '\n'
+         << "When a file name is '-' or omitted, stdout is used." << '\n'
+         << '\n';
 
-    qout << "Version: " << branding.applicationVersion() << endl;
+    qout << "Version: " << branding.applicationVersion() << '\n';
 
     qout << "Available architectures:";
     foreach (auto architecture, nc::core::arch::ArchitectureRepository::instance()->architectures()) {
         qout << " " << architecture->name();
     }
-    qout << endl;
+    qout << '\n';
     qout << "Available parsers:";
     foreach(auto parser, nc::core::input::ParserRepository::instance()->parsers()) {
         qout << " " << parser->name();
     }
-    qout << endl;
-    qout << "Report bugs to: " << branding.reportBugsTo() << endl;
-    qout << "License: " << branding.licenseName() << " <" << branding.licenseUrl() << ">" << endl;
+    qout << '\n';
+    qout << "Report bugs to: " << branding.reportBugsTo() << '\n';
+    qout << "License: " << branding.licenseName() << " <" << branding.licenseUrl() << ">" << '\n';
 }
 
 int main(int argc, char *argv[]) {
@@ -289,7 +289,7 @@ int main(int argc, char *argv[]) {
             }
         }
     } catch (const nc::Exception &e) {
-        qerr << self << ": " << e.unicodeWhat() << endl;
+        qerr << self << ": " << e.unicodeWhat() << '\n';
         return 1;
     }
 

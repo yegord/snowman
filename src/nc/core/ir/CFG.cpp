@@ -97,7 +97,7 @@ void CFG::print(QTextStream &out) const {
 
     foreach (auto &pair, successors_) {
         foreach (const BasicBlock *successor, pair.second) {
-            out << "basicBlock" << pair.first << " -> basicBlock" << successor << ';' << endl;
+            out << "basicBlock" << pair.first << " -> basicBlock" << successor << ';' << '\n';
         }
     }
 }

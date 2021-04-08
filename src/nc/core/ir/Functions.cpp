@@ -45,14 +45,14 @@ void Functions::addFunction(std::unique_ptr<Function> function) {
 }
 
 void Functions::print(QTextStream &out) const {
-    out << "digraph Functions" << this << " {" << endl;
-    out << "compound = true" << endl;
+    out << "digraph Functions" << this << " {" << '\n';
+    out << "compound = true" << '\n';
     
     foreach (auto function, list()) {
         out << *function;
     }
 
-    out << "}" << endl;
+    out << "}" << '\n';
 }
 
 } // namespace ir

@@ -74,7 +74,7 @@ void Instructions::print(QTextStream &out, PrintCallback<const Instruction *> *c
 
     foreach (const auto &instr, all()) {
         if (instr->addr() != successorAddress) {
-            out << endl;
+            out << '\n';
         }
         successorAddress = instr->endAddr();
 
@@ -92,7 +92,7 @@ void Instructions::print(QTextStream &out, PrintCallback<const Instruction *> *c
             callback->onEndPrinting(instr.get());
         }
 
-        out << endl;
+        out << '\n';
     }
 }
 

@@ -79,20 +79,20 @@ void Region::print(QTextStream &out) const {
             unreachable();
     }
 
-    out << "\"]" << endl;
+    out << "\"]" << '\n';
 
-    out << "subgraph cluster" << this << " {" << endl;
+    out << "subgraph cluster" << this << " {" << '\n';
     foreach (const Node *node, nodes()) {
         out << *node;
 
         foreach (const Edge *edge, node->outEdges()) {
-            out << "node" << edge->tail() << " -> node" << edge->head() << endl;
+            out << "node" << edge->tail() << " -> node" << edge->head() << '\n';
         }
     }
-    out << '}' << endl;
+    out << '}' << '\n';
 
     out << "node" << this << " -> node" << (entry() ? entry() : nodes()[0])
-        << " [color=\"blue\" lhead=\"cluster" << this << "\"]" << endl;
+        << " [color=\"blue\" lhead=\"cluster" << this << "\"]" << '\n';
 }
 
 } // namespace cflow
