@@ -83,7 +83,8 @@ void Instructions::print(QTextStream &out, PrintCallback<const Instruction *> *c
         }
 
         int integerBase = out.integerBase();
-        hex(out) << instr->addr() << ":\t";
+        out.setIntegerBase(16);
+        out << instr->addr() << ":\t";
         out.setIntegerBase(integerBase);
 
         out << *instr;

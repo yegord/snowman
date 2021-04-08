@@ -162,7 +162,8 @@ void BasicBlock::print(QTextStream &out) const {
     ls << "Address: ";
     if (address()) {
         int integerBase = ls.integerBase();
-        hex(ls) << "0x" << *address();
+        out.setIntegerBase(16);
+        out << "0x" << *address();
         ls.setIntegerBase(integerBase);
     } else {
         ls << "None";

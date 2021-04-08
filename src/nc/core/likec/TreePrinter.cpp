@@ -471,7 +471,9 @@ void TreePrinter::doPrint(const IntegerConstant *node) {
     if ((0 <= val && val <= 100) || (-100 <= val && val < 0 && !node->type()->isUnsigned())) {
         out_ << val;
     } else {
-        out_ << hex << "0x" << node->value().value() << dec;
+        out_.setIntegerBase(16);
+        out_ << "0x" << node->value().value();
+        out_.setIntegerBase(10);
     }
 }
 
