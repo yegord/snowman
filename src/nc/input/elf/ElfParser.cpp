@@ -56,6 +56,7 @@ public:
     static const unsigned char elfclass = ELFCLASS32;
     typedef Elf32_Ehdr Ehdr;
     typedef Elf32_Shdr Shdr;
+    typedef Elf32_Phdr Phdr;
     typedef Elf32_Sym Sym;
     typedef Elf32_Rel Rel;
     typedef Elf32_Rela Rela;
@@ -70,6 +71,7 @@ public:
     static const unsigned char elfclass = ELFCLASS64;
     typedef Elf64_Ehdr Ehdr;
     typedef Elf64_Shdr Shdr;
+    typedef Elf64_Phdr Phdr;
     typedef Elf64_Sym Sym;
     typedef Elf64_Rel Rel;
     typedef Elf64_Rela Rela;
@@ -125,6 +127,7 @@ public:
     void parse() {
         parseElfHeader();
         parseSections();
+        parseProgramHeaders();
         parseSymbols();
         parseRelocations();
 
@@ -170,6 +173,8 @@ private:
         byteOrder_.convertFrom(ehdr_.e_machine);
         byteOrder_.convertFrom(ehdr_.e_shoff);
         byteOrder_.convertFrom(ehdr_.e_shnum);
+        byteOrder_.convertFrom(ehdr_.e_phoff);
+        byteOrder_.convertFrom(ehdr_.e_phnum);
         byteOrder_.convertFrom(ehdr_.e_shstrndx);
         byteOrder_.convertFrom(ehdr_.e_entry);
 
@@ -193,7 +198,10 @@ private:
     }
 
     void parseSections() {
-        source_->seek(ehdr_.e_shoff);
+        if (!source_->seek(ehdr_.e_shoff)) {
+            log_.warning(tr("Could not seek to the section headers."));
+            return;
+        }
 
         /*
          * Read section headers.
@@ -261,8 +269,64 @@ private:
         }
     }
 
+    void parseProgramHeaders() {
+        if (!source_->seek(ehdr_.e_phoff)) {
+            log_.warning(tr("Could not seek to the program headers."));
+            return;
+        }
+
+        std::vector<typename Elf::Phdr> phdrs;
+        phdrs.resize(ehdr_.e_phnum);
+
+        if (!read(source_, *phdrs.data(), phdrs.size())) {
+            throw ParseError(tr("Cannot read program headers."));
+        }
+
+        std::size_t segmentIndex = 0;
+
+        foreach (typename Elf::Phdr &phdr, phdrs) {
+            byteOrder_.convertFrom(phdr.p_type);
+            byteOrder_.convertFrom(phdr.p_flags);
+            byteOrder_.convertFrom(phdr.p_offset);
+            byteOrder_.convertFrom(phdr.p_vaddr);
+            byteOrder_.convertFrom(phdr.p_filesz);
+
+            if ((phdr.p_type == PT_LOAD || phdr.p_type == PT_INTERP) && (phdr.p_filesz > 0)) {
+                auto section = std::make_unique<core::image::Section>(tr("[Segment %1]").arg(segmentIndex),
+                                                                      phdr.p_vaddr, phdr.p_filesz);
+
+                section->setAllocated(true);
+                section->setReadable(phdr.p_flags & PF_R);
+                section->setWritable(phdr.p_flags & PF_W);
+                section->setExecutable(phdr.p_flags & PF_X);
+
+                section->setCode(section->isExecutable());
+                section->setBss(false);
+                section->setData(!section->isExecutable());
+
+                if (source_->seek(phdr.p_offset)) {
+                    auto bytes = source_->read(phdr.p_filesz);
+
+                    if (bytes.size() != static_cast<int>(phdr.p_filesz)) {
+                        log_.warning(tr("Could read only 0x%1 bytes of segment %2, although its size is 0x%3.")
+                                         .arg(bytes.size(), 0, 16)
+                                         .arg(section->name())
+                                         .arg(phdr.p_filesz));
+                    }
+
+                    section->setContent(std::move(bytes));
+                } else {
+                    log_.warning(tr("Could not seek to the data of segment %1.").arg(section->name()));
+                }
+
+                sections_.push_back(std::move(section));
+                ++segmentIndex;
+            }
+        }
+    }
+
     void parseSymbols() {
-        for (std::size_t i = 0; i < sections_.size(); ++i) {
+        for (std::size_t i = 0; i < ehdr_.e_shnum; ++i) {
             if (shdrs_[i].sh_type == SHT_SYMTAB || shdrs_[i].sh_type == SHT_DYNSYM) {
                 parseSymbols(i);
             }
