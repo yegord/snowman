@@ -212,6 +212,8 @@ class ArrayType: public PointerType {
     virtual bool isScalar() const override { return false; }
 
     virtual void print(QTextStream &out) const override;
+
+    virtual bool isScalar() const override { return false; }
 };
 
 } // namespace likec
