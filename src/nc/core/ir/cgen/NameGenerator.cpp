@@ -40,7 +40,9 @@ NameAndComment NameGenerator::getFunctionName(const Function *function) const {
 }
 
 NameAndComment NameGenerator::getFunctionName(ByteAddr addr) const {
-    if (auto symbol = image_.getSymbol(addr)) {
+    const image::Symbol* symbol;
+    if ((symbol = image_.getSymbol(addr)) ||
+        (symbol = image_.getSymbol(addr + 1))) {
         if (auto result = getFunctionName(symbol)) {
             return result;
         }

@@ -172,7 +172,11 @@ private:
 
         switch (instr_->id) {
         case ARM_INS_ADD: {
-            _[operand(0) ^= operand(1) + operand(2)];
+            if (detail_->op_count == 2) {
+                _[operand(0) ^= operand(0) + operand(1)];
+            } else {
+                _[operand(0) ^= operand(1) + operand(2)];
+            }
             if (!handleWriteToPC(bodyBasicBlock)) {
                 if (detail_->update_flags) {
                     _[
@@ -241,7 +245,11 @@ private:
             break;
         }
         case ARM_INS_EOR: {
-            _[operand(0) ^= operand(1) ^ operand(2)];
+            if (detail_->op_count == 2) {
+                _[operand(0) ^= operand(0) ^ operand(1)];
+            } else {
+                _[operand(0) ^= operand(1) ^ operand(2)];
+            }
             if (!handleWriteToPC(bodyBasicBlock)) {
                 if (detail_->update_flags) {
                     _[
@@ -384,7 +392,11 @@ private:
             break;
         }
         case ARM_INS_ORR: {
-            _[operand(0) ^= operand(1) | operand(2)];
+            if (detail_->op_count == 2) {
+                _[operand(0) ^= operand(0) | operand(1)];
+            } else {
+                _[operand(0) ^= operand(1) | operand(2)];
+            }
             if (!handleWriteToPC(bodyBasicBlock)) {
                 if (detail_->update_flags) {
                     _[
@@ -470,7 +482,11 @@ private:
             break;
         }
         case ARM_INS_SUB: {
-            _[operand(0) ^= operand(1) - operand(2)];
+            if (detail_->op_count == 2) {
+                _[operand(0) ^= operand(0) - operand(1)];
+            } else {
+                _[operand(0) ^= operand(1) - operand(2)];
+            }
             if (!handleWriteToPC(bodyBasicBlock)) {
                 if (detail_->update_flags) {
                     _[
